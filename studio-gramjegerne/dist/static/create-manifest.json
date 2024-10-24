@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "createdAt": "2024-10-24T10:36:40.782Z",
+  "workspaces": [
+    {
+      "name": "default",
+      "title": "Gramjegerne",
+      "basePath": "/",
+      "dataset": "production",
+      "schema": "a9de988e.create-schema.json"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+[
+  {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "image",
+        "type": "image"
+      },
+      {
+        "name": "days",
+        "type": "number"
+      },
+      {
+        "name": "date",
+        "type": "date"
+      }
+    ],
+    "name": "list",
+    "type": "document",
+    "title": "list"
+  },
+  {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "image",
+        "type": "image"
+      },
+      {
+        "name": "category",
+        "type": "category"
+      },
+      {
+        "name": "size",
+        "type": "string"
+      },
+      {
+        "name": "weight",
+        "type": "weight"
+      },
+      {
+        "name": "quantity",
+        "type": "number"
+      },
+      {
+        "name": "calories",
+        "type": "number"
+      }
+    ],
+    "name": "item",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "name": "weight",
+        "type": "number"
+      },
+      {
+        "options": {
+          "list": [
+            "g",
+            "kg"
+          ]
+        },
+        "name": "unit",
+        "type": "string"
+      }
+    ],
+    "name": "weight",
+    "type": "object"
+  },
+  {
+    "fields": [
+      {
+        "options": {
+          "list": [
+            "food",
+            "clothing",
+            "sleeping",
+            "fishing",
+            "paddling",
+            "biking",
+            "gear",
+            "cooking"
+          ]
+        },
+        "name": "category",
+        "type": "string"
+      }
+    ],
+    "name": "category",
+    "type": "object"
+  }
+]
