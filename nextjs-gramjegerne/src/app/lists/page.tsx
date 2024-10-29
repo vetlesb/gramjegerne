@@ -9,8 +9,8 @@ const builder = imageUrlBuilder(client)
 // Then we like to make a simple function like this that gives the
 // builder an image and returns the builder for you to specify additional
 // parameters:
-function urlFor(source:unknown) {
-  return builder.image(source)
+function urlFor(ImageUrlBuilder:any) {
+  return builder.image(ImageUrlBuilder)
 }
 
 const LISTS_QUERY = `*[
