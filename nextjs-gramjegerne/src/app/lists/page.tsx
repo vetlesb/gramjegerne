@@ -1,6 +1,7 @@
 import { type SanityDocument } from "next-sanity";
 import imageUrlBuilder from '@sanity/image-url';
 import { client } from "@/sanity/client";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 
 // Get a pre-configured url-builder from your sanity client
@@ -9,8 +10,8 @@ const builder = imageUrlBuilder(client)
 // Then we like to make a simple function like this that gives the
 // builder an image and returns the builder for you to specify additional
 // parameters:
-function urlFor(ImageUrlBuilder:any) {
-  return builder.image(ImageUrlBuilder)
+function urlFor(SanityImageSource: SanityImageSource) {
+  return builder.image(SanityImageSource)
 }
 
 const LISTS_QUERY = `*[
