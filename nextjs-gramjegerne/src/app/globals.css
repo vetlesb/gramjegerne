@@ -67,8 +67,7 @@ li.form {
   gap: 4px;
   background-color: #272E23;
   border-radius: 8px;
-  padding: 32px;
-  max-width: 500px;
+  padding: 16px;
   margin: 8px;
   
 }
@@ -79,10 +78,14 @@ li.form {
   color: #EAFFE2;
   background-color: #1F261C;
 }
-
-.container {
-
-  max-width: 100%;
+.menu-item {
+  padding: 8px 16px 8px 16px;
+  border-radius: 48px;
+  color: #EAFFE2;
+  background-color: #272E23;
+}
+.menu-item:hover {
+  background-color: #1C2219;
 }
 
 input, select {
@@ -97,7 +100,13 @@ input:focus, select:focus {
 input:hover, select:hover {
   background-color: #1C2219;
 }
-
+input::file-selector-button {
+  background-color: #1F261C;
+  color:#B4ED9F;
+  padding: 0.5rem;
+  border: thin solid #B4ED9F;
+  border-radius: 4px;
+}
 button {
   background-color:#EAFFE2;
   color: #1F261C;

@@ -49,10 +49,10 @@ console.log (items)
       </ul>
       <ul className="flex flex-col">
         <li className="form">
-        <div className="flex flex-col gap-y-8">
+        <div className="flex flex-wrap stretch flex-col gap-y-8">
         <h2 className="text-2xl font-semibold">Add item</h2>
         <div className="flex flex-col gap-y-2">
-        <label className="text-s">Navn</label>
+        <label className="flex text-s">Navn</label>
         <input name="query" />
         </div>
         <div className="flex flex-col gap-y-2">
@@ -61,7 +61,7 @@ console.log (items)
         </div>
         <div className="flex flex-col gap-y-2">
         <label className="text-s">Kategori</label>
-        <select>
+        <select className="minimal">
         <option value="au">Clothing</option>
         <option value="ca">Nutrition</option>
         <option value="usa">Paddling</option>

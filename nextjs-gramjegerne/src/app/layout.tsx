@@ -36,11 +36,11 @@ export default function RootLayout({
     </a>
    
     <div className="w-full md:block md:w-auto" id="navbar-default">
-      <ul className="text-xl flex flex-col p-4 md:p-0 mt-4 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0">
-      <li>
+      <ul className="text-xl flex flex-col p-4 md:p-0 mt-4 md:flex-row md:space-x-4 rtl:space-x-reverse md:mt-0">
+      <li className="menu-item">
           <a href="../" className="block py-2 px-3 md:p-0" aria-current="page">Inventory</a>
         </li>
-        <li>
+        <li className="menu-item">
           <a href="/lists" className="block py-2 px-3 md:p-0">Lists</a>
         </li>
 
