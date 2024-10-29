@@ -72,7 +72,16 @@ export const categoryType = defineType({
       name: 'category',
       type: 'string',
       options: {
-        list: ['food', 'clothing', 'sleeping', 'fishing', 'paddling', 'biking', 'gear', 'cooking'],
+        list: [
+          'Nutrition',
+          'Clothing',
+          'Sleeping',
+          'Fishing',
+          'Paddling',
+          'Biking',
+          'Gear',
+          'Cooking',
+        ],
       },
     }),
   ],

@@ -4,6 +4,7 @@ import imageUrlBuilder from '@sanity/image-url';
 import { client } from "@/sanity/client";
 
 
+
 // Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client)
 
@@ -24,23 +25,25 @@ export default async function IndexPage() {
   const items = await client.fetch<SanityDocument[]>(ITEMS_QUERY, {}, options);
 console.log (items)
   return (
-    <main className="container mx-auto min-h-screen max-w-3xl p-8">
-      <h1 className="text-xl font-bold mb-8">items</h1>
-      <ul className="flex flex-col gap-y-4">
+    <main className="container mx-auto min-h-screen p-8">
+    
+      <ul className="flex flex-col">
         {items.map((item) => (
-          <li key={item._id}>
-        
-              <img src={urlFor(item.image).width(500).url()} />
-              <h2 className="text-4xl font-semibold">{item.name}</h2>
-              <p className="text-s">Category: {item.category.category}</p>
-              <p className="text-s">Size: {item.size}</p>
-              <p className="text-s">Quantity: {item.quantity}</p>
-              <p className="text-s">Weight: {item.weight.weight} {item.weight.unit}</p>
-              <p className="text-s">Slug: {item.slug.slug}</p>
-            
-              
-   
-     
+          <li className="product" key={item._id}>
+              <div className="flex flex-wrap gap-x-4">
+              <div className="h-24 w-24">
+  <img className="rounded-md h-full w-full object-cover" src={urlFor(item.image).url()} />
+</div>
+              <div className="flex flex-col gap-x-4">
+              <h2 className="text-2xl font-semibold">{item.name}</h2>
+              <div className="flex flex-wrap gap-x-2">
+              <p className="text-s tag w-fit">{item.category.category}</p>
+              <p className="text-s tag w-fit flex flex-wrap">{item.size}</p>
+              <p className="text-s tag w-fit">{item.weight.weight} {item.weight.unit}</p>
+              <p className="text-s tag w-fit">{item.calories} kcal</p>
+              </div>
+              </div>
+              </div>
           </li>
         ))}
       </ul>

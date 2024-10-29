@@ -4,7 +4,7 @@ export const listType = defineType({
   name: 'list',
   title: 'list',
   type: 'document',
- fields: [
+  fields: [
     defineField({
       name: 'name',
       type: 'string',
@@ -14,12 +14,12 @@ export const listType = defineType({
       type: 'image',
     }),
     defineField({
-        name: 'days',
-        type: 'number',
-      }),
+      name: 'days',
+      type: 'number',
+    }),
     defineField({
-        name: 'date',
-        type: 'date',
-      })
-  ]
+      name: 'weight',
+      type: 'number',
+    }),
+  ],
 })
