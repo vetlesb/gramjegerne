@@ -47,6 +47,40 @@ console.log (items)
           </li>
         ))}
       </ul>
+      <ul className="flex flex-col">
+        <li className="form">
+        <div className="flex flex-col gap-y-8">
+        <h2 className="text-2xl font-semibold">Add item</h2>
+        <div className="flex flex-col gap-y-2">
+        <label className="text-s">Navn</label>
+        <input name="query" />
+        </div>
+        <div className="flex flex-col gap-y-2">
+        <label className="text-s">Bilde</label>
+        <input type="file" name="query" />
+        </div>
+        <div className="flex flex-col gap-y-2">
+        <label className="text-s">Kategori</label>
+        <select>
+        <option value="au">Clothing</option>
+        <option value="ca">Nutrition</option>
+        <option value="usa">Paddling</option>
+        </select>
+        </div>
+        <div className="flex flex-col gap-y-2">
+        <label className="text-s">Vekt</label>
+        <input name="query" />
+        </div>
+        <div className="flex flex-col gap-y-2">
+        <label className="text-s">Kalorier</label>
+        <input name="query"/>
+        </div>
+        <button type="submit">Add item</button>
+        </div>
+        </li> </ul>
     </main>
+
+    
   );
 }
+

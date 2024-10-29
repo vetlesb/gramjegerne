@@ -62,6 +62,16 @@ li.product {
   margin: 8px;
   
 }
+li.form {
+  display: grid;
+  gap: 4px;
+  background-color: #272E23;
+  border-radius: 8px;
+  padding: 32px;
+  max-width: 500px;
+  margin: 8px;
+  
+}
 
 .tag {
   padding: 4px 8px 4px 8px;
@@ -73,4 +83,27 @@ li.product {
 .container {
 
   max-width: 100%;
+}
+
+input, select {
+  background-color: #1F261C;
+  padding: 1rem;
+  border-radius: 4px;
+}
+input:focus, select:focus {
+  outline-color: #B4ED9F;
+
+}
+input:hover, select:hover {
+  background-color: #1C2219;
+}
+
+button {
+  background-color:#EAFFE2;
+  color: #1F261C;
+  padding: 1rem;
+  border-radius: 4px;
+}
+button:hover {
+  background-color:#B4ED9F;
 }
