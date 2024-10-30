@@ -31,17 +31,17 @@ export default function RootLayout({
 
                <nav>
   <div className="flex flex-wrap items-center justify-between mx-auto p-8">
-    <a href="../" className="flex items-center space-x-3 rtl:space-x-reverse">
+    <a href="../" className="flex items-center">
         <p className="text-2xl">Gramjegerne</p>
     </a>
    
-    <div className="w-full md:block md:w-auto" id="navbar-default">
-      <ul className="text-xl flex flex-col p-4 md:p-0 mt-4 md:flex-row md:space-x-4 rtl:space-x-reverse md:mt-0">
+    <div className="md:block md:w-auto" id="navbar-default">
+      <ul className="text-xl flex flex-row gap-x-4">
       <li className="menu-item">
-          <a href="../" className="block py-2 px-3 md:p-0" aria-current="page">Inventory</a>
+          <a href="../" className="block" aria-current="page">Inventory</a>
         </li>
         <li className="menu-item">
-          <a href="/lists" className="block py-2 px-3 md:p-0">Lists</a>
+          <a href="/lists" className="block">Lists</a>
         </li>
 
       </ul>

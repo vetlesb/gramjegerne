@@ -34,8 +34,8 @@ console.log (items)
               <div className="h-24 w-24">
   <img className="rounded-md h-full w-full object-cover" src={urlFor(item.image).url()} />
 </div>
-              <div className="flex flex-col gap-x-4">
-              <h2 className="text-2xl font-semibold">{item.name}</h2>
+              <div className="flex flex-col gap-y-2">
+              <h2 className="text-xl font-semibold">{item.name}</h2>
               <div className="flex flex-wrap gap-x-2">
               <p className="text-s tag w-fit">{item.category.category}</p>
               <p className="text-s tag w-fit flex flex-wrap">{item.size}</p>
@@ -49,7 +49,7 @@ console.log (items)
       </ul>
       <ul className="flex flex-col">
         <li className="form">
-        <div className="flex flex-wrap stretch flex-col gap-y-8">
+        <div className="flex flex-col gap-y-8">
         <h2 className="text-2xl font-semibold">Add item</h2>
         <div className="flex flex-col gap-y-2">
         <label className="flex text-s">Navn</label>
