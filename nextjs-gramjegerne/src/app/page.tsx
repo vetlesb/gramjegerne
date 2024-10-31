@@ -3,8 +3,6 @@ import imageUrlBuilder from '@sanity/image-url';
 import { client } from "@/sanity/client";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
-
-
 // Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client)
 
@@ -37,10 +35,10 @@ console.log (items)
               <div className="flex flex-col gap-y-2">
               <h2 className="text-xl font-semibold">{item.name}</h2>
               <div className="flex flex-wrap gap-x-2">
-              <p className="text-s tag w-fit">{item.category.category}</p>
-              <p className="text-s tag w-fit flex flex-wrap">{item.size}</p>
-              <p className="text-s tag w-fit">{item.weight.weight} {item.weight.unit}</p>
-              <p className="text-s tag w-fit">{item.calories} kcal</p>
+              <p className="text-xs tag w-fit">{item.category.category}</p>
+              <p className="text-xs tag w-fit flex flex-wrap">{item.size}</p>
+              <p className="text-xs tag w-fit">{item.weight.weight} {item.weight.unit}</p>
+              <p className="text-xs tag w-fit">{item.calories} kcal</p>
               </div>
               </div>
               </div>

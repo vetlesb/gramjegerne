@@ -33,11 +33,11 @@ console.log (lists)
             <div className="h-24 w-24">
   <img className="rounded-md h-full w-full object-cover" src={urlFor(list.image).url()} />
 </div>
-            <div className="flex flex-col gap-x-4">
-            <h2 className="text-2xl font-semibold">{list.name}</h2>
+            <div className="flex flex-col gap-y-2">
+            <h2 className="text-xl font-semibold">{list.name}</h2>
             <div className="flex flex-wrap gap-x-2">
-            <p className="text-s tag w-fit flex flex-wrap">{list.days} dager</p>
-            <p className="text-s tag w-fit flex flex-wrap">{list.weight} kg</p>
+            <p className="text-xs tag w-fit flex flex-wrap">{list.days} dager</p>
+            <p className="text-xs tag w-fit flex flex-wrap">{list.weight} kg</p>
             
             </div>
             </div>
