@@ -53,13 +53,22 @@ li.list {
   
 }
 
+ul {
+  padding: 0px;
+}
+
+li {
+  margin:0px;
+}
+
 li.product {
   display: grid;
   gap: 4px;
   background-color: #272E23;
   border-radius: 8px;
   padding: 16px;
-  margin: 8px;
+  margin-bottom:8px;
+
   
 }
 li.form {
@@ -68,7 +77,8 @@ li.form {
   background-color: #272E23;
   border-radius: 8px;
   padding: 16px;
-  margin: 8px;
+  margin-bottom:8px;
+
   
 }
 
@@ -115,4 +125,37 @@ button {
 }
 button:hover {
   background-color:#B4ED9F;
+}
+.container {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+      max-width: 100%;
+  }
 }
