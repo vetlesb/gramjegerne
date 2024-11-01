@@ -28,30 +28,30 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <nav>
+          <div className="flex flex-wrap items-center justify-between mx-auto p-8">
+            <a href="../" className="flex items-center">
+              <p className="text-2xl">Gramjegerne</p>
+            </a>
 
-               <nav>
-  <div className="flex flex-wrap items-center justify-between mx-auto p-8">
-    <a href="../" className="flex items-center">
-        <p className="text-2xl">Gramjegerne</p>
-    </a>
-   
-    <div className="md:block md:w-auto" id="navbar-default">
-      <ul className="text-xl flex flex-row gap-x-4">
-      <li className="menu-item">
-          <a href="../" className="block" aria-current="page">Inventory</a>
-        </li>
-        <li className="menu-item">
-          <a href="/lists" className="block">Lists</a>
-        </li>
-
-      </ul>
-    </div>
-  </div>
-</nav>
+            <div className="md:block md:w-auto" id="navbar-default">
+              <ul className="text-xl flex flex-row gap-x-4">
+                <li className="menu-item">
+                  <a href="../" className="block" aria-current="page">
+                    Inventory
+                  </a>
+                </li>
+                <li className="menu-item">
+                  <a href="/lists" className="block">
+                    Lists
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
         {children}
-
       </body>
     </html>
-    
   );
 }
