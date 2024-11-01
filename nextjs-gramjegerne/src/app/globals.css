@@ -126,6 +126,24 @@ button {
 button:hover {
   background-color:#B4ED9F;
 }
+.button-secondary {
+  background-color:#1F261C;
+  color: #EAFFE2;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-secondary:hover {
+  background-color:#1C2219;
+}
+.button-ghost {
+  background-color:#272E23;
+  color: #EAFFE2;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-ghost:hover {
+  background-color:#1F261C;
+}
 .container {
   width: 100%;
 }
@@ -134,7 +152,6 @@ button:hover {
   .container {
     max-width: 100%;
     padding: 0.5rem;
-
   }
 }
 
