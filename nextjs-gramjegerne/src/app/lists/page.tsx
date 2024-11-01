@@ -24,11 +24,11 @@ export default async function IndexPage() {
   console.log(lists);
   return (
     <main className="container mx-auto min-h-screen p-8">
-      <ul className="flex flex-col">
+      <ul className="flex flex-wrap gap-x-4">
         {lists.map((list) => (
           <li className="product" key={list._id}>
-            <div className="flex flex-wrap gap-x-4">
-              <div className="h-48 w-48">
+            <div className="flex flex-col gap-y-4">
+              <div className="h-80 w-80">
                 <img
                   className="rounded-md h-full w-full object-cover"
                   src={urlFor(list.image).url()}
