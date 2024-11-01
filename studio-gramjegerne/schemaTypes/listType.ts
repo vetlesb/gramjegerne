@@ -21,5 +21,9 @@ export const listType = defineType({
       name: 'weight',
       type: 'number',
     }),
+    defineField({
+      name: 'participants',
+      type: 'number',
+    }),
   ],
 })
