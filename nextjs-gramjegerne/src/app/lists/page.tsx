@@ -28,19 +28,19 @@ export default async function IndexPage() {
         {lists.map((list) => (
           <li className="product" key={list._id}>
             <div className="flex flex-wrap gap-x-4">
-              <div className="h-24 w-24">
+              <div className="h-48 w-48">
                 <img
                   className="rounded-md h-full w-full object-cover"
                   src={urlFor(list.image).url()}
                 />
               </div>
               <div className="flex flex-col gap-y-2">
-                <h2 className="text-xl font-semibold">{list.name}</h2>
+                <h2 className="text-2xl font-semibold">{list.name}</h2>
                 <div className="flex flex-wrap gap-x-2">
-                  <p className="text-xs tag w-fit flex flex-wrap">
+                  <p className="text-m tag w-fit flex flex-wrap">
                     {list.days} dager
                   </p>
-                  <p className="text-xs tag w-fit flex flex-wrap">
+                  <p className="text-m tag w-fit flex flex-wrap">
                     {list.weight} kg
                   </p>
                 </div>
