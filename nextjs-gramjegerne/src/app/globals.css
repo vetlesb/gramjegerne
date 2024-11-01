@@ -38,6 +38,10 @@ li {
   margin: 0px;
 }
 
+#hidden {
+  display: block;
+}
+
 li.product,
 li.form,
 li.list {
@@ -55,8 +59,9 @@ li.list {
   background-color: #1f261c;
 }
 .menu-item {
-  padding: 8px 16px 8px 16px;
+  padding: 16px 24px 16px 24px;
   border-radius: 48px;
+  min-height: 28px;
   color: #eaffe2;
   background-color: #272e23;
 }
@@ -131,8 +136,15 @@ select {
 .btn-center {
   position: fixed;
   padding: 16px 24px 16px 24px;
+  border-radius: 48px;
+  min-height: 28px;
+  color: #1f261c;
+  background-color: #b4ed9f;
   bottom: 3rem;
   left: 50%;
+}
+.btn-center:hover {
+  background-color: #95db7b;
 }
 
 @media (min-width: 240px) {
@@ -140,11 +152,17 @@ select {
     max-width: 100%;
     padding: 0.5rem;
   }
+  #hidden {
+    display: none;
+  }
 }
 
 @media (min-width: 640px) {
   .container {
     max-width: 100%;
+  }
+  #hidden {
+    display: block;
   }
 }
 
