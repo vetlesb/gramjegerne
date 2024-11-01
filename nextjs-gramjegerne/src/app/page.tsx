@@ -141,7 +141,7 @@ export default async function IndexPage() {
 
       <div>
         <Dialog>
-          <DialogTrigger className="btn-center flex flex-wrap items-center gap-x-2">
+          <DialogTrigger className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
             <svg
               width="14"
               height="14"
@@ -190,10 +190,16 @@ export default async function IndexPage() {
                         <input className="text-lg" name="query" />
                       </div>
                       <div className="flex flex-col gap-y-4">
-                        <button className="button-primary" type="submit">
+                        <button
+                          className="button-primary text-lg"
+                          type="submit"
+                        >
                           Legg til
                         </button>
-                        <button className="button-secondary" type="submit">
+                        <button
+                          className="button-secondary text-lg"
+                          type="submit"
+                        >
                           Avbryt
                         </button>
                       </div>
