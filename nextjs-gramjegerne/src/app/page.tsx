@@ -157,8 +157,8 @@ export default async function IndexPage() {
             Legg til utstyr
           </DialogTrigger>
           <DialogContent className="dialog">
-            <DialogHeader>
-              <DialogTitle className="text-xl flex gap-y-4">
+            <DialogHeader className="flex flex-col gap-y-8">
+              <DialogTitle className="text-2xl flex flex-col gap-y-4">
                 Legg til utstyr
               </DialogTitle>
               <DialogDescription>
@@ -166,15 +166,15 @@ export default async function IndexPage() {
                   <li className="form">
                     <div className="flex flex-col gap-y-8">
                       <div className="flex flex-col gap-y-2">
-                        <label className="flex text-s">Navn</label>
+                        <label className="flex text-md">Navn</label>
                         <input name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-s">Bilde</label>
+                        <label className="text-md">Bilde</label>
                         <input type="file" name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-s">Kategori</label>
+                        <label className="text-md">Kategori</label>
                         <select className="minimal">
                           <option value="au">Klær</option>
                           <option value="ca">Næring</option>
@@ -182,15 +182,17 @@ export default async function IndexPage() {
                         </select>
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-s">Vekt</label>
+                        <label className="text-md">Vekt</label>
                         <input name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-s">Kalorier</label>
+                        <label className="text-md">Kalorier</label>
                         <input name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <button type="submit">Legg til</button>
+                        <button className="button-primary" type="submit">
+                          Legg til
+                        </button>
                         <button className="button-secondary" type="submit">
                           Avbryt
                         </button>

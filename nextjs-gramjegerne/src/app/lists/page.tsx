@@ -24,7 +24,7 @@ export default async function IndexPage() {
   console.log(lists);
   return (
     <main className="container mx-auto min-h-screen p-8">
-      <ul className="flex flex-wrap gap-x-4">
+      <ul className="flex gap-x-4 flex-wrap">
         {lists.map((list) => (
           <li className="product" key={list._id}>
             <div className="flex flex-col gap-y-4">

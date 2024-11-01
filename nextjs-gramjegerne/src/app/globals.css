@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #1f261c;
+  --foreground: #eaffe2;
+}
 body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #1f261c;
@@ -43,13 +47,19 @@ li {
 }
 
 li.product,
-li.form,
 li.list {
   display: grid;
   gap: 4px;
   background-color: #272e23;
   border-radius: 8px;
   padding: 16px;
+  margin-bottom: 8px;
+}
+li.form {
+  display: grid;
+  gap: 4px;
+  background-color: #272e23;
+  border-radius: 8px;
   margin-bottom: 8px;
 }
 .tag {
@@ -72,13 +82,19 @@ li.list {
 input,
 select {
   background-color: #1f261c;
+  color: #eaffe2;
   padding: 1rem;
   border-radius: 4px;
 }
+
 input:focus,
-select:focus {
-  outline-color: #b4ed9f;
+select:focus,
+input:active,
+select:active {
+  border: 0px solid #95db7b;
+  outline: 2px solid #95db7b;
 }
+
 input:hover,
 select:hover {
   background-color: #1c2219;
@@ -91,12 +107,20 @@ input::file-selector-button {
   border-radius: 4px;
 }
 button {
+  color: #eaffe2;
+  padding: 1rem;
+  border-radius: 4px;
+}
+button:hover {
+  background-color: #1c2219;
+}
+.button-primary {
   background-color: #eaffe2;
   color: #1f261c;
   padding: 1rem;
   border-radius: 4px;
 }
-button:hover {
+.button-primary:hover {
   background-color: #b4ed9f;
 }
 .button-secondary {
@@ -126,8 +150,15 @@ button:hover {
   background-color: #272e23;
   color: #eaffe2 !important;
   border-radius: 8px;
-  padding: 24px;
+  padding: 48px;
   margin-bottom: 8px;
+  border: none;
+}
+.bg-black\/80 {
+  background-color: #1f261c;
+  opacity: 90%;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(24px);
 }
 label,
 select {
@@ -243,14 +274,5 @@ select {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
