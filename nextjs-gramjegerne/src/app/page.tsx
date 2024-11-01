@@ -133,7 +133,7 @@ export default async function IndexPage() {
       <ul className="flex flex-col">
         <li className="form">
           <div className="flex flex-col gap-y-8">
-            <h2 className="text-2xl font-semibold">Add item</h2>
+            <h2 className="text-2xl font-semibold">Legg til utstyr</h2>
             <div className="flex flex-col gap-y-2">
               <label className="flex text-s">Navn</label>
               <input name="query" />
@@ -145,8 +145,8 @@ export default async function IndexPage() {
             <div className="flex flex-col gap-y-2">
               <label className="text-s">Kategori</label>
               <select className="minimal">
-                <option value="au">Clothing</option>
-                <option value="ca">Nutrition</option>
+                <option value="au">Klær</option>
+                <option value="ca">Næring</option>
                 <option value="usa">Paddling</option>
               </select>
             </div>
@@ -158,9 +158,9 @@ export default async function IndexPage() {
               <label className="text-s">Kalorier</label>
               <input name="query" />
             </div>
-            <button type="submit">Add item</button>
+            <button type="submit">Legg til</button>
             <button className="button-secondary" type="submit">
-              Cancel
+              Avbryt
             </button>
           </div>
         </li>{" "}

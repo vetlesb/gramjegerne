@@ -54,7 +54,7 @@ export default function RootLayout({
                         fill="white"
                       />
                     </svg>
-                    Items
+                    Utstyr
                   </a>
                 </li>
                 <li className="menu-item">
@@ -74,7 +74,7 @@ export default function RootLayout({
                         fill="white"
                       />
                     </svg>
-                    Trips
+                    Turer
                   </a>
                 </li>
               </ul>
