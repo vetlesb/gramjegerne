@@ -2,6 +2,14 @@ import { type SanityDocument } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client);
@@ -130,41 +138,57 @@ export default async function IndexPage() {
           </li>
         ))}
       </ul>
-      <ul className="flex flex-col">
-        <li className="form">
-          <div className="flex flex-col gap-y-8">
-            <h2 className="text-2xl font-semibold">Legg til utstyr</h2>
-            <div className="flex flex-col gap-y-2">
-              <label className="flex text-s">Navn</label>
-              <input name="query" />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label className="text-s">Bilde</label>
-              <input type="file" name="query" />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label className="text-s">Kategori</label>
-              <select className="minimal">
-                <option value="au">Klær</option>
-                <option value="ca">Næring</option>
-                <option value="usa">Paddling</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label className="text-s">Vekt</label>
-              <input name="query" />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label className="text-s">Kalorier</label>
-              <input name="query" />
-            </div>
-            <button type="submit">Legg til</button>
-            <button className="button-secondary" type="submit">
-              Avbryt
-            </button>
-          </div>
-        </li>{" "}
-      </ul>
+
+      <div>
+        <Dialog>
+          <DialogTrigger className="btn-center">Legg til utstyr</DialogTrigger>
+          <DialogContent className="dialog">
+            <DialogHeader>
+              <DialogTitle className="text-xl flex gap-y-4">
+                Legg til utstyr
+              </DialogTitle>
+              <DialogDescription>
+                <ul className="flex flex-col">
+                  <li className="form">
+                    <div className="flex flex-col gap-y-8">
+                      <div className="flex flex-col gap-y-2">
+                        <label className="flex text-s">Navn</label>
+                        <input name="query" />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-s">Bilde</label>
+                        <input type="file" name="query" />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-s">Kategori</label>
+                        <select className="minimal">
+                          <option value="au">Klær</option>
+                          <option value="ca">Næring</option>
+                          <option value="usa">Paddling</option>
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-s">Vekt</label>
+                        <input name="query" />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-s">Kalorier</label>
+                        <input name="query" />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <button type="submit">Legg til</button>
+                        <button className="button-secondary" type="submit">
+                          Avbryt
+                        </button>
+                      </div>
+                    </div>
+                  </li>{" "}
+                </ul>
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </div>
     </main>
   );
 }
