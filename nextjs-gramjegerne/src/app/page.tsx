@@ -166,30 +166,30 @@ export default async function IndexPage() {
                   <li className="form">
                     <div className="flex flex-col gap-y-8">
                       <div className="flex flex-col gap-y-2">
-                        <label className="flex text-md">Navn</label>
-                        <input name="query" />
+                        <label className="flex text-lg">Navn</label>
+                        <input className="text-lg" name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-md">Bilde</label>
-                        <input type="file" name="query" />
+                        <label className="text-lg">Bilde</label>
+                        <input type="file" className="text-md" name="query" />
                       </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-md">Kategori</label>
-                        <select className="minimal">
+                      <div className="flex flex-col gap-y-2 text-md">
+                        <label className="text-lg">Kategori</label>
+                        <select className="text-lg">
                           <option value="au">Klær</option>
                           <option value="ca">Næring</option>
                           <option value="usa">Paddling</option>
                         </select>
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-md">Vekt</label>
-                        <input name="query" />
+                        <label className="text-lg">Vekt</label>
+                        <input className="text-lg" name="query" />
                       </div>
                       <div className="flex flex-col gap-y-2">
-                        <label className="text-md">Kalorier</label>
-                        <input name="query" />
+                        <label className="text-lg">Kalorier</label>
+                        <input className="text-lg" name="query" />
                       </div>
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-4">
                         <button className="button-primary" type="submit">
                           Legg til
                         </button>
