@@ -42,7 +42,11 @@ export default async function IndexPage() {
     <main className="container mx-auto min-h-screen p-8">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-4 p-8">
         {categories.map((category) => (
-          <button className="menu-item text-lg" type="submit">
+          <button
+            className="menu-item text-lg"
+            key={category._id}
+            type="submit"
+          >
             {category.title}
           </button>
         ))}
