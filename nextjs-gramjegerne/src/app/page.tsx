@@ -20,6 +20,9 @@ const builder = imageUrlBuilder(client);
 function urlFor(SanityImageSource: SanityImageSource) {
   return builder.image(SanityImageSource);
 }
+const CATEGORIES_QUERY = `*[
+  _type == "category"
+]{name, title, slug, description}`;
 
 const ITEMS_QUERY = `*[
   _type == "item"
@@ -29,9 +32,21 @@ const options = { next: { revalidate: 30 } };
 
 export default async function IndexPage() {
   const items = await client.fetch<SanityDocument[]>(ITEMS_QUERY, {}, options);
-  console.log(items);
+  const categories = await client.fetch<SanityDocument[]>(
+    CATEGORIES_QUERY,
+    {},
+    options,
+  );
+  console.log(items, categories);
   return (
     <main className="container mx-auto min-h-screen p-8">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-4 p-8">
+        {categories.map((category) => (
+          <button className="menu-item text-lg" type="submit">
+            {category.title}
+          </button>
+        ))}
+      </div>
       <ul className="flex flex-col">
         {items.map((item) => (
           <li className="product" key={item._id}>

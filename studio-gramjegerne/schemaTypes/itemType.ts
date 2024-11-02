@@ -63,26 +63,3 @@ export const weightType = defineType({
     }),
   ],
 })
-
-export const categoryType = defineType({
-  name: 'category',
-  type: 'object',
-  fields: [
-    defineField({
-      name: 'category',
-      type: 'string',
-      options: {
-        list: [
-          'Nutrition',
-          'Clothing',
-          'Sleeping',
-          'Fishing',
-          'Paddling',
-          'Biking',
-          'Gear',
-          'Cooking',
-        ],
-      },
-    }),
-  ],
-})

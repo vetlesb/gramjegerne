@@ -83,6 +83,10 @@ li.form {
 .menu-item:hover {
   background-color: #1c2219;
 }
+#menu-active {
+  background-color: #95db7b;
+  color: #1f261c;
+}
 
 input,
 select {
