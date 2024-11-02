@@ -175,11 +175,28 @@ export default async function IndexPage() {
                       </div>
                       <div className="flex flex-col gap-y-2 text-md">
                         <label className="text-lg">Kategori</label>
-                        <select className="text-lg">
-                          <option value="au">Klær</option>
-                          <option value="ca">Næring</option>
-                          <option value="usa">Paddling</option>
-                        </select>
+                        <div className="relative flex flex-col text-md">
+                          <select className="text-lg appearance-none">
+                            <option value="au">Klær</option>
+                            <option value="ca">Næring</option>
+                            <option value="usa">Paddling</option>
+                          </select>
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1"
+                            stroke="#eaffe2"
+                            className="h-6 w-6 ml-1 absolute top-5 right-2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
+                            />
+                          </svg>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-y-2">
                         <label className="text-lg">Vekt</label>
