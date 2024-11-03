@@ -2,9 +2,9 @@ import { createClient } from '@sanity/client';
 
 // Initialize the Sanity client
 const client = createClient({
-  projectId: process.env.SANITY_PROJECT_ID,
-  dataset: process.env.SANITY_DATASET,
-  token: process.env.SANITY_TOKEN,
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+  token: process.env.NEXT_PUBLIC_SANITY_TOKEN,
   useCdn: false,
   apiVersion: '2023-01-01',
 });
