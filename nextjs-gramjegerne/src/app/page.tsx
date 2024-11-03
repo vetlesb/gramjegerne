@@ -40,7 +40,7 @@ export default async function IndexPage() {
   console.log(items, categories);
   return (
     <main className="container mx-auto min-h-screen p-8">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-4 p-8">
+      <div className="flex flex-nowrap items-center gap-x-4 gap-y-4 p-8">
         {categories.map((category) => (
           <button
             className="menu-item text-lg"
@@ -80,7 +80,9 @@ export default async function IndexPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-y-2">
-                  <h2 className="text-xl font-semibold">{item.name}</h2>
+                  <h2 className="text-xl font-semibold truncate">
+                    {item.name}
+                  </h2>
                   <div className="flex flex-wrap gap-x-2">
                     {item.size ? (
                       <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
