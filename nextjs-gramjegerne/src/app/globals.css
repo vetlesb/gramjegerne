@@ -72,6 +72,11 @@ li.form {
   border-radius: 4px;
   color: #eaffe2;
   background-color: #1f261c;
+  font-size: 16px;
+}
+.tag-icon {
+  width: 16px;
+  height: 16px;
 }
 .menu-item {
   padding: 8px 16px 8px 16px;
@@ -220,6 +225,13 @@ select {
   .text-xl {
     font-size: 1rem;
   }
+  .tag {
+    font-size: 12px;
+  }
+  .tag-icon {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -237,6 +249,13 @@ select {
   }
   .text-xl {
     font-size: 1.25rem;
+  }
+  .tag {
+    font-size: 16px;
+  }
+  .tag-icon {
+    width: 16px;
+    height: 16px;
   }
 }
 

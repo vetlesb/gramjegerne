@@ -83,10 +83,9 @@ export default async function IndexPage() {
                   <h2 className="text-xl font-semibold">{item.name}</h2>
                   <div className="flex flex-wrap gap-x-2">
                     {item.size ? (
-                      <p className="text-s tag w-fit items-center gap-x-1 flex flex-wrap">
+                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <svg
-                          width="16"
-                          height="16"
+                          className="tag-icon"
                           viewBox="0 0 16 8"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -100,10 +99,9 @@ export default async function IndexPage() {
                       </p>
                     ) : null}
                     {item.weight ? (
-                      <p className="text-s tag w-fit items-center gap-x-1 flex flex-wrap">
+                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <svg
-                          width="16"
-                          height="16"
+                          className="tag-icon"
                           viewBox="0 0 13 14"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -117,10 +115,9 @@ export default async function IndexPage() {
                       </p>
                     ) : null}
                     {item.calories ? (
-                      <p className="text-s tag w-fit items-center gap-x-1 flex flex-wrap">
+                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <svg
-                          width="16"
-                          height="16"
+                          className="tag-icon"
                           viewBox="0 0 11 10"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
