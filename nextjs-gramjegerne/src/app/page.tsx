@@ -39,8 +39,8 @@ export default async function IndexPage() {
   );
   console.log(items, categories);
   return (
-    <main className="container mx-auto min-h-screen p-8">
-      <div className="flex flex-nowrap overflow-scroll items-center gap-x-4 gap-y-4 p-4 pb-8">
+    <main className="container mx-auto min-h-screen p-16">
+      <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-4 gap-y-4 pb-8">
         {categories.map((category) => (
           <button
             className="menu-item text-lg"
