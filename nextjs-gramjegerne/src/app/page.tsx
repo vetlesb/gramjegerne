@@ -139,8 +139,7 @@ export default async function IndexPage() {
                   type="submit"
                 >
                   <svg
-                    width="25"
-                    height="25"
+                    className="tag-icon"
                     viewBox="0 0 25 25"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
