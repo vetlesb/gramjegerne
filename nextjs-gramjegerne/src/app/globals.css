@@ -217,6 +217,9 @@ select {
   .w-24 {
     width: 3rem;
   }
+  .text-xl {
+    font-size: 1rem;
+  }
 }
 
 @media (min-width: 640px) {
@@ -231,6 +234,9 @@ select {
   }
   .w-24 {
     width: 6rem;
+  }
+  .text-xl {
+    font-size: 1.25rem;
   }
 }
 
