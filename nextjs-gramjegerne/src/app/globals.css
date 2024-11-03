@@ -74,14 +74,14 @@ li.form {
   background-color: #1f261c;
 }
 .menu-item {
-  padding: 16px 24px 16px 24px;
+  padding: 8px 16px 8px 16px;
   border-radius: 48px;
   min-height: 28px;
   color: #eaffe2;
-  background-color: #272e23;
+  border: 1px solid #272e23;
 }
 .menu-item:hover {
-  background-color: #1c2219;
+  background-color: #272e23;
 }
 #menu-active {
   background-color: #95db7b;
