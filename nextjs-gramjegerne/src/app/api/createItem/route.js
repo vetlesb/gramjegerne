@@ -5,7 +5,7 @@ const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   token: process.env.NEXT_PUBLIC_SANITY_TOKEN,
-  useCdn: false,
+  useCdn: true,
   apiVersion: '2023-01-01',
 });
 
