@@ -211,9 +211,6 @@ select {
   #hidden {
     display: none;
   }
-  .btn-center {
-    width: 100%;
-  }
 }
 
 @media (min-width: 640px) {
