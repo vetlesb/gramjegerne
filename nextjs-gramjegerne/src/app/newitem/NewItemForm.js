@@ -73,6 +73,7 @@ const NewItemForm = () => {
   };
 
   return (
+    <main className="container mx-auto min-h-screen p-16">
     <form className="form" onSubmit={handleSubmit}>
       <div className="flex flex-col p-8 gap-y-8">
       <div className="flex flex-col">
@@ -98,7 +99,7 @@ const NewItemForm = () => {
           Categories:
           <select 
           className="appearance-none" 
-         multiple
+          multiple
             value={selectedCategories} 
             onChange={(e) => {
               const options = e.target.options;
@@ -154,7 +155,7 @@ const NewItemForm = () => {
       <button className="button-primary" type="submit">Create Item</button>
       </div>
     </form>
-    
+    </main>
   );
 };
 

@@ -159,93 +159,9 @@ export default async function IndexPage() {
       </ul>
 
       <div>
-        <Dialog>
-          <DialogTrigger className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M-0.0078125 7.35938C-0.0078125 6.88281 0.390625 6.48438 0.867188 6.48438H5.65625V1.69531C5.65625 1.21875 6.05469 0.820312 6.53125 0.820312C7.00781 0.820312 7.40625 1.21875 7.40625 1.69531V6.48438H12.1953C12.6719 6.48438 13.0703 6.88281 13.0703 7.35938C13.0703 7.84375 12.6719 8.23438 12.1953 8.23438H7.40625V13.0234C7.40625 13.5 7.00781 13.8984 6.53125 13.8984C6.05469 13.8984 5.65625 13.5 5.65625 13.0234V8.23438H0.867188C0.390625 8.23438 -0.0078125 7.84375 -0.0078125 7.35938Z"
-                fill="#1f261c"
-              />
-            </svg>
-            <p id="hidden">Legg til utstyr</p>
-          </DialogTrigger>
-          <DialogContent className="dialog">
-            <DialogHeader className="flex flex-col gap-y-8">
-              <DialogTitle className="text-2xl flex flex-col gap-y-4">
-                Legg til utstyr
-              </DialogTitle>
-              <DialogDescription>
-                <ul className="flex flex-col">
-                  <li className="form">
-                    <div className="flex flex-col gap-y-8">
-                      <div className="flex flex-col gap-y-2">
-                        <label className="flex text-lg">Navn</label>
-                        <input className="text-lg" name="query" />
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-lg">Bilde</label>
-                        <input type="file" className="text-md" name="query" />
-                      </div>
-                      <div className="flex flex-col gap-y-2 text-md">
-                        <label className="text-lg">Kategori</label>
-                        <div className="relative flex flex-col text-md">
-                          <select className="text-lg appearance-none">
-                            <option value="au">Klær</option>
-                            <option value="ca">Næring</option>
-                            <option value="usa">Paddling</option>
-                          </select>
-
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1"
-                            stroke="#eaffe2"
-                            className="h-6 w-6 ml-1 absolute top-5 right-2.5"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-lg">Vekt</label>
-                        <input className="text-lg" name="query" />
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-lg">Kalorier</label>
-                        <input className="text-lg" name="query" />
-                      </div>
-                      <div className="flex flex-col gap-y-4">
-                        <button
-                          className="button-primary text-lg"
-                          type="submit"
-                        >
-                          Legg til
-                        </button>
-                        <button
-                          className="button-secondary text-lg"
-                          type="submit"
-                        >
-                          Avbryt
-                        </button>
-                      </div>
-                    </div>
-                  </li>{" "}
-                </ul>
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+        <div className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
+          <a href="/newitem"> Legg til utstyr</a>
+        </div>
       </div>
     </main>
   );

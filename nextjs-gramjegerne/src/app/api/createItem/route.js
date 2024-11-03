@@ -2,7 +2,7 @@ import { createClient } from '@sanity/client';
 
 // Initialize the Sanity client
 const client = createClient({
-  projectId: wlgnd2w5,
+  projectId: process.env.SANITTY_PROJECT_ID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
   useCdn: false,
