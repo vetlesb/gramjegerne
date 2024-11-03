@@ -2,7 +2,7 @@ import { createClient } from '@sanity/client';
 
 // Initialize the Sanity client
 const client = createClient({
-  projectId: process.env.SANITTY_PROJECT_ID,
+  projectId: process.env.SANITY_PROJECT_ID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
   useCdn: false,
@@ -11,21 +11,34 @@ const client = createClient({
 
 export async function POST(req) {
   const formData = await req.formData();
-  
+
+  // Handle image upload separately
+  let imageAsset;
+  const imageFile = formData.get('image');
+  if (imageFile) {
+    const imageResponse = await client.assets.upload('image', imageFile, {
+      filename: imageFile.name,
+    });
+    imageAsset = imageResponse._id; // Use the uploaded image ID
+  }
+
   // Construct newItem object from form data
   const newItem = {
     _type: 'item',
     name: formData.get('name'),
     slug: {
       _type: 'slug',
-      current: formData.get('slug') || formData.get('name')?.toLowerCase().replace(/\s+/g, '-').slice(0, 200),
+      current: formData.get('slug') || formData.get('name').toLowerCase().replace(/\s+/g, '-').slice(0, 200),
     },
-    image: formData.get('image'),
-    categories: formData.getAll('categories'),
+    image: imageAsset ? { _type: 'image', asset: { _ref: imageAsset } } : null,
+    categories: formData.getAll('categories').map(categoryId => ({
+      _type: 'reference',
+      _ref: categoryId,
+    })),
     size: formData.get('size'),
     weight: {
-      weight: formData.get('weight')?.weight,
-      unit: formData.get('weight')?.unit,
+      weight: Number(formData.get('weight.weight')),
+      unit: formData.get('weight.unit'),
     },
     quantity: Number(formData.get('quantity')),
     calories: Number(formData.get('calories')),

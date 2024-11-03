@@ -99,7 +99,7 @@ const NewItemForm = () => {
           Categories:
           <select 
           className="appearance-none" 
-          multiple
+
             value={selectedCategories} 
             onChange={(e) => {
               const options = e.target.options;
