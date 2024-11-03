@@ -29,7 +29,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <nav>
-          <div className="flex flex-wrap items-center justify-between mx-auto p-8">
+          <div className="flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="../" className="flex items-center">
               <p className="text-2xl">Gramjegerne</p>
             </a>
