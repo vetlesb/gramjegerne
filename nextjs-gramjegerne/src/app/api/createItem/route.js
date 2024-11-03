@@ -1,42 +1,40 @@
-import sanityClient from '@sanity/client';
+import { createClient } from '@sanity/client';
 
-const client = sanityClient({
+// Initialize the Sanity client
+const client = createClient({
   projectId: process.env.SANITY_PROJECT_ID,
   dataset: process.env.SANITY_DATASET,
-  token: process.env.SANITY_TOKEN, // Optional for authenticated requests
+  token: process.env.SANITY_TOKEN,
   useCdn: false,
   apiVersion: '2023-01-01',
 });
 
+// Handle POST request
 export async function POST(req) {
-  const formData = await req.formData(); // Use formData for handling file uploads
-
-  // Extract data from formData
+  // Get form data from the request
+  const formData = await req.formData();
+  
+  // Construct newItem object from form data
   const newItem = {
     _type: 'item',
-    name: formData.get('name'),
-    slug: JSON.parse(formData.get('slug')),
-    size: formData.get('size'),
-    weight: JSON.parse(formData.get('weight')),
-    quantity: parseInt(formData.get('quantity'), 10),
-    calories: parseInt(formData.get('calories'), 10),
-    image: formData.get('image'), // This needs to be uploaded separately
+    name: formData.get('name'), // Assuming 'name' is one of your form fields
+    slug: {
+      _type: 'slug',
+      current: formData.get('slug') || formData.get('name')?.toLowerCase().replace(/\s+/g, '-').slice(0, 200), // Auto-generate slug if not provided
+    },
+    image: formData.get('image'), // Handle image if it's part of your form
+    categories: formData.getAll('categories'), // Assuming this is an array of category IDs
+    size: formData.get('size'), // Get the size from the form
+    weight: {
+      weight: formData.get('weight')?.weight, // Assuming weight is an object with a weight property
+      unit: formData.get('weight')?.unit, // Assuming weight includes a unit
+    },
+    quantity: Number(formData.get('quantity')), // Convert quantity to a number
+    calories: Number(formData.get('calories')), // Convert calories to a number
   };
 
-  // Handle the image upload separately
-  const imageFile = formData.get('image');
-  if (imageFile) {
-    const uploadResponse = await client.assets.upload('image', imageFile);
-    newItem.image = {
-      _type: 'image',
-      asset: {
-        _type: 'reference',
-        _ref: uploadResponse._id,
-      },
-    };
-  }
-
   try {
+    // Create the item in Sanity
     const createdItem = await client.create(newItem);
     return new Response(JSON.stringify(createdItem), { status: 201 });
   } catch (error) {
