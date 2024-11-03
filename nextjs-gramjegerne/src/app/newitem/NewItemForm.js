@@ -1,20 +1,19 @@
-'use client'; // Make sure to add this directive for hooks to work
-import React, { useEffect, useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 
 const NewItemForm = () => {
-  const [itemData, setItemData] = useState({
-    name: '',
-    slug: '',
-    size: '',
-    weight: { value: '', unit: 'g' }, // Default weight unit
-    quantity: '',
-    calories: '',
-    image: null, // Initialize image as null
-  });
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [size, setSize] = useState('');
+  const [weight, setWeight] = useState({ weight: '', unit: 'g' });
+  const [quantity, setQuantity] = useState('');
+  const [calories, setCalories] = useState('');
 
-  // Fetch categories on mount
+  // Fetch categories from the API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -30,151 +29,132 @@ const NewItemForm = () => {
     fetchCategories();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'weightValue') {
-      setItemData((prev) => ({
-        ...prev,
-        weight: { ...prev.weight, value: parseFloat(value) },
-      }));
+  // Automatically generate slug when name changes
+  useEffect(() => {
+    if (name) {
+      const generatedSlug = name.toLowerCase().replace(/\s+/g, '-').slice(0, 200);
+      setSlug(generatedSlug);
     } else {
-      setItemData((prev) => ({ ...prev, [name]: value }));
+      setSlug(''); // Reset slug if name is empty
     }
-  };
-
-  const handleWeightUnitChange = (e) => {
-    setItemData((prev) => ({
-      ...prev,
-      weight: { ...prev.weight, unit: e.target.value },
-    }));
-  };
-
-  const handleImageChange = (e) => {
-    setItemData((prev) => ({ ...prev, image: e.target.files[0] }));
-  };
+  }, [name]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare the form data
     const formData = new FormData();
-    formData.append('_type', 'item');
-    formData.append('name', itemData.name);
-    formData.append('slug', JSON.stringify({ _type: 'slug', current: itemData.slug }));
-    formData.append('size', itemData.size);
-    formData.append('weight', JSON.stringify(itemData.weight));
-    formData.append('quantity', itemData.quantity);
-    formData.append('calories', itemData.calories);
-    formData.append('image', itemData.image); // Add the image file
-
-    // Add categories
-    if (selectedCategory) {
-      formData.append('categories', JSON.stringify([{ _type: 'reference', _ref: selectedCategory }]));
+    formData.append('name', name);
+    formData.append('slug', slug);
+    if (image) {
+      formData.append('image', image); // Add image file to form data
     }
+    
+    // Create the categories array as objects with reference
+    const categoriesForSubmission = selectedCategories.map(categoryId => ({
+      _type: 'reference',
+      _ref: categoryId,
+    }));
+    categoriesForSubmission.forEach(category => formData.append('categories', JSON.stringify(category)));
 
-    try {
-      const response = await fetch('/api/createItem', {
-        method: 'POST',
-        body: formData, // Send form data directly
-      });
+    formData.append('size', size);
+    formData.append('weight', JSON.stringify(weight));
+    formData.append('quantity', quantity);
+    formData.append('calories', calories);
 
-      if (!response.ok) throw new Error('Failed to create item');
-      const result = await response.json();
-      console.log('Item created successfully:', result);
-      // Optionally reset form state here
-    } catch (error) {
-      console.error('Error creating item:', error);
-    }
+    const response = await fetch('/api/createItem', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error('Failed to create item');
+    const result = await response.json();
+    console.log('Item created successfully:', result);
+    // Optionally reset form state here
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Name:</label>
-        <input
-          type="text"
-          name="name"
-          value={itemData.name}
-          onChange={handleChange}
-          required
-        />
+    <form className="form" onSubmit={handleSubmit}>
+      <div className="flex flex-col p-8 gap-y-8">
+      <div className="flex flex-col">
+        <label className="flex flex-col gap-y-4">
+          Name:
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        </label>
       </div>
       <div>
-        <label>Slug:</label>
-        <input
-          type="text"
-          name="slug"
-          value={itemData.slug}
-          onChange={handleChange}
-          required
-        />
+        <label className="flex flex-col gap-y-4">
+          Slug:
+          <input type="text" value={slug} readOnly />
+        </label>
       </div>
       <div>
-        <label>Size:</label>
-        <input
-          type="text"
-          name="size"
-          value={itemData.size}
-          onChange={handleChange}
-          required
-        />
+        <label className="flex flex-col gap-y-4">
+          Image:
+          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
+        </label>
       </div>
       <div>
-        <label>Weight:</label>
-        <input
-          type="number"
-          name="weightValue"
-          value={itemData.weight.value}
-          onChange={handleChange}
-          required
-        />
-        <select value={itemData.weight.unit} onChange={handleWeightUnitChange}>
-          <option value="g">g</option>
-          <option value="kg">kg</option>
-        </select>
+        <label className="flex flex-col gap-y-4">
+          Categories:
+          <select 
+          className="appearance-none" 
+         multiple
+            value={selectedCategories} 
+            onChange={(e) => {
+              const options = e.target.options;
+              const values = [];
+              for (let i = 0; i < options.length; i++) {
+                if (options[i].selected) {
+                  values.push(options[i].value);
+                }
+              }
+              setSelectedCategories(values);
+            }}
+          >
+            {categories.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.title}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <div>
-        <label>Quantity:</label>
-        <input
-          type="number"
-          name="quantity"
-          value={itemData.quantity}
-          onChange={handleChange}
-          required
-        />
+        <label className="flex flex-col gap-y-4">
+          Size:
+          <input type="text" value={size} onChange={(e) => setSize(e.target.value)} />
+        </label>
       </div>
       <div>
-        <label>Calories:</label>
-        <input
-          type="number"
-          name="calories"
-          value={itemData.calories}
-          onChange={handleChange}
-          required
-        />
+        <label className="flex flex-col gap-y-4">
+          Weight:
+          <input 
+            type="number" 
+            value={weight.weight} 
+            onChange={(e) => setWeight({ ...weight, weight: e.target.value })} 
+          />
+          <select value={weight.unit} onChange={(e) => setWeight({ ...weight, unit: e.target.value })}>
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+          </select>
+        </label>
       </div>
       <div>
-        <label>Image:</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          required
-        />
+        <label className="flex flex-col gap-y-4">
+          Quantity:
+          <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+        </label>
       </div>
       <div>
-        <label>Category:</label>
-        <select onChange={(e) => setSelectedCategory(e.target.value)} value={selectedCategory}>
-          <option value="">Select a category</option>
-          {categories.map((category) => (
-            <option key={category._id} value={category._id}>
-              {category.title}
-            </option>
-          ))}
-        </select>
+        <label className="flex flex-col gap-y-4">
+          Calories:
+          <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} />
+        </label>
       </div>
-      <button type="submit">Create Item</button>
+      <button className="button-primary" type="submit">Create Item</button>
+      </div>
     </form>
+    
   );
 };
 
