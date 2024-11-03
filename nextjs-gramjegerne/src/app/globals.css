@@ -157,6 +157,15 @@ button:hover {
 .button-ghost:hover {
   background-color: #1f261c;
 }
+.button-outline {
+  color: #eaffe2;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #1f261c;
+}
+.button-outline:hover {
+  background-color: #1f261c;
+}
 .container {
   width: 100%;
 }

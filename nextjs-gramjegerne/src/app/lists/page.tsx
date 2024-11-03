@@ -113,7 +113,7 @@ export default async function IndexPage() {
                 fill="#1f261c"
               />
             </svg>
-            Ny tur
+            <p id="hidden">Ny tur</p>
           </DialogTrigger>
           <DialogContent className="dialog">
             <DialogHeader className="flex flex-col gap-y-8">
