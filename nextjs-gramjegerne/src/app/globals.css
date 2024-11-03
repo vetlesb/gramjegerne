@@ -87,6 +87,13 @@ li.form {
   background-color: #95db7b;
   color: #1f261c;
 }
+.placeholder_image {
+  background-color: #222a1f;
+  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
 
 input,
 select {
