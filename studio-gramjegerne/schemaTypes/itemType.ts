@@ -23,10 +23,17 @@ export const itemType = defineType({
       name: 'image',
       type: 'image',
     }),
-    defineField({
-      name: 'category',
-      type: 'category',
-    }),
+    {
+      name: 'categories',
+      title: 'Categories',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: {type: 'category'},
+        },
+      ],
+    },
     defineField({
       name: 'size',
       type: 'string',
