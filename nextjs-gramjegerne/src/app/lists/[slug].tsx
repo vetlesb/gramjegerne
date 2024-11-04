@@ -25,7 +25,7 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
 
 interface List {
   name: string;
-  image: any; // Adjust type according to your image handling
+  image: SanityImageSource; // Adjust type according to your image handling
   days: number;
   weight: number;
   participants: number;
