@@ -30,14 +30,14 @@ export default function RootLayout({
       >
         <nav>
           <div className="flex flex-wrap items-center justify-between mx-auto p-4">
-            <link href="../">
+            <a href="../">
               <p className="text-2xl">Gramjegerne</p>
-            </link>
+            </a>
 
             <div className="md:block md:w-auto" id="navbar-default">
               <ul className="text-xl flex flex-row gap-x-4">
                 <li className="menu-item">
-                  <link href="../" aria-current="page">
+                  <a href="../" aria-current="page">
                     <div className="block items-center gap-x-2 flex flex-wrap">
                       <svg
                         width="20"
@@ -53,10 +53,10 @@ export default function RootLayout({
                       </svg>
                       <p id="hidden">Utstyr</p>
                     </div>
-                  </link>
+                  </a>
                 </li>
                 <li className="menu-item">
-                  <link href="/lists">
+                  <a href="/lists">
                     <div className="block items-center gap-x-2 flex flex-wrap">
                       <svg
                         width="20"
@@ -72,7 +72,7 @@ export default function RootLayout({
                       </svg>
                       <p id="hidden">Turer</p>
                     </div>
-                  </link>
+                  </a>
                 </li>
               </ul>
             </div>
