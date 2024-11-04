@@ -1,9 +1,8 @@
-// app/lists/[slug]/page.tsx
-
-import { client } from "@/sanity/client"; // Your Sanity client
-import { groq } from "next-sanity"; // GROQ for querying
-import { SanityImageSource } from "@sanity/image-url/lib/types/types"; // Importing Sanity image types
-import imageUrlBuilder from "@sanity/image-url"; // Import image URL builder
+// src/app/lists/[slug]/page.tsx
+import { client } from "@/sanity/client";
+import { groq } from "next-sanity";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import imageUrlBuilder from "@sanity/image-url";
 
 const builder = imageUrlBuilder(client);
 
@@ -11,6 +10,7 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
+// GROQ query to fetch the list data based on slug
 const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   name,
   image,
@@ -19,32 +19,23 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
-// Interface for the list
-interface List {
-  name: string;
-  image: SanityImageSource; // Adjust type as needed
-  days: number;
-  weight: number;
-  participants: number;
-}
-
-// Fetch data on the server
+// Ensure you're using an async component
 export default async function ListItemPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  console.log("Requested slug:", params.slug); // Log slug for debugging
+  const { slug } = params;
 
-  const listData = await client.fetch(LIST_QUERY, { slug: params.slug });
+  // Fetch the data based on slug
+  const listData = await client.fetch(LIST_QUERY, { slug });
 
-  // Log fetched data for debugging
-  console.log("Fetched list data:", listData);
-
+  // Check if the listData exists
   if (!listData) {
-    return <div>List not found</div>; // Handle not found case
+    return <div>List not found</div>; // Render this if data is not found
   }
 
+  // Render the JSX to display the list details
   return (
     <div className="container mx-auto min-h-screen p-8">
       <h1 className="text-2xl font-bold">{listData.name}</h1>

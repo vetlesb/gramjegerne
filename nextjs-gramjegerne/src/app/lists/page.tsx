@@ -38,7 +38,7 @@ export default async function IndexPage() {
                           src={urlFor(list.image).url()}
                         />
                       ) : (
-                        <div className="h24 w-24 flex items-center placeholder_image">
+                        <div className="h-24 w-24 flex items-center placeholder_image">
                           <svg
                             width="16"
                             height="16"
