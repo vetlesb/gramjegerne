@@ -1,15 +1,17 @@
-// pages/lists/[slug].tsx
+import { type SanityDocument } from "next-sanity";
 import { useRouter } from "next/router";
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
+import { useEffect, useState } from "react";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import imageUrlBuilder from "@sanity/image-url";
-import { useEffect, useState } from "react";
 
 // Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client);
 
-// Function to return the image builder with additional parameters
+// Then we like to make a simple function like this that gives the
+// builder an image and returns the builder for you to specify additional
+// parameters:
 function urlFor(SanityImageSource: SanityImageSource) {
   return builder.image(SanityImageSource);
 }
@@ -24,7 +26,7 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
 
 interface List {
   name: string;
-  image: SanityImageSource;
+  image: any; // Adjust type according to your image handling
   days: number;
   weight: number;
   participants: number;
@@ -32,24 +34,21 @@ interface List {
 
 export default function ListItemPage() {
   const router = useRouter();
-  const { slug } = router.query as { slug?: string }; // Make slug optional to avoid runtime error
-  const [list, setList] = useState<List | null>(null); // State to hold the fetched list
-
-  const fetchList = async (slug: string) => {
-    const listData = await client.fetch(LIST_QUERY, { slug });
-    return listData;
-  };
+  const { slug } = router.query as { slug?: string };
+  const [list, setList] = useState<List | null>(null);
 
   useEffect(() => {
     if (slug) {
-      // Ensure slug is defined before fetching
-      fetchList(slug).then((data) => {
-        setList(data);
-      });
+      const fetchList = async () => {
+        const listData = await client.fetch(LIST_QUERY, { slug });
+        setList(listData);
+      };
+
+      fetchList();
     }
   }, [slug]);
 
-  if (!list) return <div>Loading...</div>; // Loading state
+  if (!list) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto min-h-screen p-8">
@@ -58,7 +57,6 @@ export default function ListItemPage() {
       <p>Days: {list.days}</p>
       <p>Weight: {list.weight}</p>
       <p>Participants: {list.participants}</p>
-      {/* Add more details as needed */}
     </div>
   );
 }
