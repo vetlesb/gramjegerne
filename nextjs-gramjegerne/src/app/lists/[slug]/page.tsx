@@ -4,8 +4,10 @@ import { groq } from "next-sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import imageUrlBuilder from "@sanity/image-url";
 
+// Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client);
 
+// Function to generate the URL for images
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
@@ -19,13 +21,14 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
-// Ensure you're using an async component
+// Default export of the page component
 export default async function ListItemPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const { slug } = params;
+  // Awaiting params before using them
+  const slug = await params.slug;
 
   // Fetch the data based on slug
   const listData = await client.fetch(LIST_QUERY, { slug });
@@ -39,7 +42,7 @@ export default async function ListItemPage({
   return (
     <div className="container mx-auto min-h-screen p-8">
       <h1 className="text-2xl font-bold">{listData.name}</h1>
-      {/* Ensure to construct the URL using the image asset reference */}
+      {/* Check if the image exists before rendering */}
       {listData.image && (
         <img src={urlFor(listData.image).url()} alt={listData.name} />
       )}
