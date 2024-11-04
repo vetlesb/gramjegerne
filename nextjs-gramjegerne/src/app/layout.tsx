@@ -51,9 +51,8 @@ export default function RootLayout({
                         fill="#EAFFE2"
                       />
                     </svg>
-                    <p id="hidden">
-                      <Link href="../">Utstyr</Link>
-                    </p>
+
+                    <Link href="../">Utstyr</Link>
                   </div>
                 </li>
                 <li className="menu-item">
@@ -70,9 +69,8 @@ export default function RootLayout({
                         fill="#EAFFE2"
                       />
                     </svg>
-                    <p id="hidden">
-                      <Link href="/lists">Turer</Link>
-                    </p>
+
+                    <Link href="/lists">Turer</Link>
                   </div>
                 </li>
               </ul>
