@@ -30,14 +30,14 @@ export default function RootLayout({
       >
         <nav>
           <div className="flex flex-wrap items-center justify-between mx-auto p-4">
-            <a href="../" className="flex items-center">
+            <link href="../" className="flex items-center">
               <p className="text-2xl">Gramjegerne</p>
-            </a>
+            </link>
 
             <div className="md:block md:w-auto" id="navbar-default">
               <ul className="text-xl flex flex-row gap-x-4">
                 <li className="menu-item">
-                  <a
+                  <link
                     href="../"
                     className="block items-center gap-x-2 flex flex-wrap"
                     aria-current="page"
@@ -55,10 +55,10 @@ export default function RootLayout({
                       />
                     </svg>
                     <p id="hidden">Utstyr</p>
-                  </a>
+                  </link>
                 </li>
                 <li className="menu-item">
-                  <a
+                  <link
                     href="/lists"
                     className="block items-center gap-x-2 flex flex-wrap"
                   >
@@ -75,7 +75,7 @@ export default function RootLayout({
                       />
                     </svg>
                     <p id="hidden">Turer</p>
-                  </a>
+                  </link>
                 </li>
               </ul>
             </div>
