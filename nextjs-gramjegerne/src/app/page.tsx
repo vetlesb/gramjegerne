@@ -29,7 +29,12 @@ export default async function IndexPage() {
     {},
     options,
   );
-  console.log(items, categories);
+  const sortedItems = items.sort((a, b) => {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+    if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+    return 0;
+  });
+  console.log(sortedItems, categories);
   return (
     <main className="container mx-auto min-h-screen p-16">
       <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-4 gap-y-4 pb-8">
