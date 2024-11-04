@@ -21,17 +21,17 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
-// Default export of the page component
-export default async function ListItemPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  // Awaiting params before using them
-  const slug = await params.slug;
+// Define the types for props
+interface ListItemPageProps {
+  params: {
+    slug: string; // Define slug as a string
+  };
+}
 
+// Default export of the page component
+export default async function ListItemPage({ params }: ListItemPageProps) {
   // Fetch the data based on slug
-  const listData = await client.fetch(LIST_QUERY, { slug });
+  const listData = await client.fetch(LIST_QUERY, { slug: params.slug });
 
   // Check if the listData exists
   if (!listData) {
