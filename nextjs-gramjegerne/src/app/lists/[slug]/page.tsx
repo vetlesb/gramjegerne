@@ -1,13 +1,11 @@
-// src/app/lists/[slug]/page.tsx
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import imageUrlBuilder from "@sanity/image-url";
+import { NextPage } from "next";
 
-// Get a pre-configured URL builder from your sanity client
 const builder = imageUrlBuilder(client);
 
-// Function to generate the URL for images
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
@@ -21,15 +19,17 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
+// Define the props type
+type ListItemPageProps = {
+  params: {
+    slug: string;
+  };
+};
+
 // Default export of the page component
-export default async function ListItemPage({
-  params,
-}: {
-  params: { slug: string }; // Keep it as a general type for compatibility
-}) {
+export default async function ListItemPage({ params }: ListItemPageProps) {
   // Fetch the data based on slug
-  const { slug } = params; // Destructure slug from params
-  const listData = await client.fetch(LIST_QUERY, { slug });
+  const listData = await client.fetch(LIST_QUERY, { slug: params.slug });
 
   // Check if the listData exists
   if (!listData) {
@@ -40,7 +40,6 @@ export default async function ListItemPage({
   return (
     <div className="container mx-auto min-h-screen p-8">
       <h1 className="text-2xl font-bold">{listData.name}</h1>
-      {/* Check if the image exists before rendering */}
       {listData.image && (
         <img src={urlFor(listData.image).url()} alt={listData.name} />
       )}
