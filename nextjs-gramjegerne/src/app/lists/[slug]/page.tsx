@@ -3,6 +3,7 @@ import { groq } from "next-sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import imageUrlBuilder from "@sanity/image-url";
 
+// Get a pre-configured url-builder from your sanity client
 const builder = imageUrlBuilder(client);
 
 // Function to generate the URL for images
@@ -19,17 +20,14 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
-// Define the props type for the ListItemPage component
-type ListItemPageProps = {
-  params: {
-    slug: string; // This should be the structure for params
-  };
-};
+type Params = Promise<{ slug: string[] }>;
 
-// Default export of the page component
-export default async function ListItemPage({ params }: ListItemPageProps) {
+export default async function ListItemPage({ params }: { params: Params }) {
+  // Await the params to get the slug
+  const { slug } = await params;
+
   // Fetch the data based on slug
-  const listData = await client.fetch(LIST_QUERY, { slug: params.slug });
+  const listData = await client.fetch(LIST_QUERY, { slug });
 
   // Check if the listData exists
   if (!listData) {
