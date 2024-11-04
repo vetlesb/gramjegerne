@@ -95,7 +95,7 @@ li.form,
 .menu-item:hover {
   background-color: #272e23;
 }
-#menu-active {
+.menu-active {
   background-color: #95db7b;
   color: #1f261c;
 }

@@ -1,53 +1,49 @@
+// src/app/page.tsx
 import { type SanityDocument } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import CategorySelector from "@/components/CategoryButton/CategorySelector";
 
-// Get a pre-configured url-builder from your sanity client
+// Define the Category interface based on your Sanity schema
+interface Category {
+  _id: string;
+  title: string;
+  slug: {
+    current: string; // Slug as an object containing a current string
+  };
+}
+
 const builder = imageUrlBuilder(client);
 
-// Then we like to make a simple function like this that gives the
-// builder an image and returns the builder for you to specify additional
-// parameters:
-function urlFor(SanityImageSource: SanityImageSource) {
-  return builder.image(SanityImageSource);
+function urlFor(source: SanityImageSource) {
+  return builder.image(source);
 }
-const CATEGORIES_QUERY = `*[
-  _type == "category"
-]{name, title, slug, description}`;
 
-const ITEMS_QUERY = `*[
-  _type == "item"
-]{name, slug, image, category, size, weight, quantity, calories}`;
+// Sanity queries
+const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
+const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, category, size, weight, quantity, calories}`;
 
 const options = { next: { revalidate: 30 } };
 
 export default async function IndexPage() {
+  // Fetch items and categories
   const items = await client.fetch<SanityDocument[]>(ITEMS_QUERY, {}, options);
-  const categories = await client.fetch<SanityDocument[]>(
+  const categories = await client.fetch<Category[]>(
     CATEGORIES_QUERY,
     {},
     options,
-  );
-  const sortedItems = items.sort((a, b) => {
-    if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
-    if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
-    return 0;
-  });
-  console.log(sortedItems, categories);
+  ); // Ensure categories is of type Category[]
+
+  const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-4 gap-y-4 pb-8">
-        {categories.map((category) => (
-          <div key={category._id}>
-            <button className="menu-item text-lg" type="submit">
-              {category.title}
-            </button>
-          </div>
-        ))}
-      </div>
+      {/* Use the Client Component for Category Selection */}
+      <CategorySelector categories={categories} />
+
       <ul className="flex flex-col">
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <li className="product" key={item._id}>
             <div className="flex flex-wrap items-center justify-between">
               <div className="flex flex-wrap gap-x-4">
@@ -152,7 +148,6 @@ export default async function IndexPage() {
           </li>
         ))}
       </ul>
-
       <div>
         <div className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
           <a href="/newitem"> Legg til utstyr</a>
