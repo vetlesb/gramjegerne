@@ -39,9 +39,12 @@ export default async function ListItemPage({
   return (
     <div className="container mx-auto min-h-screen p-8">
       <h1 className="text-2xl font-bold">{listData.name}</h1>
-      <img src={urlFor(listData.image).url()} alt={listData.name} />
+      {/* Ensure to construct the URL using the image asset reference */}
+      {listData.image && (
+        <img src={urlFor(listData.image).url()} alt={listData.name} />
+      )}
       <p>Days: {listData.days}</p>
-      <p>Weight: {listData.weight}</p>
+      <p>Weight: {listData.weight} kg</p>
       <p>Participants: {listData.participants}</p>
     </div>
   );
