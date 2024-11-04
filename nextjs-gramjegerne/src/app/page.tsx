@@ -39,13 +39,11 @@ export default async function IndexPage() {
     <main className="container mx-auto min-h-screen p-16">
       <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-4 gap-y-4 pb-8">
         {categories.map((category) => (
-          <button
-            className="menu-item text-lg"
-            key={category._id}
-            type="submit"
-          >
-            {category.title}
-          </button>
+          <div key={category._id}>
+            <button className="menu-item text-lg" type="submit">
+              {category.title}
+            </button>
+          </div>
         ))}
       </div>
       <ul className="flex flex-col">

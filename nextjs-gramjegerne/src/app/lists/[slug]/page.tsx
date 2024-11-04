@@ -2,10 +2,10 @@ import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import imageUrlBuilder from "@sanity/image-url";
-import { NextPage } from "next";
 
 const builder = imageUrlBuilder(client);
 
+// Function to generate the URL for images
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
@@ -19,10 +19,10 @@ const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
   participants
 }`;
 
-// Define the props type
+// Define the props type for the ListItemPage component
 type ListItemPageProps = {
   params: {
-    slug: string;
+    slug: string; // This should be the structure for params
   };
 };
 
