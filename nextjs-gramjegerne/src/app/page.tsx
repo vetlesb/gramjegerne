@@ -46,7 +46,6 @@ export default function IndexPage() {
         setLoading(false); // Set loading to false once data is fetched
       }
     };
-
     fetchData();
   }, []); // Empty dependency array means this runs once on mount
 
