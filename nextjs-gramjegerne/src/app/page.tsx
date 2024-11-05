@@ -33,18 +33,22 @@ export default function IndexPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("Attempting to fetch items...");
         const fetchedItems = await client.fetch<SanityDocument[]>(ITEMS_QUERY);
+        console.log("Fetched items:", fetchedItems);
+
+        console.log("Attempting to fetch categories...");
         const fetchedCategories =
           await client.fetch<Category[]>(CATEGORIES_QUERY);
+        console.log("Fetched categories:", fetchedCategories);
+
         setItems(fetchedItems);
         setCategories(fetchedCategories);
       } catch (error) {
         console.error("Error fetching data:", error);
         alert("Error fetching data. Check console logs.");
       }
-      // Removed setLoading(false); since loading state is no longer needed
     };
-
     fetchData();
   }, []);
 
