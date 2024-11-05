@@ -32,7 +32,6 @@ export default function IndexPage() {
   const [loading, setLoading] = useState(true); // State to manage loading
 
   useEffect(() => {
-    // Function to fetch data
     const fetchData = async () => {
       try {
         const fetchedItems = await client.fetch<SanityDocument[]>(ITEMS_QUERY);
@@ -42,12 +41,13 @@ export default function IndexPage() {
         setCategories(fetchedCategories);
       } catch (error) {
         console.error("Error fetching data:", error);
+        alert("Error fetching data. Check console logs.");
       } finally {
-        setLoading(false); // Set loading to false once data is fetched
+        setLoading(false);
       }
     };
     fetchData();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   // Render loading state
   if (loading) {
