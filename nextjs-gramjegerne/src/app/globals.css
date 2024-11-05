@@ -224,7 +224,7 @@ select {
   color: #1f261c;
   background-color: #b4ed9f;
   bottom: 3rem;
-  right: 3rem;
+  right: 50%;
 }
 .btn-center:hover {
   background-color: #95db7b;
