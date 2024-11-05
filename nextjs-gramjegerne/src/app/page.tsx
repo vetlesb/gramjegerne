@@ -29,7 +29,6 @@ const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, category, size, 
 export default function IndexPage() {
   const [items, setItems] = useState<SanityDocument[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true); // State to manage loading
 
   useEffect(() => {
     const fetchData = async () => {
