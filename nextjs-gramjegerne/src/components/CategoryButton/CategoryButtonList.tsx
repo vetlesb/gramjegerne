@@ -20,7 +20,7 @@ const CategoryButtonsList: React.FC<CategoryButtonsListProps> = ({
   onCategorySelect,
 }) => {
   return (
-    <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-4 gap-y-4 pb-8">
+    <div className="flex flex-nowrap overflow-scroll no-scrollbar items-center gap-x-2 gap-y-4 pb-8">
       {categories.map((category) => (
         <CategoryButton
           key={category._id}

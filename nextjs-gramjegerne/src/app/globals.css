@@ -66,6 +66,14 @@ li.list {
   padding: 16px;
   margin-bottom: 8px;
 }
+.cnt {
+  display: grid;
+  gap: 4px;
+  background-color: #272e23;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
 li.form,
 .form {
   display: grid;
@@ -79,6 +87,13 @@ li.form,
   border-radius: 4px;
   color: #eaffe2;
   background-color: #1f261c;
+  font-size: 16px;
+}
+.tag-invert {
+  padding: 4px 8px 4px 8px;
+  border-radius: 4px;
+  color: #eaffe2;
+  background-color: #272e23;
   font-size: 16px;
 }
 .tag-icon {
@@ -209,7 +224,7 @@ select {
   color: #1f261c;
   background-color: #b4ed9f;
   bottom: 3rem;
-  left: 50%;
+  right: 3rem;
 }
 .btn-center:hover {
   background-color: #95db7b;

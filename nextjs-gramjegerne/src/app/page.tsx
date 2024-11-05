@@ -71,10 +71,8 @@ export default async function IndexPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-y-2">
-                  <h2 className="text-xl font-semibold truncate">
-                    {item.name}
-                  </h2>
-                  <div className="flex flex-wrap gap-x-2">
+                  <h2 className="text-xl truncate">{item.name}</h2>
+                  <div className="flex flex-wrap gap-x-1">
                     {item.size ? (
                       <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <svg

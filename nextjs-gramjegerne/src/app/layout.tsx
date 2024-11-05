@@ -36,7 +36,7 @@ export default function RootLayout({
             </p>
 
             <div className="md:block md:w-auto" id="navbar-default">
-              <ul className="text-xl flex flex-row gap-x-4">
+              <ul className="text-xl flex flex-row gap-x-2">
                 <li className="menu-item">
                   <div className="block items-center gap-x-2 flex flex-wrap">
                     <svg
