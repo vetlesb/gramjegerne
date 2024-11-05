@@ -1,17 +1,25 @@
 "use client";
 // src/app/page.tsx
-import { type SanityDocument } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { useState, useEffect } from "react";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
+// Define Category and Item types
 interface Category {
   _id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: { current: string };
+}
+interface Item {
+  _id: string;
+  name: string;
+  categories?: { _id: string; title: string }[]; // Populated categories
+  image?: SanityImageSource;
+  size?: string;
+  weight?: { weight: number; unit: string };
+  quantity?: number;
+  calories?: number;
 }
 
 const builder = imageUrlBuilder(client);
@@ -22,10 +30,14 @@ function urlFor(source: SanityImageSource) {
 
 // Define your queries
 const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
-const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, "categories": categories[]-> {_id, title}, size, weight, quantity, calories}`;
+const ITEMS_QUERY = `*[_type == "item"]{
+  _id, name, slug, image, 
+  "categories": categories[]-> {_id, title}, 
+  size, weight, quantity, calories
+}`;
 
 export default function IndexPage() {
-  const [items, setItems] = useState<SanityDocument[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,33 +45,38 @@ export default function IndexPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const fetchedItems = await client.fetch(ITEMS_QUERY);
-        const fetchedCategories =
-          await client.fetch<Category[]>(CATEGORIES_QUERY);
+        // Fetch all items and categories from Sanity
+        const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY);
+        const fetchedCategories: Category[] =
+          await client.fetch(CATEGORIES_QUERY);
+
+        // Filter categories to only include those that have items associated with them
+        const categoriesWithEntries = fetchedCategories.filter((category) =>
+          fetchedItems.some((item) =>
+            item.categories?.some((cat) => cat._id === category._id),
+          ),
+        );
+
         setItems(fetchedItems);
-        setCategories(fetchedCategories);
+        setCategories(categoriesWithEntries);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
+  // Filter items based on the selected category
   const filteredItems = selectedCategory
     ? items.filter((item) =>
-        item.categories?.some(
-          (category: { _id: string; title: string }) =>
-            category._id === selectedCategory,
-        ),
+        item.categories?.some((category) => category._id === selectedCategory),
       )
     : items;
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
+  // Sort the items alphabetically by name
   const sortedItems = filteredItems.sort((a, b) =>
     a.name.localeCompare(b.name),
   );
@@ -75,18 +92,21 @@ export default function IndexPage() {
       });
 
       if (!response.ok) {
-        // Handle error response
         const errorData = await response.json();
         console.error("Delete item response error:", errorData);
         throw new Error(errorData.error || "Failed to delete item");
       }
 
-      // Successfully deleted, so update the items
+      // Update items after successful deletion
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
     } catch (error) {
       console.error("Error deleting item:", error);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="container mx-auto min-h-screen p-16">
