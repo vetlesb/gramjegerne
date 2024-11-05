@@ -5,14 +5,12 @@ import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { useState, useEffect } from "react";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import CategorySelector from "@/components/CategoryButton/CategorySelector";
 
-// Define the Category interface based on your Sanity schema
 interface Category {
   _id: string;
   title: string;
   slug: {
-    current: string; // Slug as an object containing a current string
+    current: string;
   };
 }
 
@@ -21,35 +19,50 @@ const builder = imageUrlBuilder(client);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
+
 // Define your queries
 const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
-const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, category, size, weight, quantity, calories}`;
+const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, "categories": categories[]-> {_id, title}, size, weight, quantity, calories}`;
 
 export default function IndexPage() {
   const [items, setItems] = useState<SanityDocument[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Attempting to fetch items...");
-        const fetchedItems = await client.fetch<SanityDocument[]>(ITEMS_QUERY);
-        console.log("Fetched items:", fetchedItems);
-
-        console.log("Attempting to fetch categories...");
+        const fetchedItems = await client.fetch(ITEMS_QUERY);
         const fetchedCategories =
           await client.fetch<Category[]>(CATEGORIES_QUERY);
-        console.log("Fetched categories:", fetchedCategories);
-
         setItems(fetchedItems);
         setCategories(fetchedCategories);
       } catch (error) {
         console.error("Error fetching data:", error);
-        alert("Error fetching data. Check console logs.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
+
+  const filteredItems = selectedCategory
+    ? items.filter((item) =>
+        item.categories?.some(
+          (category: { _id: string; title: string }) =>
+            category._id === selectedCategory,
+        ),
+      )
+    : items;
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const sortedItems = filteredItems.sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
 
   const deleteItem = async (itemId: string) => {
     try {
@@ -75,13 +88,36 @@ export default function IndexPage() {
     }
   };
 
-  const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
-
   return (
     <main className="container mx-auto min-h-screen p-16">
-      {/* Use the Client Component for Category Selection */}
-      <CategorySelector categories={categories} />
-
+      <div className="flex gap-4 mb-8">
+        {/* Button to reset the filter */}
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
+            selectedCategory === null ? "menu-active" : "menu-item"
+          }`}
+        >
+          Alle
+        </button>
+        {/* Render category filter buttons */}
+        {categories.map((category) => (
+          <button
+            key={category._id}
+            onClick={
+              () =>
+                selectedCategory === category._id
+                  ? setSelectedCategory(null) // Deselect if already selected
+                  : setSelectedCategory(category._id) // Select the clicked category
+            }
+            className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
+              selectedCategory === category._id ? "menu-active" : "menu-item"
+            }`}
+          >
+            {category.title}
+          </button>
+        ))}
+      </div>
       <ul className="flex flex-col">
         {sortedItems.map((item) => (
           <li className="product" key={item._id}>
