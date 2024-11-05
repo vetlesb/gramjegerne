@@ -21,7 +21,6 @@ const builder = imageUrlBuilder(client);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
-
 // Define your queries
 const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
 const ITEMS_QUERY = `*[_type == "item"]{_id, name, slug, image, category, size, weight, quantity, calories}`;
