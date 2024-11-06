@@ -102,7 +102,7 @@ const NewItemForm = () => {
   };
 
   return (
-    <main className="container mx-auto min-h-screen p-16">
+    <main className="container mx-auto min-h-screen p-8">
       {successMessage && (
         <div className="toast text-xl">
           {successMessage}
@@ -110,7 +110,7 @@ const NewItemForm = () => {
       )}
       <div className="flex flex-col items-center">
       <form className="form" onSubmit={handleSubmit}>
-        <div className="flex flex-col p-8 gap-y-8">
+        <div className="flex flex-col p-4 gap-y-8">
           <div className="flex flex-col"><p className="text-xl">Legg til utstyr</p></div>
           <div className="flex flex-col">
             <label className="flex flex-col gap-y-4">
