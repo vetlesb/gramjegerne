@@ -284,6 +284,9 @@ select {
   .gap-y-2 {
     row-gap: 0.25rem;
   }
+  .btn-center {
+    bottom: 1rem;
+  }
 }
 
 @media (min-width: 640px) {
@@ -315,6 +318,9 @@ select {
   }
   .gap-y-2 {
     row-gap: 0.5rem;
+  }
+  .btn-center {
+    bottom: 3rem;
   }
 }
 
