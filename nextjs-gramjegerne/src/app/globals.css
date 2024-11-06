@@ -113,6 +113,13 @@ li.form,
   color: #eaffe2;
 }
 .menu-active {
+  padding: 8px 16px 8px 16px;
+  border-radius: 48px;
+  min-height: 28px;
+  background-color: #95db7b;
+  color: #1f261c;
+}
+.menu-active:hover {
   background-color: #95db7b;
   color: #1f261c;
 }

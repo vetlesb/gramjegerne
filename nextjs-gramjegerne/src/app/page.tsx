@@ -2,8 +2,10 @@
 // src/app/page.tsx
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import { useRouter, usePathname } from "next/navigation";
 
 // Define Category and Item types
 interface Category {
@@ -41,16 +43,16 @@ export default function IndexPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all items and categories from Sanity
         const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY);
         const fetchedCategories: Category[] =
           await client.fetch(CATEGORIES_QUERY);
 
-        // Filter categories to only include those that have items associated with them
         const categoriesWithEntries = fetchedCategories.filter((category) =>
           fetchedItems.some((item) =>
             item.categories?.some((cat) => cat._id === category._id),
@@ -69,17 +71,39 @@ export default function IndexPage() {
     fetchData();
   }, []);
 
-  // Filter items based on the selected category
+  // Update selectedCategory based on URL path
+  useEffect(() => {
+    const slugInPath = pathname?.slice(1); // Get the category slug from URL
+    const matchingCategory = categories.find(
+      (category) => category.slug.current === slugInPath,
+    );
+
+    if (matchingCategory) {
+      setSelectedCategory(matchingCategory._id);
+    } else {
+      setSelectedCategory(null);
+    }
+  }, [pathname, categories]);
+
   const filteredItems = selectedCategory
     ? items.filter((item) =>
         item.categories?.some((category) => category._id === selectedCategory),
       )
     : items;
 
-  // Sort the items alphabetically by name
   const sortedItems = filteredItems.sort((a, b) =>
     a.name.localeCompare(b.name),
   );
+
+  const handleCategorySelect = (category: Category | null) => {
+    if (category) {
+      setSelectedCategory(category._id);
+      router.push(`/?category=${category.slug.current}`);
+    } else {
+      setSelectedCategory(null);
+      router.push("/");
+    }
+  };
 
   const deleteItem = async (itemId: string) => {
     try {
@@ -113,7 +137,7 @@ export default function IndexPage() {
       <div className="flex gap-x-2 no-scrollbar mb-8">
         {/* Button to reset the filter */}
         <button
-          onClick={() => setSelectedCategory(null)}
+          onClick={() => handleCategorySelect(null)}
           className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
             selectedCategory === null ? "menu-active" : "menu-item"
           }`}
@@ -124,12 +148,7 @@ export default function IndexPage() {
         {categories.map((category) => (
           <button
             key={category._id}
-            onClick={
-              () =>
-                selectedCategory === category._id
-                  ? setSelectedCategory(null) // Deselect if already selected
-                  : setSelectedCategory(category._id) // Select the clicked category
-            }
+            onClick={() => handleCategorySelect(category)}
             className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
               selectedCategory === category._id ? "menu-active" : "menu-item"
             }`}
@@ -244,7 +263,7 @@ export default function IndexPage() {
       </ul>
       <div>
         <div className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
-          <a href="/newitem"> Legg til utstyr</a>
+          <Link href="/newitem">Legg til utstyr</Link>
         </div>
       </div>
     </main>
