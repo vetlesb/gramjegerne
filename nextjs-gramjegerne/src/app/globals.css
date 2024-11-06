@@ -81,7 +81,6 @@ li.form,
 .form {
   display: grid;
   gap: 4px;
-  min-width: 600px;
   background-color: #272e23;
   border-radius: 8px;
   margin-bottom: 8px;
