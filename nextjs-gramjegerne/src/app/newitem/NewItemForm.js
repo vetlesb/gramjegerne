@@ -108,9 +108,9 @@ const NewItemForm = () => {
           {successMessage}
         </div>
       )}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col">
       <form className="form" onSubmit={handleSubmit}>
-        <div className="flex flex-col p-4 gap-y-8">
+        <div className="flex flex-col p-8 gap-y-8">
           <div className="flex flex-col"><p className="text-xl">Legg til utstyr</p></div>
           <div className="flex flex-col">
             <label className="flex flex-col gap-y-4">
@@ -175,7 +175,7 @@ const NewItemForm = () => {
           <div>
             <label className="flex flex-col gap-y-4">
               Weight:
-              <div className="flex flex-row gap-x-4">
+             
               <input 
                 type="number" 
                 value={weight.weight} 
@@ -185,7 +185,7 @@ const NewItemForm = () => {
                 <option value="g">g</option>
                 <option value="kg">kg</option>
               </select>
-              </div>
+             
             </label>
           </div>
           <div>
