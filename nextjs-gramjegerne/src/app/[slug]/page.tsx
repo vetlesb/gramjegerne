@@ -1,12 +1,12 @@
-// src/app/[slug]/page.tsx
 import { client } from "@/sanity/client";
 import { notFound } from "next/navigation";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
-// Define types for items and category
+// Define the types for Item and Category
 interface Item {
   _id: string;
   name: string;
-  image?: string; // Adjust as needed
+  image?: SanityImageSource;
   size?: string;
   weight?: { weight: number; unit: string };
   quantity?: number;
@@ -19,46 +19,26 @@ interface Category {
   items: Item[];
 }
 
-// Fetch category data
-async function getCategoryData(slug: string): Promise<Category | null> {
-  return await client.fetch(
+interface CategoryPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  // Await params to ensure it's resolved
+  const { slug } = await params;
+
+  // Fetch the category with items
+  const category: Category | null = await client.fetch(
     `*[_type == "category" && slug.current == $slug][0]{
-      _id, 
-      title, 
+      _id,
+      title,
       "items": *[_type == "item" && references(^._id)]{
-        _id, 
-        name, 
-        image, 
-        size, 
-        weight, 
-        quantity, 
-        calories
+        _id, name, image, size, weight, quantity, calories
       }
     }`,
     { slug },
   );
-}
 
-// Synchronously generate static paths for categories
-export async function generateStaticParams() {
-  const categories = await client.fetch(`*[_type == "category"]{ slug }`);
-  return categories.map((category: { slug: { current: string } }) => ({
-    slug: category.slug.current,
-  }));
-}
-
-// Component definition without additional params constraint
-export default async function CategoryPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
-
-  // Fetch the category and items associated with the slug
-  const category = await getCategoryData(slug);
-
-  // Handle 404 if category is not found
   if (!category) {
     return notFound();
   }
@@ -70,7 +50,7 @@ export default async function CategoryPage({
         {category.items.map((item) => (
           <li key={item._id}>
             <h2>{item.name}</h2>
-            {/* Display additional item details here, like image, size, etc. */}
+            {/* Additional item details */}
           </li>
         ))}
       </ul>
