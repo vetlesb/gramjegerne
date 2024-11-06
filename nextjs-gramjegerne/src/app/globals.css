@@ -66,6 +66,9 @@ li.list {
   padding: 16px;
   margin-bottom: 8px;
 }
+li.product:hover {
+  background-color: #293124;
+}
 .cnt {
   display: grid;
   gap: 4px;
@@ -235,7 +238,7 @@ select {
   color: #1f261c;
   background-color: #b4ed9f;
   bottom: 3rem;
-  left: 50%;
+  right: 3rem;
   transform: translate(-50%, 0);
 }
 .btn-center:hover {
@@ -285,6 +288,7 @@ select {
   }
   .btn-center {
     bottom: 1rem;
+    right: 1rem;
   }
 }
 
@@ -320,6 +324,7 @@ select {
   }
   .btn-center {
     bottom: 3rem;
+    right: 3rem;
   }
 }
 

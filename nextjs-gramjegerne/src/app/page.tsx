@@ -260,7 +260,7 @@ export default function IndexPage() {
       </ul>
       <div>
         <div className="btn-center flex items-center text-lg">
-          <Link href="/newitem">Legg til utstyr</Link>
+          <Link href="/newitem">+</Link>
         </div>
       </div>
     </main>
