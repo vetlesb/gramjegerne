@@ -84,10 +84,11 @@ const NewItemForm = () => {
   return (
     <main className="container mx-auto min-h-screen p-16">
       {successMessage && (
-        <div className="p-4 mb-4 text-green-800 bg-green-100 rounded">
+        <div className="toast text-xl">
           {successMessage}
         </div>
       )}
+      <div className="flex flex-col items-center">
       <form className="form" onSubmit={handleSubmit}>
         <div className="flex flex-col p-8 gap-y-8">
           <div className="flex flex-col">
@@ -168,6 +169,7 @@ const NewItemForm = () => {
           <button className="button-primary" type="submit">Create Item</button>
         </div>
       </form>
+      </div>
     </main>
   );
 };
