@@ -245,7 +245,7 @@ select {
   min-height: 28px;
   color: #1f261c;
   background-color: #b4ed9f;
-  bottom: 50%;
+  bottom: 3rem;
   right: 50%;
   transform: translate(-50%, 0);
 }
@@ -262,10 +262,10 @@ select {
     display: none;
   }
   .h-24 {
-    height: 3rem;
+    height: 4rem;
   }
   .w-24 {
-    width: 3rem;
+    width: 4rem;
   }
   .text-xl {
     font-size: 1rem;
