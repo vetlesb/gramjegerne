@@ -110,7 +110,7 @@ export default function IndexPage() {
 
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-4 no-scrollbar mb-8">
         {/* Button to reset the filter */}
         <button
           onClick={() => setSelectedCategory(null)}
