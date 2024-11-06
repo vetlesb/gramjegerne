@@ -5,6 +5,7 @@ const NewItemForm = () => {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [size, setSize] = useState('');
@@ -39,6 +40,24 @@ const NewItemForm = () => {
     }
   }, [name]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+
+    // Generate a preview URL
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setImagePreview(previewURL);
+    } else {
+      setImagePreview(null); // Clear preview if no file is selected
+    }
+  };
+
+  const handleImageClick = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -72,6 +91,7 @@ const NewItemForm = () => {
     setName('');
     setSlug('');
     setImage(null);
+    setImagePreview(null);
     setSelectedCategories([]);
     setSize('');
     setWeight({ weight: '', unit: 'g' });
@@ -107,7 +127,18 @@ const NewItemForm = () => {
           <div>
             <label className="flex flex-col gap-y-4">
               Image:
-              <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {imagePreview && (
+               
+                <img
+                  src={imagePreview}
+                  alt="Image preview"
+                  className="mt-4 w-48 h-48 object-cover rounded-md cursor-pointer"
+                  onClick={handleImageClick}
+                  title="Click to remove image"
+                />
+  
+              )}
             </label>
           </div>
           <div>
@@ -144,15 +175,17 @@ const NewItemForm = () => {
           <div>
             <label className="flex flex-col gap-y-4">
               Weight:
+              <div className="flex flex-row gap-x-4">
               <input 
                 type="number" 
                 value={weight.weight} 
                 onChange={(e) => setWeight({ ...weight, weight: e.target.value })} 
               />
-              <select value={weight.unit} onChange={(e) => setWeight({ ...weight, unit: e.target.value })}>
+              <select className="appearance-none" value={weight.unit} onChange={(e) => setWeight({ ...weight, unit: e.target.value })}>
                 <option value="g">g</option>
                 <option value="kg">kg</option>
               </select>
+              </div>
             </label>
           </div>
           <div>

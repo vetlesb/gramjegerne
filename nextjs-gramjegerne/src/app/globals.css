@@ -77,8 +77,8 @@ li.list {
 li.form,
 .form {
   display: grid;
-  max-width: 800px;
   gap: 4px;
+  min-width: 600px;
   background-color: #272e23;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -138,7 +138,6 @@ select {
   padding: 1rem;
   border-radius: 4px;
 }
-
 input:focus,
 select:focus,
 input:active,

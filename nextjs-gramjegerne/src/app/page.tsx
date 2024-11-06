@@ -262,7 +262,7 @@ export default function IndexPage() {
         ))}
       </ul>
       <div>
-        <div className="btn-center flex flex-wrap items-center gap-x-2 text-lg">
+        <div className="btn-center flex items-center text-lg">
           <Link href="/newitem">Legg til utstyr</Link>
         </div>
       </div>
