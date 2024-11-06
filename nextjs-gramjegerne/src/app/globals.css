@@ -17,7 +17,7 @@ body {
   border-radius: 4px;
 }
 .truncate {
-  width: 25ch;
+  width: 20ch;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -98,6 +98,10 @@ li.form,
   font-size: 16px;
 }
 .tag-icon {
+  width: 16px;
+  height: 16px;
+}
+.btn-icon {
   width: 16px;
   height: 16px;
 }
@@ -277,6 +281,9 @@ select {
     width: 12px;
     height: 12px;
   }
+  .gap-y-2 {
+    row-gap: 0.25rem;
+  }
 }
 
 @media (min-width: 640px) {
@@ -305,6 +312,9 @@ select {
   .tag-icon {
     width: 16px;
     height: 16px;
+  }
+  .gap-y-2 {
+    row-gap: 0.5rem;
   }
 }
 
