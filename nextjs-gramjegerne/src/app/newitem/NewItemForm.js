@@ -91,6 +91,7 @@ const NewItemForm = () => {
       <div className="flex flex-col items-center">
       <form className="form" onSubmit={handleSubmit}>
         <div className="flex flex-col p-8 gap-y-8">
+          <div className="flex flex-col"><p className="text-xl">Legg til utstyr</p></div>
           <div className="flex flex-col">
             <label className="flex flex-col gap-y-4">
               Name:
