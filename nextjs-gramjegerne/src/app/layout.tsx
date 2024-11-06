@@ -36,8 +36,10 @@ export default function RootLayout({
             <div className="md:block md:w-auto" id="navbar-default">
               <ul className="text-xl flex flex-row gap-x-2">
                 <li className={pathname === "/" ? "menu-active" : "menu-item"}>
-                  <div className="block items-center gap-x-2 flex flex-wrap">
-                    <Link href="../">Utstyr</Link>
+                  <div className="block items-center gap-x-2 h-fit flex flex-wrap">
+                    <Link className="text-lg" href="../">
+                      Utstyr
+                    </Link>
                   </div>
                 </li>
                 <li
@@ -45,8 +47,10 @@ export default function RootLayout({
                     pathname === "/lists" ? "menu-active" : "menu-item"
                   }
                 >
-                  <div className="block items-center gap-x-2 flex flex-wrap">
-                    <Link href="/lists">Pakklister</Link>
+                  <div className="block items-center gap-x-2 h-fit flex flex-wrap">
+                    <Link className="text-lg" href="/lists">
+                      Pakklister
+                    </Link>
                   </div>
                 </li>
               </ul>

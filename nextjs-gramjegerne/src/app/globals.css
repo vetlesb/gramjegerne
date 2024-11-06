@@ -108,7 +108,6 @@ li.form,
 .menu-item {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
-  min-height: 28px;
   color: #eaffe2;
   border: 1px solid #272e23;
 }
@@ -119,9 +118,9 @@ li.form,
 .menu-active {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
-  min-height: 28px;
   background-color: #95db7b;
   color: #1f261c;
+  border: 1px solid #95db7b;
 }
 .menu-active:hover {
   background-color: #95db7b;
