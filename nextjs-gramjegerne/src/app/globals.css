@@ -217,14 +217,11 @@ button:hover {
   width: 100%;
 }
 .dialog {
-  display: grid;
-  gap: 4px;
   background-color: #272e23;
   color: #eaffe2 !important;
   border-radius: 8px;
-  padding: 48px;
-  margin-bottom: 8px;
-  border: none;
+  border: border 3px;
+  border-color: #95db7b;
 }
 .bg-black\/80 {
   background-color: #1f261c;
