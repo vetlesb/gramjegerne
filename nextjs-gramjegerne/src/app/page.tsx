@@ -301,7 +301,7 @@ export default function IndexPage() {
         <DialogTrigger asChild>
           <button className="button-primary btn-center">Legg til</button>
         </DialogTrigger>
-        <DialogContent className="dialog p-8 rounded-2xl">
+        <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] sm:max-h-[90vh] overflow-y-auto p-6 no-scrollbar">
           <DialogHeader className="text-xl">
             <DialogTitle>Add New Item</DialogTitle>
           </DialogHeader>
