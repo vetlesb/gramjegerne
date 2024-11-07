@@ -55,6 +55,7 @@ export default function IndexPage() {
   const router = useRouter();
   const pathname = usePathname();
   const [itemToDelete, setItemToDelete] = useState<string | null>(null); // Track item for deletion
+  const [newCategoryName, setNewCategoryName] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,6 +138,26 @@ export default function IndexPage() {
       console.error("Error deleting item:", error);
     }
   };
+  // Function to handle adding a new category
+  const handleAddCategory = async () => {
+    if (!newCategoryName) return;
+
+    try {
+      const response = await fetch("/api/addCategory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newCategoryName }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add category");
+
+      const newCategory = await response.json();
+      setCategories((prevCategories) => [...prevCategories, newCategory]);
+      setNewCategoryName(""); // Reset input after adding
+    } catch (error) {
+      console.error("Error adding category:", error);
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -148,7 +169,7 @@ export default function IndexPage() {
         {/* Button to reset the filter */}
         <button
           onClick={() => handleCategorySelect(null)}
-          className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
+          className={`menu-item text-lg p-2 px-4 ${
             selectedCategory === null ? "menu-active" : "menu-item"
           }`}
         >
@@ -159,13 +180,54 @@ export default function IndexPage() {
           <button
             key={category._id}
             onClick={() => handleCategorySelect(category)}
-            className={`menu-item text-lg p-2 px-4 rounded-md font-medium ${
+            className={`menu-item text-lg p-2 px-4 ${
               selectedCategory === category._id ? "menu-active" : "menu-item"
             }`}
           >
             {category.title}
           </button>
         ))}
+        {/* Add Category Button */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="ghost-button text-lg p-2 px-4">
+              + New category
+            </button>
+          </DialogTrigger>
+          <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Category</DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddCategory();
+              }}
+              className="flex flex-col gap-4"
+            >
+              <label>
+                Category Name:
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </label>
+              <DialogFooter>
+                <button type="submit" className="button-primary">
+                  Add Category
+                </button>
+                <DialogClose asChild>
+                  <button type="button" className="button-secondary">
+                    Cancel
+                  </button>
+                </DialogClose>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
       <ul className="flex flex-col">
         {sortedItems.map((item) => (
