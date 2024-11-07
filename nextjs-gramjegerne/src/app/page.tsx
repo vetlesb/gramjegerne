@@ -274,9 +274,9 @@ export default function IndexPage() {
                   <p>
                     Er du sikker på at du vil slette &quot;{item.name}&quot;?
                   </p>
-                  <DialogFooter>
+                  <DialogFooter className="gap-y-4 gap-x-2">
                     <button
-                      className="button-primary"
+                      className="button-primary-accent"
                       onClick={confirmDeleteItem}
                     >
                       Slett

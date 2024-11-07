@@ -229,7 +229,7 @@ const NewItemForm = () => {
                 />
               </label>
             </div>
-            <button className="button-primary" type="submit">
+            <button className="button-primary-accent" type="submit">
               Legg til
             </button>
           </div>

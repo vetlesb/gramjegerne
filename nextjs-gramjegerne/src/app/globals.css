@@ -186,6 +186,16 @@ button:hover {
 .button-primary:hover {
   background-color: #b4ed9f;
 }
+
+.button-primary-accent {
+  background-color: #b4ed9f;
+  color: #1f261c;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-primary-accent:hover {
+  background-color: #95db7b;
+}
 .button-secondary {
   background-color: #1f261c;
   color: #eaffe2;
