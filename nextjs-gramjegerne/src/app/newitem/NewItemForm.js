@@ -108,7 +108,11 @@ const NewItemForm = () => {
 
   return (
     <main className="container mx-auto min-h-screen p-4 sm:p-8 overflow-hidden">
-      {successMessage && <div className="toast text-xl">{successMessage}</div>}
+      {successMessage && (
+        <div className="toast text-lg">
+          <div>{successMessage}</div>
+        </div>
+      )}
       <div className="flex flex-col items-center">
         <form
           className="form w-full max-w-md p-4 sm:p-4"
@@ -213,17 +217,7 @@ const NewItemForm = () => {
                 </select>
               </label>
             </div>
-            <div>
-              <label className="flex flex-col gap-y-4">
-                Antall
-                <input
-                  type="number"
-                  className="w-full max-w-full p-4"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-              </label>
-            </div>
+
             <div>
               <label className="flex flex-col gap-y-4">
                 Kalorier
