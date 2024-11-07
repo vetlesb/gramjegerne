@@ -118,10 +118,20 @@ li.form,
   width: 16px;
   height: 16px;
 }
-.menu-item {
+.menu-category {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
   max-height: 40px;
+  color: #eaffe2;
+  border: 1px solid var(--fg-dimmed);
+}
+.menu-category:hover {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+}
+.menu-item {
+  padding: 8px 16px 8px 16px;
+  border-radius: 48px;
   color: #eaffe2;
   border: 1px solid var(--fg-dimmed);
 }
@@ -132,7 +142,6 @@ li.form,
 .menu-active {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
-  max-height: 40px;
   background-color: var(--bg-accent);
   color: #1f261c;
   border: 1px solid var(--fg-accent);

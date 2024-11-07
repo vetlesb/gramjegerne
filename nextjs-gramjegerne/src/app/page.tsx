@@ -169,8 +169,8 @@ export default function IndexPage() {
         {/* Button to reset the filter */}
         <button
           onClick={() => handleCategorySelect(null)}
-          className={`menu-item text-md ${
-            selectedCategory === null ? "menu-active" : "menu-item"
+          className={`menu-category text-md ${
+            selectedCategory === null ? "menu-active" : "menu-category"
           }`}
         >
           Alle
@@ -180,8 +180,10 @@ export default function IndexPage() {
           <button
             key={category._id}
             onClick={() => handleCategorySelect(category)}
-            className={`menu-item text-md ${
-              selectedCategory === category._id ? "menu-active" : "menu-item"
+            className={`menu-category text-md ${
+              selectedCategory === category._id
+                ? "menu-active"
+                : "menu-category"
             }`}
           >
             {category.title}
@@ -190,7 +192,7 @@ export default function IndexPage() {
         {/* Add Category Button */}
         <Dialog>
           <DialogTrigger asChild>
-            <button className="menu-item text-md">+Add</button>
+            <button className="menu-category text-md">+Add</button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
