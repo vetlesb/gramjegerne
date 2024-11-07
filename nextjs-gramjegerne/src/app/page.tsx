@@ -2,10 +2,10 @@
 // src/app/page.tsx
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { useRouter, usePathname } from "next/navigation";
+import NewItemForm from "../components/NewItemForm";
 import {
   Dialog,
   DialogTrigger,
@@ -296,11 +296,19 @@ export default function IndexPage() {
           </li>
         ))}
       </ul>
-      <div>
-        <div className="btn-center flex items-center text-lg">
-          <Link href="/newitem">+</Link>
-        </div>
-      </div>
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <button className="button-primary btn-center">Legg til</button>
+        </DialogTrigger>
+        <DialogContent className="dialog p-8 rounded-2xl">
+          <DialogHeader className="text-xl">
+            <DialogTitle>Add New Item</DialogTitle>
+          </DialogHeader>
+          <NewItemForm />
+          <DialogFooter></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

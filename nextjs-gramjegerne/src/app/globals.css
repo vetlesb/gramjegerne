@@ -232,10 +232,9 @@ button:hover {
 }
 .dialog {
   background-color: var(--bg-dimmed);
-  color: var(--fg-primary) !important;
-  border-radius: 8px;
-  border: border 3px;
+  color: var(--fg-primary);
   border-color: var(--fg-accent);
+  border: 0px;
 }
 .bg-black\/80 {
   background-color: var(--bg-primary);
@@ -392,6 +391,7 @@ select {
     --fg-secondary: #1f261c;
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
+    --radius: 8px;
   }
 }
 @layer utilities {

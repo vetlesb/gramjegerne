@@ -107,23 +107,17 @@ const NewItemForm = () => {
   };
 
   return (
-    <main className="container mx-auto min-h-screen p-4 sm:p-8 overflow-hidden">
+    <main>
       {successMessage && (
         <div className="toast text-lg">
           <div>{successMessage}</div>
         </div>
       )}
-      <div className="flex flex-col items-center">
-        <form
-          className="form w-full max-w-md p-4 sm:p-4"
-          onSubmit={handleSubmit}
-        >
-          <div className="flex flex-col p-4 sm:p-4 gap-y-8">
+      <div className="gap-y-4">
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-y-4">
             <div className="flex flex-col">
-              <p className="text-xl">Legg til utstyr</p>
-            </div>
-            <div className="flex flex-col">
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Navn
                 <input
                   className="w-full max-w-full p-4"
@@ -136,7 +130,7 @@ const NewItemForm = () => {
             </div>
 
             <div>
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Bilde
                 <input
                   type="file"
@@ -148,7 +142,7 @@ const NewItemForm = () => {
                   <img
                     src={imagePreview}
                     alt="Image preview"
-                    className="mt-4 w-48 h-48 object-cover rounded-md cursor-pointer"
+                    className="mt-4 w-24 h-24 object-cover rounded-md cursor-pointer"
                     onClick={handleImageClick}
                     title="Click to remove image"
                   />
@@ -156,7 +150,7 @@ const NewItemForm = () => {
               </label>
             </div>
             <div>
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Kategori
                 <select
                   className="w-full max-w-full p-4"
@@ -181,7 +175,7 @@ const NewItemForm = () => {
               </label>
             </div>
             <div className="flex flex-col gap-y-4">
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Størrelse
                 <input
                   type="text"
@@ -192,34 +186,33 @@ const NewItemForm = () => {
               </label>
             </div>
             <div className="flex flex-col gap-y-4">
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Vekt
-                <input
-                  type="number"
-                  className="w-full max-w-full p-4"
-                  value={weight.weight}
-                  onChange={(e) =>
-                    setWeight({ ...weight, weight: e.target.value })
-                  }
-                />
-              </label>
-              <label className="flex flex-col gap-y-4">
-                Enhet
-                <select
-                  className="w-full max-w-full p-4"
-                  value={weight.unit}
-                  onChange={(e) =>
-                    setWeight({ ...weight, unit: e.target.value })
-                  }
-                >
-                  <option value="g">g</option>
-                  <option value="kg">kg</option>
-                </select>
+                <div className="flex flex-row gap-x-2">
+                  <input
+                    type="number"
+                    className="w-full max-w-full p-4"
+                    value={weight.weight}
+                    onChange={(e) =>
+                      setWeight({ ...weight, weight: e.target.value })
+                    }
+                  />
+                  <select
+                    className="w-full max-w-full p-4"
+                    value={weight.unit}
+                    onChange={(e) =>
+                      setWeight({ ...weight, unit: e.target.value })
+                    }
+                  >
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </div>
               </label>
             </div>
 
             <div>
-              <label className="flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2">
                 Kalorier
                 <input
                   type="number"
