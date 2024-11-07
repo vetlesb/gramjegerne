@@ -190,7 +190,7 @@ export default function IndexPage() {
         {/* Add Category Button */}
         <Dialog>
           <DialogTrigger asChild>
-            <button className="menu-item text-md">+ Add category</button>
+            <button className="menu-item text-md">+Add</button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
