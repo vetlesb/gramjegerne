@@ -4,15 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const apfel = localFont({
+  src: [
+    {
+      path: "../../public/fonts/ApfelGrotezk-Regular.woff2",
+      weight: "400",
+    },
+    {
+      path: "../../public/fonts/ApfelGrotezk-Mittel.woff2",
+      weight: "500",
+    },
+    {
+      path: "../../public/fonts/ApfelGrotezk-Fett.woff2",
+      weight: "700",
+    },
+  ],
+  variable: "--font-apfel",
 });
 
 export default function RootLayout({
@@ -24,12 +31,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${apfel.variable} antialiased`}>
         <nav className="nav pb-8">
           <div className="flex flex-wrap items-center justify-between mx-auto">
-            <p className="text-2xl">
+            <p className="logo">
               <Link href="../">Gramjegerne</Link>
             </p>
 
