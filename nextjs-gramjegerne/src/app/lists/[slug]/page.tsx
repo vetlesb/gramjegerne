@@ -1,15 +1,6 @@
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import imageUrlBuilder from "@sanity/image-url";
-
-// Get a pre-configured url-builder from your sanity client
-const builder = imageUrlBuilder(client);
-
-// Function to generate the URL for images
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
 
 // GROQ query to fetch the list data based on slug
 const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
