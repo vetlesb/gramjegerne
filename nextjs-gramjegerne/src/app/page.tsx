@@ -191,32 +191,32 @@ export default function IndexPage() {
         <Dialog>
           <DialogTrigger asChild>
             <button className="ghost-button text-lg p-2 px-4">
-              + New category
+              + Add category
             </button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
+              <DialogTitle className="text-xl font-normal">
+                Add Category
+              </DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleAddCategory();
               }}
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-y-8 gap-4"
             >
-              <label>
-                Category Name:
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </label>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="w-full max-w-full p-4"
+                required
+              />
+
               <DialogFooter>
-                <button type="submit" className="button-primary">
+                <button type="submit" className="button-primary-accent">
                   Add Category
                 </button>
                 <DialogClose asChild>
@@ -329,14 +329,16 @@ export default function IndexPage() {
                     </svg>
                   </button>
                 </DialogTrigger>
-                <DialogContent className="dialog">
+                <DialogContent className="dialog gap-y-8">
                   <DialogHeader>
-                    <DialogTitle>Bekreft sletting</DialogTitle>
+                    <DialogTitle className="text-xl font-normal">
+                      Bekreft sletting
+                    </DialogTitle>
                   </DialogHeader>
                   <p>
                     Er du sikker på at du vil slette &quot;{item.name}&quot;?
                   </p>
-                  <DialogFooter className="gap-y-4 gap-x-2">
+                  <DialogFooter className="gap-y-4 gap-x-1">
                     <button
                       className="button-primary-accent"
                       onClick={confirmDeleteItem}
@@ -364,8 +366,10 @@ export default function IndexPage() {
           <button className="button-primary btn-center">Legg til</button>
         </DialogTrigger>
         <DialogContent className="dialog p-10 rounded-2xl max-h-[100vh] sm:max-h-[100vh] overflow-y-auto no-scrollbar">
-          <DialogHeader className="text-xl">
-            <DialogTitle>Add New Item</DialogTitle>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-normal">
+              Add New Item
+            </DialogTitle>
           </DialogHeader>
           <NewItemForm />
           <DialogFooter></DialogFooter>
