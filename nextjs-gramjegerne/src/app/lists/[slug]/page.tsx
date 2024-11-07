@@ -1,6 +1,5 @@
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 // GROQ query to fetch the list data based on slug
 const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
