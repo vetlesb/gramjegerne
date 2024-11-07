@@ -128,10 +128,6 @@ export default function IndexPage() {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <main className="container mx-auto min-h-screen p-16">
       <div className="flex gap-x-2 no-scrollbar mb-8">

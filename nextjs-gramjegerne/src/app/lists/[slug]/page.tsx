@@ -27,14 +27,26 @@ export default async function ListItemPage({ params }: { params: Params }) {
   // Render the JSX to display the list details
   return (
     <main className="container mx-auto min-h-screen">
-      <ul className="flex flex-wrap gap-x-4">
-        <li className="flex flex-wrap product">
-          <h2 className="text-xl w-fit items-center gap-x-1 flex flex-wrap">
+      <ul className="flex flex-row gap-x-4">
+        <li className="flex stats">
+          <p className="text-l w-fit items-center gap-x-2 flex flex-wrap">
+            <svg
+              className="tag-icon"
+              viewBox="0 0 23 17"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1.05196 13.6953C0.356646 13.6953 0.114458 13.0703 0.403521 12.5L5.36446 2.53906C5.52071 2.23438 5.80196 2.03906 6.11446 2.03906C6.42696 2.03906 6.71602 2.23438 6.87227 2.53906L9.93477 8.70312L13.6691 1.21094C13.8488 0.84375 14.1848 0.625 14.552 0.625C14.9113 0.625 15.2473 0.84375 15.4348 1.21094L22.2395 14.8828C22.5754 15.5625 22.3176 16.2734 21.4973 16.2734H7.59883C6.77852 16.2734 6.52071 15.5625 6.86446 14.8828L7.4504 13.6953H1.05196ZM7.97383 15.3438H10.7941L14.1301 8.14844C14.2238 7.96094 14.3801 7.875 14.552 7.875C14.716 7.875 14.8723 7.96094 14.966 8.14844L18.302 15.3438H21.1691C21.3254 15.3438 21.3645 15.2188 21.2863 15.0469L14.6926 1.80469C14.6301 1.67188 14.4738 1.67188 14.4035 1.80469L7.80977 15.0469C7.73946 15.2031 7.78633 15.3438 7.97383 15.3438ZM1.4504 12.7734H3.39571L5.81758 7.55469C5.88008 7.42188 5.98946 7.35156 6.11446 7.35156C6.23946 7.35156 6.35665 7.42188 6.42696 7.55469L8.3879 11.8125L9.42696 9.73438L6.19258 3.25C6.16133 3.17188 6.0754 3.17188 6.03633 3.25L1.37227 12.6328C1.34102 12.7109 1.34883 12.7734 1.4504 12.7734ZM6.11446 8.74219L5.22383 12.7734H7.0129L6.11446 8.74219ZM14.552 9.77344L13.3098 15.3438H15.7863L14.552 9.77344Z"
+                fill="white"
+              />
+            </svg>
+
             {listData.name}
-          </h2>
+          </p>
         </li>
-        <li className="flex flex-wrap product">
-          <p className="text-xl w-fit items-center gap-x-2 flex flex-wrap">
+        <li className="flex stats">
+          <p className="text-l w-fit items-center gap-x-2 flex flex-wrap">
             <svg
               className="tag-icon"
               viewBox="0 0 13 14"
@@ -49,8 +61,8 @@ export default async function ListItemPage({ params }: { params: Params }) {
             {listData.weight} kg
           </p>
         </li>
-        <li className="flex flex-wrap product">
-          <p className="text-xl w-fit items-center gap-x-2 flex flex-wrap">
+        <li className="flex stats">
+          <p className="text-l w-fit items-center gap-x-2 flex flex-wrap">
             <svg
               className="tag-icon"
               viewBox="0 0 11 10"

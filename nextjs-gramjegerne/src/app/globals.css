@@ -66,6 +66,13 @@ li.list {
   padding: 16px;
   margin-bottom: 8px;
 }
+li.stats {
+  display: grid;
+  gap: 4px;
+  background-color: #272e23;
+  border-radius: 8px;
+  padding: 16px;
+}
 li.product:hover {
   background-color: #293124;
 }
