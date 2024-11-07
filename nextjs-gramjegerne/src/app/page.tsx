@@ -165,11 +165,11 @@ export default function IndexPage() {
 
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <div className="flex gap-x-2 no-scrollbar mb-8">
+      <div className="flex gap-x-2 no-scrollbar mb-4">
         {/* Button to reset the filter */}
         <button
           onClick={() => handleCategorySelect(null)}
-          className={`menu-item text-lg p-2 px-4 ${
+          className={`menu-item text-md ${
             selectedCategory === null ? "menu-active" : "menu-item"
           }`}
         >
@@ -180,7 +180,7 @@ export default function IndexPage() {
           <button
             key={category._id}
             onClick={() => handleCategorySelect(category)}
-            className={`menu-item text-lg p-2 px-4 ${
+            className={`menu-item text-md ${
               selectedCategory === category._id ? "menu-active" : "menu-item"
             }`}
           >
@@ -190,9 +190,7 @@ export default function IndexPage() {
         {/* Add Category Button */}
         <Dialog>
           <DialogTrigger asChild>
-            <button className="ghost-button text-lg p-2 px-4">
-              + Add category
-            </button>
+            <button className="menu-item text-md">+ Add category</button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>

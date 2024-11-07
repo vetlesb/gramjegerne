@@ -121,6 +121,7 @@ li.form,
 .menu-item {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
+  max-height: 40px;
   color: #eaffe2;
   border: 1px solid var(--fg-dimmed);
 }
