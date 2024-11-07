@@ -155,7 +155,7 @@ const NewItemForm = () => {
               <label className="flex flex-col gap-y-4">
                 Kategori
                 <select
-                  className="w-full max-w-full p-4 whitespace-nowrap"
+                  className="w-full max-w-full p-4"
                   value={selectedCategories}
                   onChange={(e) => {
                     const options = e.target.options;
@@ -202,7 +202,7 @@ const NewItemForm = () => {
               <label className="flex flex-col gap-y-4">
                 Enhet
                 <select
-                  className="w-full max-w-full p-4 whitespace-nowrap"
+                  className="w-full max-w-full p-4"
                   value={weight.unit}
                   onChange={(e) =>
                     setWeight({ ...weight, unit: e.target.value })

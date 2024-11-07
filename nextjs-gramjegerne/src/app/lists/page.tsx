@@ -23,7 +23,7 @@ export default async function IndexPage() {
   const lists = await client.fetch<SanityDocument[]>(LISTS_QUERY, {}, options);
   console.log(lists);
   return (
-    <main className="container mx-auto min-h-screen p-8">
+    <main className="container mx-auto min-h-screen p-16">
       <ul className="flex flex-col">
         {lists.map((list) => (
           <div key={list._id}>
@@ -70,7 +70,7 @@ export default async function IndexPage() {
                                 fill="#EAFFE2"
                               />
                             </svg>
-                            {list.weight}
+                            {list.weight} kg
                           </p>
                         ) : null}
                         <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
