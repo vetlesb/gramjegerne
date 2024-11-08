@@ -58,7 +58,6 @@ export default function IndexPage() {
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
