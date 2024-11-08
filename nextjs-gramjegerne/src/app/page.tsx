@@ -57,6 +57,8 @@ export default function IndexPage() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null); // Track item for deletion
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,8 +142,11 @@ export default function IndexPage() {
     }
   };
   const handleAddCategory = async () => {
-    if (!newCategoryName) return;
+    if (!newCategoryName || isLoading) return;
 
+    setIsLoading(true); // Set loading to true to prevent further submissions
+
+    // Log existing categories for debugging
     console.log("Existing categories before adding:", categories);
 
     // Check for duplicates
@@ -152,7 +157,8 @@ export default function IndexPage() {
 
     if (categoryExists) {
       console.error("Category already exists:", newCategoryName);
-      return;
+      setIsLoading(false); // Reset loading state
+      return; // Exit if category exists
     }
 
     try {
@@ -167,11 +173,14 @@ export default function IndexPage() {
       const newCategory = await response.json();
       console.log("New category added:", newCategory);
 
+      // Update categories state
       setCategories((prevCategories) => [...prevCategories, newCategory]);
       setNewCategoryName(""); // Reset input
       setIsDialogOpen(false); // Close dialog
     } catch (error) {
       console.error("Error adding category:", error);
+    } finally {
+      setIsLoading(false); // Reset loading state after attempt
     }
   };
 
@@ -208,12 +217,7 @@ export default function IndexPage() {
         {/* Add Category Button */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button
-              className="menu-category text-md"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              +Add
-            </button>
+            <button className="menu-category text-md">+Add</button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -221,6 +225,9 @@ export default function IndexPage() {
                 Add Category
               </DialogTitle>
             </DialogHeader>
+            <div id="dialog-description" className="sr-only">
+              Enter the name of the new category you want to add.
+            </div>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -234,18 +241,15 @@ export default function IndexPage() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 className="w-full max-w-full p-4"
                 required
+                aria-describedby="dialog-description"
               />
-
               <DialogFooter>
                 <button
                   type="submit"
                   className="button-primary-accent"
-                  onClick={async () => {
-                    await handleAddCategory();
-                    setIsDialogOpen(false); // Close dialog on success
-                  }}
+                  disabled={isLoading} // Disable button when loading
                 >
-                  Add Category
+                  {isLoading ? "Adding..." : "Add Category"}
                 </button>
                 <DialogClose asChild>
                   <button type="button" className="button-secondary">
