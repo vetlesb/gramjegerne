@@ -56,6 +56,7 @@ export default function IndexPage() {
   const pathname = usePathname();
   const [itemToDelete, setItemToDelete] = useState<string | null>(null); // Track item for deletion
   const [newCategoryName, setNewCategoryName] = useState<string>("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,9 +139,21 @@ export default function IndexPage() {
       console.error("Error deleting item:", error);
     }
   };
-  // Function to handle adding a new category
   const handleAddCategory = async () => {
     if (!newCategoryName) return;
+
+    console.log("Existing categories before adding:", categories);
+
+    // Check for duplicates
+    const categoryExists = categories.some(
+      (category) =>
+        category.title.toLowerCase() === newCategoryName.toLowerCase(),
+    );
+
+    if (categoryExists) {
+      console.error("Category already exists:", newCategoryName);
+      return;
+    }
 
     try {
       const response = await fetch("/api/addCategory", {
@@ -152,8 +165,11 @@ export default function IndexPage() {
       if (!response.ok) throw new Error("Failed to add category");
 
       const newCategory = await response.json();
+      console.log("New category added:", newCategory);
+
       setCategories((prevCategories) => [...prevCategories, newCategory]);
-      setNewCategoryName(""); // Reset input after adding
+      setNewCategoryName(""); // Reset input
+      setIsDialogOpen(false); // Close dialog
     } catch (error) {
       console.error("Error adding category:", error);
     }
@@ -190,9 +206,14 @@ export default function IndexPage() {
           </button>
         ))}
         {/* Add Category Button */}
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button className="menu-category text-md">+Add</button>
+            <button
+              className="menu-category text-md"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              +Add
+            </button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -216,7 +237,14 @@ export default function IndexPage() {
               />
 
               <DialogFooter>
-                <button type="submit" className="button-primary-accent">
+                <button
+                  type="submit"
+                  className="button-primary-accent"
+                  onClick={async () => {
+                    await handleAddCategory();
+                    setIsDialogOpen(false); // Close dialog on success
+                  }}
+                >
                   Add Category
                 </button>
                 <DialogClose asChild>
@@ -332,12 +360,10 @@ export default function IndexPage() {
                 <DialogContent className="dialog gap-y-8">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-normal">
-                      Bekreft sletting
+                      Er du sikker på at du vil slette &quot;{item.name}&quot;?
                     </DialogTitle>
                   </DialogHeader>
-                  <p>
-                    Er du sikker på at du vil slette &quot;{item.name}&quot;?
-                  </p>
+
                   <DialogFooter className="gap-y-4 gap-x-1">
                     <button
                       className="button-primary-accent"
@@ -365,7 +391,7 @@ export default function IndexPage() {
         <DialogTrigger asChild>
           <button className="button-primary btn-center">Legg til</button>
         </DialogTrigger>
-        <DialogContent className="dialog p-10 rounded-2xl max-h-[100vh] sm:max-h-[100vh] overflow-y-auto no-scrollbar">
+        <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-xl font-normal">
               Add New Item
