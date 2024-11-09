@@ -1,4 +1,4 @@
-// pages/api/deleteItem.ts
+// app/api/deleteItem/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "next-sanity";
 
@@ -10,6 +10,7 @@ const client = createClient({
   useCdn: false,
   apiVersion: "2023-01-01",
 });
+
 export async function DELETE(request: Request) {
   try {
     const { itemId } = await request.json();
