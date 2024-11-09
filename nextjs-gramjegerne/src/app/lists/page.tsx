@@ -2,6 +2,7 @@ import { type SanityDocument } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
 import { client } from "@/sanity/client";
+import AddListDialog from "../../components/addListDialog";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 // Get a pre-configured url-builder from your sanity client
@@ -13,17 +14,15 @@ function urlFor(SanityImageSource: SanityImageSource) {
 }
 
 // GROQ query to fetch lists
-const LISTS_QUERY = `*[_type == "list"]{slug, name, image, days, weight, participants}`;
+const LISTS_QUERY = `*[_type == "list"]{_id, slug, name, image, days, weight, participants}`;
 
-const options = { next: { revalidate: 30 } };
+export default async function ListsPage() {
+  // Fetch the lists from Sanity server-side
+  const lists = await client.fetch<SanityDocument[]>(LISTS_QUERY);
 
-// Default export for the IndexPage component
-export default async function IndexPage() {
-  // Fetch the lists from Sanity
-  const lists = await client.fetch<SanityDocument[]>(LISTS_QUERY, {}, options);
-  console.log(lists);
   return (
     <main className="container mx-auto min-h-screen p-16">
+      <AddListDialog />
       <ul className="flex flex-col">
         {lists.map((list) => (
           <div key={list._id}>
