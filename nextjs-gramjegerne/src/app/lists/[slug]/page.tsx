@@ -1,82 +1,387 @@
+"use client";
+import { useState, useEffect } from "react";
+import imageUrlBuilder from "@sanity/image-url";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client } from "@/sanity/client";
-import { groq } from "next-sanity";
+import { usePathname } from "next/navigation";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogClose,
+} from "../../../components/ui/dialog";
 
-// GROQ query to fetch the list data based on slug
-const LIST_QUERY = groq`*[_type == "list" && slug.current == $slug][0]{
-  name,
-  image,
-  days,
-  weight,
-  participants
+// Define Category and Item types
+interface Category {
+  _id: string;
+  title: string;
+  slug: { current: string };
+}
+interface Item {
+  _id: string;
+  name: string;
+  categories?: { _id: string; title: string }[];
+  image?: SanityImageSource;
+  size?: string;
+  weight?: { weight: number; unit: string };
+  calories?: number;
+}
+interface List {
+  _id: string;
+  name: string;
+  items: Item[];
+}
+
+const builder = imageUrlBuilder(client);
+
+function urlFor(source: SanityImageSource) {
+  return builder.image(source);
+}
+
+const ITEMS_QUERY = `*[_type == "item"]{
+  _id, name, slug, image,
+  "categories": categories[]-> {_id, title},
+  size, weight, quantity, calories
 }`;
 
-type Params = Promise<{ slug: string[] }>;
+const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
 
-export default async function ListItemPage({ params }: { params: Params }) {
-  // Await the params to get the slug
-  const { slug } = await params;
+const LIST_QUERY = (
+  listSlug: string,
+) => `*[_type == "list" && slug.current == "${listSlug}"]{
+  _id,
+  name,
+  "items": items[]->{
+    _id,
+    name,
+    "categories": categories[]->{_id, title},
+    image,
+    size,
+    weight,
+    calories
+  }
+}`;
 
-  // Fetch the data based on slug
-  const listData = await client.fetch(LIST_QUERY, { slug });
+export default function ListPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [list, setList] = useState<List | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // For search functionality
+  const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]); // Temporary selection state
 
-  // Check if the listData exists
-  if (!listData) {
-    return <div>List not found</div>; // Render this if data is not found
+  const pathname = usePathname();
+  const listSlug = pathname?.split("/")[2];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch categories and items
+        const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY);
+        const fetchedCategories: Category[] =
+          await client.fetch(CATEGORIES_QUERY);
+
+        setItems(fetchedItems);
+        setCategories(fetchedCategories);
+
+        // Fetch the current list if the slug exists
+        if (listSlug) {
+          const fetchedList: List[] = await client.fetch(LIST_QUERY(listSlug));
+          if (fetchedList[0]) {
+            setList(fetchedList[0]);
+            setSelectedItems(fetchedList[0].items || []);
+          } else {
+            setList(null);
+            setSelectedItems([]);
+          }
+        } else {
+          setList(null);
+          setSelectedItems([]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setSelectedItems([]);
+      }
+    };
+
+    fetchData();
+  }, [listSlug]);
+
+  const handleCategorySelect = (categoryId: string | null) => {
+    setSelectedCategory(categoryId);
+  };
+
+  // Handle item selection in the dialog
+  const handleTempItemToggle = (item: Item) => {
+    setTempSelectedItems((prevItems) => {
+      const itemExists = prevItems.some(
+        (selectedItem) => selectedItem._id === item._id,
+      );
+      if (itemExists) {
+        // Remove item
+        return prevItems.filter((i) => i._id !== item._id);
+      } else {
+        // Add item
+        return [...prevItems, item];
+      }
+    });
+  };
+
+  const handleRemoveFromList = async (item: Item) => {
+    try {
+      // Update the list in the backend
+      const response = await fetch("/api/updateList", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listId: list?._id,
+          items: selectedItems
+            .filter((i) => i._id !== item._id)
+            .map((i) => i._id),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove item from list");
+
+      // Update the list's selected items by removing the item
+      setSelectedItems((prevItems) =>
+        prevItems.filter((i) => i._id !== item._id),
+      );
+    } catch (error) {
+      console.error("Error removing item from list:", error);
+    }
+  };
+
+  // Filter items for the category selection
+  const filteredItemsForList = selectedCategory
+    ? selectedItems.filter((item) =>
+        item.categories?.some((category) => category._id === selectedCategory),
+      )
+    : selectedItems; // When selectedCategory is null, show all items
+
+  // Filter categories to only those with items in the selectedItems
+  const filteredCategoriesForList = categories.filter((category) =>
+    selectedItems.some((item) =>
+      item.categories?.some((cat) => cat._id === category._id),
+    ),
+  );
+
+  // Filter items based on the search query in the dialog
+  const filteredItemsForDialog = items.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  // When the dialog opens, initialize tempSelectedItems with current selectedItems
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    setIsDialogOpen(isOpen);
+    if (isOpen) {
+      setTempSelectedItems(selectedItems);
+      setSearchQuery(""); // Clear search query when dialog opens
+    }
+  };
+
+  if (!categories || !items) {
+    return <div>Loading...</div>;
   }
 
-  // Render the JSX to display the list details
   return (
-    <main className="container mx-auto min-h-screen">
-      <ul className="flex flex-row gap-x-4">
-        <li className="flex stats">
-          <p className="text-xl w-fit items-center gap-x-2 flex flex-wrap">
-            <svg
-              className="tag-icon"
-              viewBox="0 0 23 17"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+    <main className="container mx-auto min-h-screen p-16">
+      <div className="flex gap-x-2 no-scrollbar mb-4 p-2">
+        {/* Show categories with items and include "All Categories" button */}
+        {filteredCategoriesForList.length > 0 && (
+          <>
+            <button
+              onClick={() => handleCategorySelect(null)} // Set selectedCategory to null for "All Categories"
+              className={`menu-category text-md ${
+                selectedCategory === null ? "menu-active" : ""
+              }`}
             >
-              <path
-                d="M1.05196 13.6953C0.356646 13.6953 0.114458 13.0703 0.403521 12.5L5.36446 2.53906C5.52071 2.23438 5.80196 2.03906 6.11446 2.03906C6.42696 2.03906 6.71602 2.23438 6.87227 2.53906L9.93477 8.70312L13.6691 1.21094C13.8488 0.84375 14.1848 0.625 14.552 0.625C14.9113 0.625 15.2473 0.84375 15.4348 1.21094L22.2395 14.8828C22.5754 15.5625 22.3176 16.2734 21.4973 16.2734H7.59883C6.77852 16.2734 6.52071 15.5625 6.86446 14.8828L7.4504 13.6953H1.05196ZM7.97383 15.3438H10.7941L14.1301 8.14844C14.2238 7.96094 14.3801 7.875 14.552 7.875C14.716 7.875 14.8723 7.96094 14.966 8.14844L18.302 15.3438H21.1691C21.3254 15.3438 21.3645 15.2188 21.2863 15.0469L14.6926 1.80469C14.6301 1.67188 14.4738 1.67188 14.4035 1.80469L7.80977 15.0469C7.73946 15.2031 7.78633 15.3438 7.97383 15.3438ZM1.4504 12.7734H3.39571L5.81758 7.55469C5.88008 7.42188 5.98946 7.35156 6.11446 7.35156C6.23946 7.35156 6.35665 7.42188 6.42696 7.55469L8.3879 11.8125L9.42696 9.73438L6.19258 3.25C6.16133 3.17188 6.0754 3.17188 6.03633 3.25L1.37227 12.6328C1.34102 12.7109 1.34883 12.7734 1.4504 12.7734ZM6.11446 8.74219L5.22383 12.7734H7.0129L6.11446 8.74219ZM14.552 9.77344L13.3098 15.3438H15.7863L14.552 9.77344Z"
-                fill="#b4ed9f"
-              />
-            </svg>
+              All Categories
+            </button>
+            {filteredCategoriesForList.map((category) => (
+              <button
+                key={category._id}
+                onClick={() => handleCategorySelect(category._id)}
+                className={`menu-category text-md ${
+                  selectedCategory === category._id ? "menu-active" : ""
+                }`}
+              >
+                {category.title}
+              </button>
+            ))}
+          </>
+        )}
 
-            {listData.name}
-          </p>
-        </li>
-        <li className="flex stats">
-          <p className="text-xl w-fit items-center gap-x-2 flex flex-wrap">
-            <svg
-              className="tag-icon"
-              viewBox="0 0 13 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M0.693374 11.0117L1.98244 5.79102C2.21095 4.86523 2.87892 4.34375 3.82228 4.34375H5.9258V3.79883C5.24025 3.55859 4.73634 2.90234 4.73634 2.14648C4.73634 1.17969 5.53908 0.376953 6.50001 0.376953C7.46095 0.376953 8.26955 1.17969 8.26955 2.14648C8.26955 2.90234 7.76564 3.55859 7.07423 3.79883V4.34375H9.17775C10.127 4.34375 10.7891 4.86523 11.0176 5.79102L12.3067 11.0117C12.6289 12.3066 12.0723 13.0625 10.8184 13.0625H2.18751C0.927749 13.0625 0.376968 12.3066 0.693374 11.0117ZM6.50001 2.9375C6.93947 2.9375 7.30275 2.57422 7.30275 2.14648C7.30275 1.70703 6.93361 1.33789 6.50001 1.33789C6.06642 1.33789 5.70314 1.71289 5.70314 2.14648C5.70314 2.57422 6.06642 2.9375 6.50001 2.9375ZM1.81251 11.0879C1.67189 11.6328 1.88283 11.9141 2.35158 11.9141H10.6543C11.1172 11.9141 11.3281 11.6328 11.1875 11.0879L9.93947 6.14844C9.82228 5.70898 9.56447 5.49219 9.12501 5.49219H3.87501C3.44142 5.49219 3.17775 5.70898 3.06642 6.14844L1.81251 11.0879Z"
-                fill="#b4ed9f"
+        {/* Button to open the Add Item Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+          <DialogTrigger asChild>
+            <button className="menu-category">Legg til</button>
+          </DialogTrigger>
+          {/* Updated DialogContent */}
+          <DialogContent className="dialog p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-normal">
+                Legg til produkter
+              </DialogTitle>
+            </DialogHeader>
+            {/* Search Bar */}
+            <label className="flex flex-col pt-4 gap-y-2">
+              Søk
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full max-w-full p-4 mb-2"
               />
-            </svg>
-            {listData.weight} kg
-          </p>
-        </li>
-        <li className="flex stats">
-          <p className="text-xl w-fit items-center gap-x-2 flex flex-wrap">
-            <svg
-              className="tag-icon"
-              viewBox="0 0 11 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M2.10157 9.70702C1.72266 9.9453 1.37501 9.8242 1.15626 9.60545C0.910162 9.35936 0.824224 9.0078 1.05079 8.64842L4.33594 3.41795C5.08985 2.22264 6.23047 1.87889 7.19141 2.50389C7.11329 1.67967 7.39454 0.574204 7.98047 0.714829C8.30079 0.79686 8.36329 1.17186 8.28126 1.61327C8.75391 1.08592 9.31641 0.761704 9.66407 1.10936C10.0117 1.46092 9.68751 2.02733 9.16407 2.49999C9.60547 2.41405 9.98438 2.47655 10.0664 2.80467C10.207 3.39061 9.08204 3.67186 8.26172 3.58592C8.86719 4.54686 8.52344 5.67577 7.33985 6.41795L2.10157 9.70702ZM3.42579 7.39452C3.53907 7.28124 3.71094 7.27733 3.82813 7.39061L4.08594 7.64842L4.4961 7.39061L4.15235 7.05467C4.03516 6.93749 4.03516 6.76561 4.14844 6.65233C4.26563 6.53514 4.4336 6.53514 4.55079 6.64842L4.99219 7.08202L6.98438 5.83202C8.00782 5.18358 8.15235 4.37108 7.4336 3.64452L7.11329 3.3242C6.4961 2.6992 5.80469 2.71874 5.21094 3.3867L5.94922 4.11717C6.06641 4.23436 6.06641 4.40233 5.95313 4.51952C5.83985 4.6328 5.66797 4.6367 5.55079 4.52342L4.8711 3.85155L4.61719 4.2617L5.04297 4.67967C5.16016 4.79686 5.16016 4.97264 5.04688 5.08592C4.92579 5.1992 4.76172 5.20311 4.64454 5.08592L4.30469 4.75389L1.69922 8.89452C1.62501 9.0117 1.74219 9.12108 1.85938 9.05077L3.58985 7.96092L3.42969 7.79686C3.31251 7.67967 3.31251 7.5078 3.42579 7.39452Z"
-                fill="#b4ed9f"
-              />
-            </svg>
-            14 573 kcal
-          </p>
-        </li>
+            </label>
+            {/* Container for the list of items */}
+            <div className="flex-grow overflow-y-auto no-scrollbar">
+              <ul className="flex flex-col">
+                {filteredItemsForDialog.map((item) => {
+                  const isSelected = tempSelectedItems.some(
+                    (selectedItem) => selectedItem._id === item._id,
+                  );
+                  return (
+                    <li
+                      key={item._id}
+                      className={`product-search flex items-center gap-4 py-2 cursor-pointer ${
+                        isSelected ? "active" : ""
+                      }`}
+                      onClick={() => handleTempItemToggle(item)}
+                    >
+                      <div className="flex flex-grow items-center gap-x-4">
+                        <div className="h-24 w-24">
+                          {item.image ? (
+                            <img
+                              className="rounded-md h-full w-full object-cover"
+                              src={urlFor(item.image).url()}
+                            />
+                          ) : (
+                            <div className="h-24 w-24 flex items-center placeholder_image">
+                              {/* Placeholder SVG */}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-y-2">
+                          <h2 className="text-xl truncate">{item.name}</h2>
+                          <div className="flex flex-wrap gap-x-1">
+                            {item.size && (
+                              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                {/* SVG Icon */}
+                                {item.size}
+                              </p>
+                            )}
+                            {item.weight && (
+                              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                {/* SVG Icon */}
+                                {item.weight.weight} {item.weight.unit}
+                              </p>
+                            )}
+                            {item.calories && (
+                              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                {/* SVG Icon */}
+                                {item.calories} kcal
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <DialogFooter>
+              <button
+                onClick={async () => {
+                  try {
+                    // Update the list in the backend
+                    const response = await fetch("/api/updateList", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        listId: list?._id,
+                        items: tempSelectedItems.map((i) => i._id),
+                      }),
+                    });
+
+                    if (!response.ok) throw new Error("Failed to update list");
+
+                    // Update the selectedItems state with tempSelectedItems
+                    setSelectedItems(tempSelectedItems);
+                    setIsDialogOpen(false);
+                  } catch (error) {
+                    console.error("Error updating list:", error);
+                  }
+                }}
+                className="button-primary-accent"
+              >
+                Lagre endringer
+              </button>
+              <DialogClose asChild>
+                <button type="button" className="button-secondary">
+                  Lukk
+                </button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Display selected items */}
+      <ul className="flex flex-col">
+        {filteredItemsForList.map((item) => (
+          <li key={item._id} className="product flex items-center gap-4 py-2">
+            <div className="flex flex-grow items-center gap-x-4">
+              <div className="h-24 w-24">
+                {item.image ? (
+                  <img
+                    className="rounded-md h-full w-full object-cover"
+                    src={urlFor(item.image).url()}
+                  />
+                ) : (
+                  <div className="h-24 w-24 flex items-center placeholder_image">
+                    {/* Placeholder SVG */}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-y-2">
+                <h2 className="text-xl truncate">{item.name}</h2>
+                <div className="flex flex-wrap gap-x-1">
+                  {item.size && (
+                    <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon */}
+                      {item.size}
+                    </p>
+                  )}
+                  {item.weight && (
+                    <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon */}
+                      {item.weight.weight} {item.weight.unit}
+                    </p>
+                  )}
+                  {item.calories && (
+                    <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon */}
+                      {item.calories} kcal
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => handleRemoveFromList(item)}
+                className="button-primary-accent ml-auto"
+              >
+                Fjern fra liste
+              </button>
+            </div>
+          </li>
+        ))}
       </ul>
     </main>
   );

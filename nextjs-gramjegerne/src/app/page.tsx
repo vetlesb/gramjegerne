@@ -302,11 +302,11 @@ export default function IndexPage() {
               </button>
             </form>
             <p>Kategorier</p>
-            <ul className="category-list p-4 flex flex-col gap-y-2 max-h-[30vh] overflow-y-auto">
+            <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[30vh] overflow-y-auto">
               {allCategories.map((category) => (
                 <li
                   key={category._id}
-                  className="category p-3 flex justify-between items-center"
+                  className="category p-2 flex justify-between items-center"
                 >
                   <span>{category.title}</span>
                   <button
