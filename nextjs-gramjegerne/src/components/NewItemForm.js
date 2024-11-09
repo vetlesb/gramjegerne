@@ -149,7 +149,7 @@ const NewItemForm = () => {
                 )}
               </label>
             </div>
-            <div>
+            <div className="flex flex-col gap-y-4">
               <label className="flex flex-col gap-y-2">
                 Kategori
                 <select
