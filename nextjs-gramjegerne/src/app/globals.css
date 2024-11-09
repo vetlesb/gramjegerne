@@ -96,6 +96,10 @@ li.form,
   border-radius: 8px;
   margin-bottom: 8px;
 }
+li.category {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+}
 .tag {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
@@ -182,6 +186,12 @@ input::file-selector-button {
   color: var(--fg-primary);
   padding: 0.5rem;
   border: thin solid var(--fg-accent);
+  border-radius: 4px;
+}
+.button-link {
+  color: var(--fg-primary);
+  background-color: var(--bg-dimmed);
+  padding: 0.5rem;
   border-radius: 4px;
 }
 button {
