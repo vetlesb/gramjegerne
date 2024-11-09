@@ -300,9 +300,8 @@ export default function IndexPage() {
                 {isLoading ? "Adding..." : "Add Category"}
               </button>
             </form>
-
-            <ul className="mt-4 flex flex-col gap-y-2 max-h-[30vh] overflow-y-auto">
-              <li>Kategorier</li>
+            <p>Kategorier</p>
+            <ul className="category-list p-4 flex flex-col gap-y-2 max-h-[30vh] overflow-y-auto">
               {allCategories.map((category) => (
                 <li
                   key={category._id}
@@ -497,7 +496,13 @@ export default function IndexPage() {
             </DialogTitle>
           </DialogHeader>
           <NewItemForm />
-          <DialogFooter></DialogFooter>
+          <DialogFooter>
+            <DialogClose asChild>
+              <button type="button" className="button-secondary">
+                Close
+              </button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </main>

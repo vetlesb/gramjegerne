@@ -100,6 +100,10 @@ li.category {
   background-color: var(--bg-primary);
   border-radius: 8px;
 }
+ul.category-list {
+  border: 1px solid var(--fg-accent);
+  border-radius: 8px;
+}
 .tag {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
