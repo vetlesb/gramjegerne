@@ -256,7 +256,7 @@ export default function IndexPage() {
         {/* Add Category Button */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button className="menu-category text-md">
+            <button className="menu-category flex flex-row items-center gap-x-1 text-md">
               <svg
                 width="17"
                 height="16"
@@ -269,6 +269,7 @@ export default function IndexPage() {
                   fill="#EAFFE2"
                 />
               </svg>
+              Rediger
             </button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl">
