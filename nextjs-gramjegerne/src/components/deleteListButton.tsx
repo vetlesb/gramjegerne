@@ -72,21 +72,22 @@ export default function DeleteListButton({
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="dialog p-6 rounded-2xl">
+        <DialogContent className="dialog gap-y-8">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle className="text-xl font-normal">
+              Confirm Deletion
+            </DialogTitle>
           </DialogHeader>
           <div className="mb-4">
             <p>
-              Are you sure you want to delete the list &quot;
-              <strong>{listName}</strong>&quot;? This action cannot be undone
-              and will delete all associated items.
+              Er du sikker på at du vil slette listen &quot;
+              <strong>{listName}</strong>&quot;?
             </p>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-y-4 gap-x-1">
             <button
               onClick={handleDelete}
-              className="button-danger"
+              className="button-primary-accent"
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client } from "@/sanity/client";
@@ -67,18 +67,21 @@ const LIST_QUERY = (
 }`;
 
 export default function ListPage() {
+  // State variables and Hooks
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [list, setList] = useState<List | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // State for loading
   const [searchQuery, setSearchQuery] = useState(""); // For search functionality
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]); // Temporary selection state
 
   const pathname = usePathname();
   const listSlug = pathname?.split("/")[2];
 
+  // Data fetching useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -107,12 +110,21 @@ export default function ListPage() {
       } catch (error) {
         console.error("Error fetching data:", error);
         setSelectedItems([]);
+        setList(null); // Ensure list is set to null on error
+      } finally {
+        setIsLoading(false); // Set loading to false after data is fetched or on error
       }
     };
 
     fetchData();
   }, [listSlug]);
 
+  // Log selected items
+  useEffect(() => {
+    console.log("Selected Items:", selectedItems);
+  }, [selectedItems]);
+
+  // Handle category selection
   const handleCategorySelect = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
   };
@@ -186,12 +198,50 @@ export default function ListPage() {
     }
   };
 
-  if (!categories || !items) {
-    return <div>Loading...</div>;
+  // Calculate total weight and calories when 'All Categories' is selected
+  const totalWeight = useMemo(() => {
+    if (selectedCategory !== null) return 0;
+    return selectedItems.reduce((acc, item) => {
+      let weight = 0;
+      if (item.weight && item.weight.weight) {
+        weight = item.weight.weight;
+        if (item.weight.unit === "g") {
+          weight = weight / 1000; // Convert grams to kilograms
+        }
+        // Handle other units if necessary
+      }
+      return acc + weight;
+    }, 0);
+  }, [selectedItems, selectedCategory]);
+
+  const totalCalories = useMemo(() => {
+    if (selectedCategory !== null) return 0;
+    return selectedItems.reduce((acc, item) => {
+      return acc + (item.calories || 0);
+    }, 0);
+  }, [selectedItems, selectedCategory]);
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <main className="container mx-auto min-h-screen p-16">
+        <div>Loading...</div>
+      </main>
+    );
+  }
+
+  // Handle list not found
+  if (!list) {
+    return (
+      <main className="container mx-auto min-h-screen p-16">
+        <h1 className="text-2xl font-bold mb-4">List Not Found</h1>
+      </main>
+    );
   }
 
   return (
     <main className="container mx-auto min-h-screen p-16">
+      <h1 className="text-2xl py-4">{list.name}</h1>
       <div className="flex gap-x-2 no-scrollbar mb-4 p-2">
         {/* Show categories with items and include "All Categories" button */}
         {filteredCategoriesForList.length > 0 && (
@@ -202,7 +252,7 @@ export default function ListPage() {
                 selectedCategory === null ? "menu-active" : ""
               }`}
             >
-              All Categories
+              Oversikt
             </button>
             {filteredCategoriesForList.map((category) => (
               <button
@@ -240,6 +290,7 @@ export default function ListPage() {
                 className="w-full max-w-full p-4 mb-2"
               />
             </label>
+
             {/* Container for the list of items */}
             <div className="flex-grow overflow-y-auto no-scrollbar">
               <ul className="flex flex-col">
@@ -374,7 +425,24 @@ export default function ListPage() {
           </DialogContent>
         </Dialog>
       </div>
-
+      {selectedCategory === null && (
+        <ul className="product flex flex-wrap items-center gap-4 py-2">
+          <li>
+            {" "}
+            <div className="flex flex-wrap gap-x-4 items-center">
+              <p className="text-xl">Totalt</p>
+              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                {/* Weight Icon */}
+                {totalWeight.toFixed(2)} kg
+              </p>
+              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                {/* Calories Icon */}
+                {totalCalories} kcal
+              </p>
+            </div>
+          </li>
+        </ul>
+      )}
       {/* Display selected items */}
       <ul className="flex flex-col">
         {filteredItemsForList.map((item) => (

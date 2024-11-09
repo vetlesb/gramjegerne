@@ -71,6 +71,14 @@ li.list {
   padding: 16px;
   margin-bottom: 8px;
 }
+ul.product {
+  display: grid;
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
 li.product-search {
   display: grid;
   gap: 4px;
