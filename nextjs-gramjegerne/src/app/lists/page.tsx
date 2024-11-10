@@ -1,13 +1,37 @@
+"use client";
+import { useState, useEffect } from "react";
 import { client } from "@/sanity/client";
+import { groq } from "next-sanity";
 import AddListDialog from "../../components/addListDialog";
 import ListItem from "../../components/ListItem";
 import { ListDocument } from "@/types";
 
-const LISTS_QUERY = `*[_type == "list"]{_id, slug, name, image, days, weight, participants}`;
+export default function Page() {
+  const [lists, setLists] = useState<ListDocument[]>([]);
 
-export default async function ListsPage() {
-  const lists = await client.fetch<ListDocument[]>(LISTS_QUERY);
+  useEffect(() => {
+    const query = groq`*[_type == "list"]{_id, slug, name, image, days, weight, participants}`;
 
+    // Initial fetch
+    client.fetch(query).then((data) => setLists(data));
+
+    // Subscribe to real-time updates
+    const subscription = client.listen(query).subscribe({
+      next: () => {
+        // Removed 'update' parameter
+        // Re-fetch the lists when there's a mutation
+        client.fetch(query).then((data) => setLists(data));
+      },
+      error: (error) => {
+        console.error("Subscription error:", error);
+      },
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   return (
     <main className="container mx-auto min-h-screen p-16">
       <AddListDialog />
