@@ -4,16 +4,18 @@ import { createClient } from "next-sanity";
 
 // Initialize a Sanity client with the token from environment variables
 const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-  token: process.env.NEXT_PUBLIC_SANITY_TOKEN,
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  token: process.env.SANITY_API_TOKEN,
   useCdn: false,
   apiVersion: "2023-01-01",
 });
 
 export async function DELETE(request: Request) {
   try {
-    const { itemId } = await request.json();
+    const { searchParams } = new URL(request.url);
+    const itemId = searchParams.get("itemId");
+    console.log("Received itemId:", itemId);
 
     if (!itemId) {
       return NextResponse.json(

@@ -126,17 +126,15 @@ export default function IndexPage() {
   const confirmDeleteItem = async () => {
     if (!itemToDelete) return;
     try {
-      const response = await fetch("/api/deleteItem", {
+      const response = await fetch(`/api/deleteItem?itemId=${itemToDelete}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ itemId: itemToDelete }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to delete item");
       }
+
       setItems((prevItems) =>
         prevItems.filter((item) => item._id !== itemToDelete),
       );
@@ -145,6 +143,7 @@ export default function IndexPage() {
       console.error("Error deleting item:", error);
     }
   };
+
   const handleAddCategory = async () => {
     if (!newCategoryName || isLoading) return;
 

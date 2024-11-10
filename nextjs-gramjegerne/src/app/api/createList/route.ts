@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 const client = createClient({
-  projectId: "your-project-id",
-  dataset: "your-dataset",
-  apiVersion: "2023-10-17",
-  token: process.env.SANITY_API_TOKEN, // Use a server-side token
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  token: process.env.SANITY_API_TOKEN,
   useCdn: false,
+  apiVersion: "2023-01-01",
 });
 
 export async function POST(request: Request) {

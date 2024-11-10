@@ -1,7 +1,16 @@
 // src/app/api/updateList/route.ts
 
 import { NextResponse } from "next/server";
-import { client } from "@/sanity/client"; // Adjust the import path as necessary
+import { createClient } from "next-sanity";
+
+// Initialize a Sanity client with the token from environment variables
+const client = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  token: process.env.SANITY_API_TOKEN,
+  useCdn: false,
+  apiVersion: "2023-01-01",
+});
 
 export async function PUT(request: Request) {
   try {
