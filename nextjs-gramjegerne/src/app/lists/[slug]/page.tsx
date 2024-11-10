@@ -277,7 +277,7 @@ export default function ListPage() {
           <DialogContent className="dialog p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal">
-                Legg til produkter
+                Legg til utstyr
               </DialogTitle>
             </DialogHeader>
             {/* Search Bar */}
