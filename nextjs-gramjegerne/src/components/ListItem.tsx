@@ -107,7 +107,11 @@ export default function ListItem({ list }: ListItemProps) {
           </div>
         </div>
         <div className="flex gap-x-1">
-          <DeleteListButton listId={list._id} listName={list.name} />
+          <DeleteListButton
+            listId={list._id}
+            listName={list.name}
+            redirectTo="/lists"
+          />
         </div>
       </div>
     </li>
