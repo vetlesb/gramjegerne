@@ -85,7 +85,7 @@ export default function AddListDialog() {
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-xl font-normal">
-              Add New List
+              Legg til ny pakkliste
             </DialogTitle>
           </DialogHeader>
           {/* Form Fields */}
@@ -93,7 +93,7 @@ export default function AddListDialog() {
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
-                  Name
+                  Navn
                   <input
                     className="input"
                     type="text"
@@ -105,7 +105,7 @@ export default function AddListDialog() {
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
-                  Image
+                  Bilde
                   <input
                     type="file"
                     accept="image/*"
@@ -118,7 +118,7 @@ export default function AddListDialog() {
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
-                  Days
+                  Antall dager
                   <input
                     type="number"
                     value={newListDays ?? ""}
@@ -133,7 +133,7 @@ export default function AddListDialog() {
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
-                  Weight
+                  Vekt
                   <input
                     type="number"
                     value={newListWeight ?? ""}
@@ -148,7 +148,7 @@ export default function AddListDialog() {
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
-                  Participants
+                  Deltakere
                   <input
                     type="number"
                     value={newListParticipants ?? ""}
