@@ -242,7 +242,7 @@ export default function ListPage() {
   return (
     <main className="container mx-auto min-h-screen p-16">
       <h1 className="text-2xl py-4">{list.name}</h1>
-      <div className="flex gap-x-2 no-scrollbar mb-4 p-2">
+      <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
         {/* Show categories with items and include "All Categories" button */}
         {filteredCategoriesForList.length > 0 && (
           <>
@@ -271,7 +271,7 @@ export default function ListPage() {
         {/* Button to open the Add Item Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
-            <button className="menu-category">Legg til</button>
+            <button className="button-primary btn-center">Legg til</button>
           </DialogTrigger>
           {/* Updated DialogContent */}
           <DialogContent className="dialog p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
