@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { client } from "@/sanity/client";
 import {
   Dialog,
   DialogContent,
@@ -27,39 +26,34 @@ export default function AddListDialog() {
   const handleCreateList = async () => {
     setIsSubmitting(true);
     try {
-      // Prepare the data for the new list
-      let imageAsset = null;
+      // Prepare the form data
+      const formData = new FormData();
+      formData.append("name", newListName);
       if (newListImage) {
-        // Upload the image to Sanity
-        const imageData = await client.assets.upload("image", newListImage);
-        imageAsset = {
-          _type: "image",
-          asset: {
-            _type: "reference",
-            _ref: imageData._id,
-          },
-        };
+        formData.append("image", newListImage);
+      }
+      if (newListDays !== null) {
+        formData.append("days", newListDays.toString());
+      }
+      if (newListWeight !== null) {
+        formData.append("weight", newListWeight.toString());
+      }
+      if (newListParticipants !== null) {
+        formData.append("participants", newListParticipants.toString());
       }
 
-      // Create the new list document
-      const newList = {
-        _type: "list",
-        name: newListName,
-        slug: {
-          _type: "slug",
-          current: newListName.toLowerCase().replace(/\s+/g, "-"),
-        },
-        image: imageAsset,
-        days: newListDays,
-        weight: newListWeight,
-        participants: newListParticipants,
-        items: [],
-      };
+      // Send the form data to the API route
+      const response = await fetch("/api/createList", {
+        method: "POST",
+        body: formData, // No need to set headers; the browser handles it
+      });
 
-      // Save the new list to Sanity
-      await client.create(newList);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create list");
+      }
 
-      // Close the dialog and reset form fields
+      // Reset form fields and close dialog
       setIsDialogOpen(false);
       setNewListName("");
       setNewListImage(null);
@@ -98,69 +92,74 @@ export default function AddListDialog() {
           <div className="gap-y-4">
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col">
-                <label htmlFor="list-name">Name</label>
-                <input
-                  id="list-name"
-                  type="text"
-                  value={newListName}
-                  onChange={(e) => setNewListName(e.target.value)}
-                  className="input"
-                  required
-                />
+                <label className="flex flex-col gap-y-2">
+                  Name
+                  <input
+                    className="input"
+                    type="text"
+                    value={newListName}
+                    onChange={(e) => setNewListName(e.target.value)}
+                    required
+                  />
+                </label>
               </div>
               <div className="flex flex-col">
-                <label htmlFor="list-image">Image</label>
-                <input
-                  id="list-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setNewListImage(e.target.files ? e.target.files[0] : null)
-                  }
-                  className="input"
-                />
+                <label className="flex flex-col gap-y-2">
+                  Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setNewListImage(e.target.files ? e.target.files[0] : null)
+                    }
+                    className="input"
+                  />
+                </label>
               </div>
               <div className="flex flex-col">
-                <label htmlFor="list-days">Days</label>
-                <input
-                  id="list-days"
-                  type="number"
-                  value={newListDays ?? ""}
-                  onChange={(e) =>
-                    setNewListDays(
-                      e.target.value ? parseInt(e.target.value) : null,
-                    )
-                  }
-                  className="input"
-                />
+                <label className="flex flex-col gap-y-2">
+                  Days
+                  <input
+                    type="number"
+                    value={newListDays ?? ""}
+                    onChange={(e) =>
+                      setNewListDays(
+                        e.target.value ? parseInt(e.target.value) : null,
+                      )
+                    }
+                    className="input"
+                  />
+                </label>
               </div>
               <div className="flex flex-col">
-                <label htmlFor="list-weight">Weight</label>
-                <input
-                  id="list-weight"
-                  type="number"
-                  value={newListWeight ?? ""}
-                  onChange={(e) =>
-                    setNewListWeight(
-                      e.target.value ? parseInt(e.target.value) : null,
-                    )
-                  }
-                  className="input"
-                />
+                <label className="flex flex-col gap-y-2">
+                  Weight
+                  <input
+                    type="number"
+                    value={newListWeight ?? ""}
+                    onChange={(e) =>
+                      setNewListWeight(
+                        e.target.value ? parseInt(e.target.value) : null,
+                      )
+                    }
+                    className="input"
+                  />
+                </label>
               </div>
               <div className="flex flex-col">
-                <label htmlFor="list-participants">Participants</label>
-                <input
-                  id="list-participants"
-                  type="number"
-                  value={newListParticipants ?? ""}
-                  onChange={(e) =>
-                    setNewListParticipants(
-                      e.target.value ? parseInt(e.target.value) : null,
-                    )
-                  }
-                  className="input"
-                />
+                <label className="flex flex-col gap-y-2">
+                  Participants
+                  <input
+                    type="number"
+                    value={newListParticipants ?? ""}
+                    onChange={(e) =>
+                      setNewListParticipants(
+                        e.target.value ? parseInt(e.target.value) : null,
+                      )
+                    }
+                    className="input"
+                  />
+                </label>
               </div>
             </div>
           </div>
