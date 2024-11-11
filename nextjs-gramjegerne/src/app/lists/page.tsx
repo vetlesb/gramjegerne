@@ -34,7 +34,10 @@ export default function Page() {
   }, []);
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <AddListDialog />
+      <div className="flex gap-y-4 gap-x-4 pb-8">
+        <AddListDialog />
+      </div>
+
       <ul className="flex flex-col">
         {lists.map((list) => (
           <ListItem key={list._id} list={list} />

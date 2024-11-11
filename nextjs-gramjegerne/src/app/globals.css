@@ -268,20 +268,20 @@ button:hover {
 .button-ghost {
   background-color: var(--bg-dimmed);
   color: var(--fg-primary);
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 4px;
 }
 .button-ghost:hover {
   background-color: var(--bg-dimmed-hover);
 }
-.button-outline {
+.button-create {
   color: var(--fg-primary);
+  background-color: var(--bg-dimmed);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--fg-secondary);
 }
-.button-outline:hover {
-  background-color: var(--bg-primary);
+.button-create:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 .container {
   width: 100%;
