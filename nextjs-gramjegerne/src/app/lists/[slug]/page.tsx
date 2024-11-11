@@ -445,7 +445,7 @@ export default function ListPage() {
             </p>
             <p className="text-xl">
               {/* Weight Icon */}
-              {totalWeight.toFixed(2)} kg
+              {totalWeight.toFixed(3)} kg
             </p>
             {totalCalories ? (
               <p className="text-xl">
