@@ -25,7 +25,7 @@ export default function ListItem({ list }: ListItemProps) {
   };
 
   return (
-    <li className="product flex flex-col basis-full lg:basis-1/3 gap-y-8 gap-x-8">
+    <li className="product flex flex-col basis-full lg:basis-1/3">
       <div className="flex flex-col gap-y-4">
         <div>
           {list.image ? (
@@ -34,7 +34,7 @@ export default function ListItem({ list }: ListItemProps) {
               src={urlFor(list.image).url()}
             />
           ) : (
-            <div className="h-full w-full aspect-square flex items-center placeholder_image">
+            <div className="h-full w-full aspect-video flex items-center placeholder_image">
               <svg
                 width="16"
                 height="16"

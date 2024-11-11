@@ -37,7 +37,7 @@ export default function Page() {
       <div className="flex flex-col gap-y-8">
         <AddListDialog />
 
-        <ul className="flex flex-col lg:flex-row gap-x-4 gap-y-8">
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-4">
           {lists.map((list) => (
             <ListItem key={list._id} list={list} />
           ))}
