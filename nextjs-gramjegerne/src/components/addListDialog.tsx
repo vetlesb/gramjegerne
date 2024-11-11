@@ -95,7 +95,7 @@ export default function AddListDialog() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
-            <DialogTitle className="text-xl font-normal">
+            <DialogTitle className="text-xl text-accent font-normal">
               Legg til ny pakkliste
             </DialogTitle>
           </DialogHeader>

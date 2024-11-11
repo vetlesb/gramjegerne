@@ -27,6 +27,9 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.text-accent {
+  color: var(--fg-accent);
+}
 
 img.product-image {
   border-radius: 4px;
@@ -38,16 +41,6 @@ img.product-image {
 img.list-image {
   border-radius: 8px;
   width: 56px;
-}
-
-.text-xl,
-.text-2xl,
-.text-4xl {
-  color: var(--fg-accent);
-}
-
-.text-2xl {
-  margin-bottom: 8px;
 }
 
 ul {
@@ -345,9 +338,7 @@ select {
   .w-24 {
     width: 4rem;
   }
-  .text-xl {
-    font-size: 1rem;
-  }
+
   .tag {
     font-size: 12px;
   }
@@ -384,9 +375,7 @@ select {
   .w-24 {
     width: 6rem;
   }
-  .text-xl {
-    font-size: 1.25rem;
-  }
+
   .tag {
     font-size: 16px;
   }

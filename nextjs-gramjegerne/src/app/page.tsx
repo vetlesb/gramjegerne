@@ -249,7 +249,7 @@ export default function IndexPage() {
           </DialogTrigger>
           <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal">
+              <DialogTitle className="text-xl font-normal text-accent">
                 Opprett utstyr
               </DialogTitle>
             </DialogHeader>
@@ -279,7 +279,7 @@ export default function IndexPage() {
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal">
+              <DialogTitle className="text-xl text-accent font-normal">
                 Legg til kategori
               </DialogTitle>
             </DialogHeader>
@@ -409,7 +409,7 @@ export default function IndexPage() {
                 )}
               </div>
               <div className="flex flex-col gap-y-2">
-                <h2 className="text-xl truncate">{item.name}</h2>
+                <h2 className="text-lg md:text-xl text-accent">{item.name}</h2>
                 <div className="flex flex-wrap gap-x-1">
                   {item.size ? (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
@@ -473,7 +473,7 @@ export default function IndexPage() {
                 </DialogTrigger>
                 <DialogContent className="dialog gap-y-8">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-normal">
+                    <DialogTitle className="text-xl font-normal text-accent">
                       Er du sikker på at du vil slette &quot;{item.name}&quot;?
                     </DialogTitle>
                   </DialogHeader>

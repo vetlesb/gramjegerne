@@ -51,7 +51,7 @@ export default function ListItem({ list }: ListItemProps) {
           )}
         </div>
         <div className="flex flex-col gap-y-2 gap-x-4">
-          <h2 className="text-xl truncate">{list.name}</h2>
+          <h2 className="text-xl text-accent">{list.name}</h2>
           <div className="flex flex-wrap gap-x-1 gap-y-1">
             {list.weight && (
               <p className="tag w-fit items-center gap-x-1 flex flex-wrap">

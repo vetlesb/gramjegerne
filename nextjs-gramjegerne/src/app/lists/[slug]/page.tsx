@@ -248,7 +248,7 @@ export default function ListPage() {
 
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <h1 className="text-2xl py-4">{list.name}</h1>
+      <h1 className="text-2xl text-accent py-4">{list.name}</h1>
       <div className="flex gap-y-4 gap-x-4 pb-8">
         {/* Button to open the Add Item Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
@@ -271,7 +271,7 @@ export default function ListPage() {
           {/* Updated DialogContent */}
           <DialogContent className="dialog p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal">
+              <DialogTitle className="text-xl text-accent font-normal">
                 Legg til utstyr
               </DialogTitle>
             </DialogHeader>
@@ -326,7 +326,7 @@ export default function ListPage() {
                           )}
                         </div>
                         <div className="flex flex-col gap-y-2">
-                          <h2 className="text-xl truncate">{item.name}</h2>
+                          <h2 className="text-xl text-accent">{item.name}</h2>
                           <div className="flex flex-wrap gap-x-1">
                             {item.size ? (
                               <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
@@ -453,11 +453,11 @@ export default function ListPage() {
         <li>
           {" "}
           <div className="flex flex-wrap gap-x-4 items-center">
-            <p className="text-l">Totalt</p>
-            <p className="text-xl">{totalItems} stk</p>
-            <p className="text-xl">{totalWeight.toFixed(3)} kg</p>
+            <p className="text-lg">Totalt</p>
+            <p className="text-xl text-accent">{totalItems} stk</p>
+            <p className="text-xl text-accent">{totalWeight.toFixed(3)} kg</p>
             {totalCalories ? (
-              <p className="text-xl">{totalCalories} kcal</p>
+              <p className="text-xl text-accent">{totalCalories} kcal</p>
             ) : null}
           </div>
         </li>
@@ -492,7 +492,7 @@ export default function ListPage() {
                 )}
               </div>
               <div className="flex flex-col gap-y-2">
-                <h2 className="text-xl truncate">{item.name}</h2>
+                <title className="text-xl text-accent">{item.name}</title>
                 <div className="flex flex-wrap gap-x-1">
                   {item.size ? (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
