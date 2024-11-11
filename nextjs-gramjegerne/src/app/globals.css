@@ -30,7 +30,11 @@ body {
 .text-accent {
   color: var(--fg-accent);
 }
-
+.icon-wrapper {
+  padding: 0.5rem;
+  background-color: var(--bg-primary);
+  border-radius: 99px;
+}
 img.product-image {
   border-radius: 4px;
   padding: 4px;
@@ -270,8 +274,8 @@ button:hover {
 .button-create {
   color: var(--fg-primary);
   background-color: var(--bg-dimmed);
-  padding: 1rem;
-  border-radius: 4px;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  border-radius: 99px;
 }
 .button-create:hover {
   background-color: var(--bg-dimmed-hover);

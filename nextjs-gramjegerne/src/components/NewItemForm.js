@@ -155,6 +155,7 @@ const NewItemForm = () => {
                 <select
                   className="w-full max-w-full p-4"
                   value={selectedCategories}
+                  multiple={false}
                   onChange={(e) => {
                     const options = e.target.options;
                     const values = [];
