@@ -77,7 +77,6 @@ export default function ListPage() {
   const [isLoading, setIsLoading] = useState(true); // State for loading
   const [searchQuery, setSearchQuery] = useState(""); // For search functionality
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]); // Temporary selection state
-
   const pathname = usePathname();
   const listSlug = pathname?.split("/")[2];
 
@@ -171,11 +170,15 @@ export default function ListPage() {
   };
 
   // Filter items for the category selection
-  const filteredItemsForList = selectedCategory
-    ? selectedItems.filter((item) =>
-        item.categories?.some((category) => category._id === selectedCategory),
-      )
-    : selectedItems; // When selectedCategory is null, show all items
+  const filteredItemsForList = useMemo(() => {
+    return selectedCategory
+      ? selectedItems.filter((item) =>
+          item.categories?.some(
+            (category) => category._id === selectedCategory,
+          ),
+        )
+      : selectedItems; // When selectedCategory is null, show all items
+  }, [selectedItems, selectedCategory]);
 
   // Filter categories to only those with items in the selectedItems
   const filteredCategoriesForList = categories.filter((category) =>
@@ -200,8 +203,7 @@ export default function ListPage() {
 
   // Calculate total weight and calories when 'All Categories' is selected
   const totalWeight = useMemo(() => {
-    if (selectedCategory !== null) return 0;
-    return selectedItems.reduce((acc, item) => {
+    return filteredItemsForList.reduce((acc, item) => {
       let weight = 0;
       if (item.weight && item.weight.weight) {
         weight = item.weight.weight;
@@ -212,14 +214,19 @@ export default function ListPage() {
       }
       return acc + weight;
     }, 0);
-  }, [selectedItems, selectedCategory]);
+  }, [filteredItemsForList]);
 
+  // Calculate total calories based on filtered items
   const totalCalories = useMemo(() => {
-    if (selectedCategory !== null) return 0;
-    return selectedItems.reduce((acc, item) => {
+    return filteredItemsForList.reduce((acc, item) => {
       return acc + (item.calories || 0);
     }, 0);
-  }, [selectedItems, selectedCategory]);
+  }, [filteredItemsForList]);
+
+  // Calculate total items based on filtered items
+  const totalItems = useMemo(() => {
+    return filteredItemsForList.length;
+  }, [filteredItemsForList]);
 
   // Handle loading state
   if (isLoading) {
@@ -425,24 +432,31 @@ export default function ListPage() {
           </DialogContent>
         </Dialog>
       </div>
-      {selectedCategory === null && (
-        <ul className="product flex flex-wrap items-center gap-4 py-2">
-          <li>
-            {" "}
-            <div className="flex flex-wrap gap-x-4 items-center">
-              <p className="text-xl">Totalt</p>
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                {/* Weight Icon */}
-                {totalWeight.toFixed(2)} kg
-              </p>
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+      {/* Totalt for weight and calories */}
+
+      <ul className="product flex flex-wrap items-center gap-4 py-2">
+        <li>
+          {" "}
+          <div className="flex flex-wrap gap-x-4 items-center">
+            <p className="text-l">Totalt</p>
+            <p className="text-xl">
+              {/* Calories Icon */}
+              {totalItems} stk
+            </p>
+            <p className="text-xl">
+              {/* Weight Icon */}
+              {totalWeight.toFixed(2)} kg
+            </p>
+            {totalCalories ? (
+              <p className="text-xl">
                 {/* Calories Icon */}
                 {totalCalories} kcal
               </p>
-            </div>
-          </li>
-        </ul>
-      )}
+            ) : null}
+          </div>
+        </li>
+      </ul>
+
       {/* Display selected items */}
       <ul className="flex flex-col">
         {filteredItemsForList.map((item) => (
