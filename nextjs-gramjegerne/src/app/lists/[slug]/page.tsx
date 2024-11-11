@@ -492,7 +492,7 @@ export default function ListPage() {
                 )}
               </div>
               <div className="flex flex-col gap-y-2">
-                <title className="text-xl text-accent">{item.name}</title>
+                <h2 className="text-xl text-accent">{item.name}</h2>
                 <div className="flex flex-wrap gap-x-1">
                   {item.size ? (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
