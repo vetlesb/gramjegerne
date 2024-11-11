@@ -71,7 +71,7 @@ export default function DeleteListButton({
           setIsDialogOpen(true);
         }}
       >
-        Slett pakkliste
+        Slett
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

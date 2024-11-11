@@ -25,7 +25,7 @@ export default function ListItem({ list }: ListItemProps) {
   };
 
   return (
-    <li className="product flex flex-col basis-full lg:basis-1/3">
+    <li className="product flex flex-col basis-full">
       <div className="flex flex-col gap-y-4">
         <div>
           {list.image ? (
@@ -118,12 +118,12 @@ export default function ListItem({ list }: ListItemProps) {
             )}
           </div>
         </div>
-        <div className="flex flex-col pt-4 gap-y-2">
+        <div className="flex flex-col pt-4 gap-x-4 gap-y-4">
           <button
             className="button-primary-accent w-full"
             onClick={handleClick}
           >
-            Åpne pakkliste
+            Åpne
           </button>
           <DeleteListButton
             listId={list._id}
