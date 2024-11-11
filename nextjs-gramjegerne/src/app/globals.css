@@ -295,7 +295,7 @@ button:hover {
 .bg-black\/80 {
   background-color: var(--bg-primary);
   opacity: 90%;
-  -webkit-backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
 label,

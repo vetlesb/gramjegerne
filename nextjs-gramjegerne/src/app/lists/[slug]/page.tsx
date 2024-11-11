@@ -302,14 +302,14 @@ export default function ListPage() {
                       onClick={() => handleTempItemToggle(item)}
                     >
                       <div className="flex flex-grow items-center gap-x-4">
-                        <div className="h-24 w-24">
+                        <div className="h-16 w-16">
                           {item.image ? (
                             <img
                               className="rounded-md h-full w-full object-cover"
                               src={urlFor(item.image).url()}
                             />
                           ) : (
-                            <div className="h-24 w-24 flex items-center placeholder_image">
+                            <div className="h-16 w-16 flex items-center placeholder_image">
                               <svg
                                 width="16"
                                 height="16"
@@ -468,14 +468,14 @@ export default function ListPage() {
         {filteredItemsForList.map((item) => (
           <li key={item._id} className="product flex items-center gap-4 py-2">
             <div className="flex flex-grow items-center gap-x-4">
-              <div className="h-24 w-24">
+              <div className="h-16 w-16">
                 {item.image ? (
                   <img
                     className="rounded-md h-full w-full object-cover"
                     src={urlFor(item.image).url()}
                   />
                 ) : (
-                  <div className="h-24 w-24 flex items-center placeholder_image">
+                  <div className="h-16 w-16 flex items-center placeholder_image">
                     <svg
                       width="16"
                       height="16"
