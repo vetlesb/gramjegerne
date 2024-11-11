@@ -248,8 +248,8 @@ export default function ListPage() {
 
   return (
     <main className="container mx-auto min-h-screen p-16">
+      <h1 className="text-2xl py-4">{list.name}</h1>
       <div className="flex gap-y-4 gap-x-4 pb-8">
-        {" "}
         {/* Button to open the Add Item Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
@@ -262,7 +262,7 @@ export default function ListPage() {
               >
                 <path
                   d="M-0.0078125 7.35938C-0.0078125 6.88281 0.390625 6.48438 0.867188 6.48438H5.65625V1.69531C5.65625 1.21875 6.05469 0.820312 6.53125 0.820312C7.00781 0.820312 7.40625 1.21875 7.40625 1.69531V6.48438H12.1953C12.6719 6.48438 13.0703 6.88281 13.0703 7.35938C13.0703 7.84375 12.6719 8.23438 12.1953 8.23438H7.40625V13.0234C7.40625 13.5 7.00781 13.8984 6.53125 13.8984C6.05469 13.8984 5.65625 13.5 5.65625 13.0234V8.23438H0.867188C0.390625 8.23438 -0.0078125 7.84375 -0.0078125 7.35938Z"
-                  fill="#EAFFE2"
+                  fill="#eaffe2"
                 />
               </svg>
               Legg til utstyr
@@ -420,7 +420,7 @@ export default function ListPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <h1 className="text-2xl py-4">{list.name}</h1>
+
       <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
         {/* Show categories with items and include "All Categories" button */}
         {filteredCategoriesForList.length > 0 && (
