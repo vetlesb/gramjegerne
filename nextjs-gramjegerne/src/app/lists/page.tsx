@@ -34,6 +34,9 @@ export default function Page() {
   }, []);
   return (
     <main className="container mx-auto min-h-screen p-16">
+      <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
+        lager pakklister
+      </h1>
       <div className="flex flex-col gap-y-8">
         <AddListDialog />
 

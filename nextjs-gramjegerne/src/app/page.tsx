@@ -229,10 +229,14 @@ export default function IndexPage() {
 
   return (
     <main className="container mx-auto min-h-screen p-16">
+      <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
+        digger utstyr
+      </h1>
       <div className="flex flex-wrap gap-y-4 gap-x-4 pb-8">
         <Dialog>
           <DialogTrigger asChild>
             <button className="button-create flex flex-row items-center gap-x-2 text-md">
+              Opprett utstyr
               <span className="icon-wrapper">
                 <svg
                   className="tag-icon"
@@ -246,7 +250,6 @@ export default function IndexPage() {
                   />
                 </svg>
               </span>
-              Opprett utstyr
             </button>
           </DialogTrigger>
           <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
@@ -264,21 +267,20 @@ export default function IndexPage() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <button className="button-create flex flex-row items-center gap-x-2 text-md">
+              Opprett kategori
               <span className="icon-wrapper">
                 <svg
-                  width="17"
-                  height="16"
-                  viewBox="0 0 17 16"
+                  className="tag-icon"
+                  viewBox="0 0 14 14"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M15.3281 1.82034L14.4219 0.914088L14.9375 0.406276C15.1719 0.171901 15.5 0.140651 15.7188 0.367213L15.8516 0.492213C16.0859 0.734401 16.0859 1.0469 15.8359 1.30471L15.3281 1.82034ZM6.17969 10.2266C6.0625 10.2735 5.92969 10.1328 5.98438 10.0235L6.625 8.72659L13.8984 1.44534L14.7969 2.34378L7.52344 9.62503L6.17969 10.2266ZM3.125 15.3985C1.60156 15.3985 0.820312 14.625 0.820312 13.1172V4.13284C0.820312 2.61721 1.60156 1.84378 3.125 1.84378H12.2109L11.25 2.81253H3.14062C2.26562 2.81253 1.78906 3.28128 1.78906 4.17971V13.0625C1.78906 13.9688 2.26562 14.4297 3.14062 14.4297H12.2031C12.9297 14.4297 13.4062 13.9688 13.4062 13.0625V5.01565L14.375 4.05471V13.1172C14.375 14.625 13.5938 15.3985 12.2266 15.3985H3.125Z"
+                    d="M-0.0078125 7.35938C-0.0078125 6.88281 0.390625 6.48438 0.867188 6.48438H5.65625V1.69531C5.65625 1.21875 6.05469 0.820312 6.53125 0.820312C7.00781 0.820312 7.40625 1.21875 7.40625 1.69531V6.48438H12.1953C12.6719 6.48438 13.0703 6.88281 13.0703 7.35938C13.0703 7.84375 12.6719 8.23438 12.1953 8.23438H7.40625V13.0234C7.40625 13.5 7.00781 13.8984 6.53125 13.8984C6.05469 13.8984 5.65625 13.5 5.65625 13.0234V8.23438H0.867188C0.390625 8.23438 -0.0078125 7.84375 -0.0078125 7.35938Z"
                     fill="#EAFFE2"
                   />
                 </svg>
               </span>
-              Endre kategorier
             </button>
           </DialogTrigger>
           <DialogContent className="dialog p-8 rounded-2xl">

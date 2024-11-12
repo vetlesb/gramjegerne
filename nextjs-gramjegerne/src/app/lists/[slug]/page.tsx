@@ -249,7 +249,7 @@ export default function ListPage() {
   return (
     <main className="container mx-auto min-h-screen p-16">
       <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-        {list.name}
+        i {list.name}
       </h1>
       <div className="flex gap-y-4 gap-x-4 pb-8">
         {/* Button to open the Add Item Dialog */}
