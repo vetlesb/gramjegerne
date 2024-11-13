@@ -36,7 +36,10 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    item.categories?.map((cat) => cat._id) || [],
+    // Initialize with the first category if it exists
+    item.categories && item.categories.length > 0
+      ? [item.categories[0]._id]
+      : [],
   );
   const [size, setSize] = useState<string>(item.size || "");
   const [weight, setWeight] = useState<{ weight: number; unit: string }>({
@@ -54,7 +57,18 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
         const response = await fetch("/api/getCategories");
         if (!response.ok) throw new Error("Failed to fetch categories");
         const data: Category[] = await response.json();
-        setCategories(data);
+
+        // Sort categories alphabetically
+        const sortedCategories = [...data].sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
+        );
+
+        setCategories(sortedCategories);
+
+        // If no category is selected and we have categories, select the first one
+        if (selectedCategories.length === 0 && sortedCategories.length > 0) {
+          setSelectedCategories([sortedCategories[0]._id]);
+        }
       } catch (error) {
         console.error("Category fetch error:", error);
         setErrorMessage("Kunne ikke hente kategorier.");
@@ -94,11 +108,6 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       }
     };
   }, [imagePreview]);
-
-  const handleImageRemoval = () => {
-    setImage(null);
-    setImagePreview(item.image?.asset.url || null);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,14 +215,6 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
                 alt="Image preview"
                 className="h-24 w-24 object-cover rounded-md"
               />
-              <button
-                type="button"
-                onClick={handleImageRemoval}
-                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                title="Fjern bilde"
-              >
-                &times;
-              </button>
             </div>
           )}
         </div>
@@ -224,17 +225,9 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
             Kategori
             <select
               className="w-full max-w-full p-4"
-              value={selectedCategories}
-              multiple
+              value={selectedCategories[0] || ""} // Use first selected category or empty string
               onChange={(e) => {
-                const options = e.target.options;
-                const values: string[] = [];
-                for (let i = 0; i < options.length; i++) {
-                  if (options[i].selected) {
-                    values.push(options[i].value);
-                  }
-                }
-                setSelectedCategories(values);
+                setSelectedCategories([e.target.value]); // Wrap the selected value in an array
               }}
               required
             >

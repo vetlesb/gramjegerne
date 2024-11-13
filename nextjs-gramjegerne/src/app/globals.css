@@ -224,6 +224,8 @@ input::file-selector-button {
   border: thin solid var(--fg-accent);
   border-radius: 4px;
 }
+/* Update your existing placeholder styles or add this new one */
+
 .button-link {
   color: var(--fg-primary);
   background-color: var(--bg-dimmed);
@@ -446,6 +448,15 @@ select {
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
     --radius: 8px;
+    input::placeholder {
+      color: var(--fg-primary);
+      opacity: 0.5;
+    }
+
+    select::placeholder {
+      color: var(--fg-primary);
+      opacity: 0.5;
+    }
   }
 }
 @layer utilities {
