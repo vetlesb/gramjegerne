@@ -503,18 +503,16 @@ export default function ListPage() {
               {calculateCategoryTotals(selectedItems).map((categoryTotal) => (
                 <div
                   key={categoryTotal.title}
-                  className="flex items-center gap-x-4"
+                  className="flex items-center gap-x-4 border-b border-white/5 pb-4"
                 >
-                  <h3 className="text-xl">{categoryTotal.title}</h3>
+                  <h3 className="text-xl w-32">{categoryTotal.title}</h3>
                   <div className="flex gap-x-4">
-                    <p className="text-accent text-xl">
-                      {categoryTotal.items} stk
-                    </p>
-                    <p className="text-accent text-xl">
+                    <p className="text-xl w-32">
                       {categoryTotal.weight.toFixed(3)} kg
                     </p>
+                    <p className="text-xl w-32">{categoryTotal.items} stk</p>
                     {categoryTotal.calories > 0 && (
-                      <p className="text-accent text-xl">
+                      <p className="text-xl w-32">
                         {categoryTotal.calories} kcal
                       </p>
                     )}
@@ -524,12 +522,13 @@ export default function ListPage() {
             </div>
           )}
           <div className="flex flex-wrap gap-x-4 items-center">
-            <p className="text-lg">Totalt</p>
-            <p className="text-xl text-accent">{totalItems} stk</p>
-            <p className="text-xl text-accent">{totalWeight.toFixed(3)} kg</p>
-            {totalCalories ? (
-              <p className="text-xl text-accent">{totalCalories} kcal</p>
-            ) : null}
+            <p className="text-xl text-accent w-32">Totalt</p>
+
+            <p className="text-xl text-accent w-32">
+              {totalWeight.toFixed(3)} kg
+            </p>
+            <p className="text-xl text-accent w-32">{totalItems} stk</p>
+            <p className="text-xl text-accent w-32">{totalCalories} kcal</p>
           </div>
         </li>
       </ul>
