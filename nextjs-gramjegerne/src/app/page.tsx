@@ -1,10 +1,11 @@
-"use client";
 // src/app/page.tsx
+
+"use client";
+
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { useState, useEffect } from "react";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { useRouter, usePathname } from "next/navigation";
+import EditItemForm from "../components/EditItemForm";
 import NewItemForm from "../components/NewItemForm";
 import Icon from "@/components/Icon";
 import {
@@ -15,7 +16,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogClose,
-} from "../components/ui/dialog"; // Adjust this import path if necessary
+} from "../components/ui/dialog";
 
 // Define Category and Item types
 interface Category {
@@ -23,29 +24,49 @@ interface Category {
   title: string;
   slug: { current: string };
 }
+
+interface ImageAsset {
+  _ref: string;
+  url?: string;
+}
+
 interface Item {
   _id: string;
   name: string;
-  categories?: { _id: string; title: string }[]; // Populated categories
-  image?: SanityImageSource;
+  slug: string;
+  image?: {
+    asset: ImageAsset;
+  };
   size?: string;
   weight?: { weight: number; unit: string };
   quantity?: number;
   calories?: number;
+  categories?: { _id: string; title: string }[]; // Populated categories
 }
 
 const builder = imageUrlBuilder(client);
 
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
+function urlFor(source: ImageAsset) {
+  return source.url || builder.image(source._ref).url();
 }
 
 // Define your queries
 const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
 const ITEMS_QUERY = `*[_type == "item"]{
-  _id, name, slug, image, 
-  "categories": categories[]-> {_id, title}, 
-  size, weight, quantity, calories
+  _id,
+  name,
+  slug,
+  image{
+    asset->{
+      _ref,
+      url
+    }
+  },
+  "categories": categories[]-> {_id, title},
+  size,
+  weight,
+  quantity,
+  calories
 }`;
 
 export default function IndexPage() {
@@ -53,14 +74,14 @@ export default function IndexPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
   const [itemToDelete, setItemToDelete] = useState<string | null>(null); // Track item for deletion
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null); // Track category for deletion
   const [allCategories, setAllCategories] = useState<Category[]>([]); // Fetch all categories
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<Item | null>(null); // Track item for editing
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,18 +90,24 @@ export default function IndexPage() {
         const fetchedCategories: Category[] =
           await client.fetch(CATEGORIES_QUERY);
 
+        // Sort categories alphabetically
+        const sortedCategories = [...fetchedCategories].sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
+        );
+
         // Filter categories to only those with items
-        const categoriesWithEntries = fetchedCategories.filter((category) =>
+        const categoriesWithEntries = sortedCategories.filter((category) =>
           fetchedItems.some((item) =>
             item.categories?.some((cat) => cat._id === category._id),
           ),
         );
 
         setItems(fetchedItems);
-        setAllCategories(fetchedCategories); // Set all categories for the dialog
-        setCategories(categoriesWithEntries); // Set filtered categories for the main page
+        setAllCategories(sortedCategories); // Store all sorted categories
+        setCategories(categoriesWithEntries); // Store filtered sorted categories
       } catch (error) {
         console.error("Error fetching data:", error);
+        setErrorMessage("Failed to fetch data.");
       } finally {
         setLoading(false);
       }
@@ -91,17 +118,32 @@ export default function IndexPage() {
 
   // Update selectedCategory based on URL path
   useEffect(() => {
-    const slugInPath = pathname?.slice(1); // Get the category slug from URL
-    const matchingCategory = categories.find(
-      (category) => category.slug.current === slugInPath,
-    );
+    const handleRouteChange = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const categorySlug = urlParams.get("category");
 
-    if (matchingCategory) {
-      setSelectedCategory(matchingCategory._id);
-    } else {
-      setSelectedCategory(null);
-    }
-  }, [pathname, categories]);
+      if (categorySlug) {
+        const matchingCategory = categories.find(
+          (category) => category.slug.current === categorySlug,
+        );
+        if (matchingCategory) {
+          setSelectedCategory(matchingCategory._id);
+        } else {
+          setSelectedCategory(null);
+        }
+      } else {
+        setSelectedCategory(null);
+      }
+    };
+
+    handleRouteChange(); // Initial check
+
+    window.addEventListener("popstate", handleRouteChange); // Handle back/forward navigation
+
+    return () => {
+      window.removeEventListener("popstate", handleRouteChange);
+    };
+  }, [categories]);
 
   const filteredItems = selectedCategory
     ? items.filter((item) =>
@@ -109,22 +151,27 @@ export default function IndexPage() {
       )
     : items;
 
-  const sortedItems = filteredItems.sort((a, b) =>
+  const sortedItems = [...filteredItems].sort((a, b) =>
     a.name.localeCompare(b.name),
   );
 
   const handleCategorySelect = (category: Category | null) => {
     if (category) {
       setSelectedCategory(category._id);
-      router.push(`/?category=${category.slug.current}`);
+      const url = new URL(window.location.href);
+      url.searchParams.set("category", category.slug.current);
+      window.history.pushState({}, "", url.toString());
     } else {
       setSelectedCategory(null);
-      router.push("/");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("category");
+      window.history.pushState({}, "", url.toString());
     }
   };
 
   const confirmDeleteItem = async () => {
     if (!itemToDelete) return;
+    setIsLoadingDelete(true);
     try {
       const response = await fetch(`/api/deleteItem?itemId=${itemToDelete}`, {
         method: "DELETE",
@@ -132,22 +179,28 @@ export default function IndexPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete item");
+        throw new Error(errorData.message || "Kunne ikke slette utstyr");
       }
 
+      // Remove the deleted item from the state
       setItems((prevItems) =>
         prevItems.filter((item) => item._id !== itemToDelete),
       );
-      setItemToDelete(null); // Reset dialog state
-    } catch (error) {
+      setItemToDelete(null);
+    } catch (error: unknown) {
       console.error("Error deleting item:", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Kunne ikke slette utstyr",
+      );
+    } finally {
+      setIsLoadingDelete(false);
     }
   };
 
   const handleAddCategory = async () => {
-    if (!newCategoryName || isLoading) return;
+    if (!newCategoryName || isLoadingDelete) return;
 
-    setIsLoading(true);
+    setIsLoadingDelete(true);
 
     const categoryExists = allCategories.some(
       (category) =>
@@ -156,7 +209,9 @@ export default function IndexPage() {
 
     if (categoryExists) {
       console.error("Category already exists:", newCategoryName);
-      setIsLoading(false);
+      setErrorMessage("Kategori eksisterer allerede.");
+      alert("Kategori eksisterer allerede.");
+      setIsLoadingDelete(false);
       return;
     }
 
@@ -170,14 +225,31 @@ export default function IndexPage() {
       if (!response.ok) throw new Error("Failed to add category");
 
       const newCategory = await response.json();
-      setAllCategories((prevCategories) => [...prevCategories, newCategory]); // Add to all categories
-      setCategories((prevCategories) => [...prevCategories, newCategory]); // Optionally add to displayed categories
+
+      // Add new category and sort
+      setAllCategories((prevCategories) => {
+        const updatedCategories = [...prevCategories, newCategory];
+        return updatedCategories.sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
+        );
+      });
+
+      // Add to filtered categories if needed and sort
+      setCategories((prevCategories) => {
+        const updatedCategories = [...prevCategories, newCategory];
+        return updatedCategories.sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
+        );
+      });
+
       setNewCategoryName("");
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error adding category:", error);
+      setErrorMessage("Failed to add category.");
+      alert("Failed to add category.");
     } finally {
-      setIsLoading(false);
+      setIsLoadingDelete(false);
     }
   };
 
@@ -188,14 +260,16 @@ export default function IndexPage() {
     return itemsWithCategory.length > 0;
   };
 
-  // Function to confirm deletion of a category
   const confirmDeleteCategory = async () => {
     if (!categoryToDelete) return;
 
     try {
       const referencesExist = await hasReferences(categoryToDelete);
       if (referencesExist) {
-        alert("Cannot delete category. It has references in items.");
+        setErrorMessage(
+          "Kan ikke slette kategori. Den har referanser i utstyr.",
+        );
+        alert("Kan ikke slette kategori. Den har referanser i utstyr.");
         return;
       }
 
@@ -218,8 +292,10 @@ export default function IndexPage() {
         prevCategories.filter((category) => category._id !== categoryToDelete),
       );
       setCategoryToDelete(null);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deleting category:", error);
+      setErrorMessage("Failed to delete category.");
+      alert("Failed to delete category.");
     }
   };
 
@@ -227,12 +303,28 @@ export default function IndexPage() {
     return <div>Loading...</div>;
   }
 
+  // Function to refresh items after creating or updating
+  const refreshItems = async () => {
+    setLoading(true);
+    try {
+      const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY);
+      setItems(fetchedItems);
+    } catch (error) {
+      console.error("Error refreshing items:", error);
+      setErrorMessage("Failed to refresh items.");
+      alert("Failed to refresh items.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="container mx-auto min-h-screen p-16">
       <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-        digger utstyr
+        Digger Utstyr
       </h1>
       <div className="flex flex-wrap gap-y-4 gap-x-4 pb-8">
+        {/* New Item Dialog */}
         <Dialog>
           <DialogTrigger asChild>
             <button className="button-create flex flex-row items-center gap-x-2 text-md">
@@ -258,7 +350,8 @@ export default function IndexPage() {
                 Opprett utstyr
               </DialogTitle>
             </DialogHeader>
-            <NewItemForm />
+            <NewItemForm onSuccess={refreshItems} />
+            {/* Pass the refresh callback */}
             <DialogFooter></DialogFooter>
           </DialogContent>
         </Dialog>
@@ -269,6 +362,7 @@ export default function IndexPage() {
             <button className="button-create flex flex-row items-center gap-x-2 text-md">
               Opprett kategori
               <span className="icon-wrapper">
+                {/* Your SVG Icon */}
                 <svg
                   className="tag-icon"
                   viewBox="0 0 14 14"
@@ -303,16 +397,18 @@ export default function IndexPage() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 className="p-4 border rounded"
                 required
+                placeholder="Kategori navn"
               />
               <button
                 type="submit"
                 className="button-primary-accent"
-                disabled={isLoading}
+                disabled={isLoadingDelete}
               >
-                {isLoading ? "Adding..." : "Add Category"}
+                {isLoadingDelete ? "Legger til..." : "Legg til"}
               </button>
             </form>
-            <p>Kategorier</p>
+
+            <p className="mt-6">Kategorier</p>
             <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[50vh] overflow-y-auto">
               {allCategories.map((category) => (
                 <li
@@ -321,7 +417,7 @@ export default function IndexPage() {
                 >
                   <span>{category.title}</span>
                   <button
-                    className="button-link"
+                    className="button-link text-red-500 hover:text-red-700"
                     onClick={() => setCategoryToDelete(category._id)}
                   >
                     Slett
@@ -342,7 +438,7 @@ export default function IndexPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                Are you sure you want to delete this category?
+                Er du sikker på at du vil slette denne kategorien?
               </DialogTitle>
             </DialogHeader>
             <DialogFooter>
@@ -350,11 +446,11 @@ export default function IndexPage() {
                 onClick={confirmDeleteCategory}
                 className="button-primary-accent"
               >
-                Yes, Delete
+                Ja, Slett
               </button>
               <DialogClose asChild>
                 <button type="button" className="button-secondary">
-                  Cancel
+                  Avbryt
                 </button>
               </DialogClose>
             </DialogFooter>
@@ -362,7 +458,7 @@ export default function IndexPage() {
         </Dialog>
       </div>
 
-      <div className="flex gap-x-2 no-scrollbar mb-4 p-2">
+      <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto">
         {/* Button to reset the filter */}
         <button
           onClick={() => handleCategorySelect(null)}
@@ -387,18 +483,30 @@ export default function IndexPage() {
           </button>
         ))}
       </div>
+
+      {errorMessage && (
+        <div className="error-toast text-lg">
+          <div>{errorMessage}</div>
+        </div>
+      )}
+
       <ul className="flex flex-col">
         {sortedItems.map((item) => (
-          <li className="product flex items-center gap-4 py-2" key={item._id}>
+          <li
+            className="product flex items-center gap-4 py-2 hover:bg-gray-100 rounded-md p-2"
+            key={item._id}
+          >
             <div className="flex flex-grow items-center gap-x-4">
               <div className="h-16 w-16">
                 {item.image ? (
                   <img
                     className="rounded-md h-full w-full object-cover"
-                    src={urlFor(item.image).url()}
+                    src={urlFor(item.image.asset)}
+                    alt={item.name}
                   />
                 ) : (
-                  <div className="h16 w-16 flex items-center placeholder_image">
+                  <div className="h-16 w-16 flex items-center justify-center placeholder_image">
+                    {/* Placeholder SVG or image */}
                     <svg
                       width="16"
                       height="16"
@@ -414,11 +522,13 @@ export default function IndexPage() {
                   </div>
                 )}
               </div>
+
               <div className="flex flex-col gap-y-2">
                 <h2 className="text-lg md:text-xl text-accent">{item.name}</h2>
                 <div className="flex flex-wrap gap-x-1">
-                  {item.size ? (
+                  {item.size && (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon for Size */}
                       <svg
                         className="tag-icon"
                         viewBox="0 0 16 8"
@@ -426,15 +536,16 @@ export default function IndexPage() {
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M15.3184 2.13477V5.41602C15.3184 6.48242 14.7383 7.05664 13.6602 7.05664H2.33398C1.25586 7.05664 0.675781 6.48242 0.675781 5.41602V2.13477C0.675781 1.0625 1.25 0.488281 2.32812 0.488281H13.6543C14.7324 0.488281 15.3184 1.0625 15.3184 2.13477ZM14.2109 2.31641C14.2109 1.8418 13.9531 1.58398 13.502 1.58398H13.4727V4.24414C13.4727 4.39648 13.3672 4.50781 13.2148 4.50781C13.0684 4.50781 12.9512 4.40234 12.9512 4.25V1.58398H12.4238V3.26562C12.4238 3.41797 12.3242 3.5293 12.1719 3.5293C12.0254 3.5293 11.9082 3.42383 11.9082 3.27148V1.58398H11.3809V3.26562C11.3809 3.41797 11.2754 3.5293 11.123 3.5293C10.9824 3.5293 10.8652 3.42383 10.8652 3.27148V1.58398H10.3379V3.26562C10.3379 3.41797 10.2383 3.5293 10.0801 3.5293C9.93945 3.5293 9.82227 3.42383 9.82227 3.27148V1.58398H9.29492V3.26562C9.29492 3.41797 9.18945 3.5293 9.03711 3.5293C8.89648 3.5293 8.77344 3.42383 8.77344 3.27148V1.58398H8.25195V4.24414C8.25195 4.39648 8.14648 4.50781 7.99414 4.50781C7.85352 4.50781 7.73633 4.40234 7.73633 4.25V1.58398H7.20312V3.26562C7.20312 3.41797 7.10352 3.5293 6.95117 3.5293C6.80469 3.5293 6.6875 3.42383 6.6875 3.27148V1.58398H6.16016V3.26562C6.16016 3.41797 6.05469 3.5293 5.90234 3.5293C5.76172 3.5293 5.64453 3.42383 5.64453 3.27148V1.58398H5.11719V3.26562C5.11719 3.41797 5.01758 3.5293 4.85938 3.5293C4.71875 3.5293 4.60156 3.42383 4.60156 3.27148V1.58398H4.08008V3.26562C4.08008 3.41797 3.97461 3.5293 3.82227 3.5293C3.67578 3.5293 3.55859 3.42383 3.55859 3.27148V1.58398H3.03125V4.24414C3.03125 4.39648 2.92578 4.50781 2.77344 4.50781C2.63281 4.50781 2.51562 4.40234 2.51562 4.25V1.58398H2.48633C2.03516 1.58398 1.77148 1.8418 1.77148 2.31641V5.23438C1.77148 5.70312 2.03516 5.96094 2.48047 5.96094H13.502C13.9531 5.96094 14.2109 5.70312 14.2109 5.23438V2.31641Z"
+                          d="M15.3184 2.13477V5.41602C15.3184 6.48242 14.7383 7.05664 13.6602 7.05664H2.33398C1.25586 7.05664 0.675781 6.48242 0.675781 5.41602V2.13477C0.675781 1.0625 1.25 0.488281 2.32812 0.488281H13.6543C14.7324 0.488281 15.3184 1.0625 15.3184 2.13477ZM14.2109 2.31641C14.2109 1.8418 13.9531 1.58398 13.502 1.58398H13.4727V4.24414C13.4727 4.39648 13.3672 4.50781 13.2148 4.50781C13.0684 4.50781 12.9512 4.40234 12.9512 4.25V1.58398H12.4238V3.26562C12.4238 3.41797 12.3242 3.5293 12.1719 3.5293C12.0254 3.5293 11.9082 3.42383 11.9082 3.27148V1.58398H11.3809V3.26562C11.3809 3.41797 11.2754 3.5293 11.123 3.5293C10.9824 3.5293 10.8652 3.42383 10.8652 3.27148V1.58398H10.3379V3.26562C10.3379 3.41797 10.2383 3.5293 10.0801 3.5293C9.93945 3.5293 9.82227 3.42383 9.82227 3.27148V1.58398H9.29492V3.26562C9.29492 3.41797 9.18945 3.5293 9.03711 3.5293C8.89648 3.5293 8.77344 3.42383 8.77344 3.27148V1.58398H8.25195V3.26562C8.25195 3.41797 8.14648 3.5293 7.99414 3.5293C7.85352 3.5293 7.73633 3.42383 7.73633 3.27148V1.58398H7.20312V3.26562C7.20312 3.41797 7.10352 3.5293 6.95117 3.5293C6.80469 3.5293 6.6875 3.42383 6.6875 3.27148V1.58398H6.16016V3.26562C6.16016 3.41797 6.05469 3.5293 5.90234 3.5293C5.76172 3.5293 5.64453 3.42383 5.64453 3.27148V1.58398H5.11719V3.26562C5.11719 3.41797 5.01758 3.5293 4.85938 3.5293C4.71875 3.5293 4.60156 3.42383 4.60156 3.27148V1.58398H4.08008V3.26562C4.08008 3.41797 3.97461 3.5293 3.82227 3.5293C3.67578 3.5293 3.55859 3.42383 3.55859 3.27148V1.58398H3.03125V4.24414C3.03125 4.39648 2.92578 4.50781 2.77344 4.50781C2.63281 4.50781 2.51562 4.40234 2.51562 4.25V1.58398H2.48633C2.03516 1.58398 1.77148 1.8418 1.77148 2.31641V5.23438C1.77148 5.70312 2.03516 5.96094 2.48047 5.96094H13.502C13.9531 5.96094 14.2109 5.70312 14.2109 5.23438V2.31641Z"
                           fill="#EAFFE2"
                         />
                       </svg>
                       {item.size}
                     </p>
-                  ) : null}
-                  {item.weight ? (
+                  )}
+                  {item.weight && (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon for Weight */}
                       <svg
                         className="tag-icon"
                         viewBox="0 0 13 14"
@@ -442,15 +553,16 @@ export default function IndexPage() {
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M0.693374 11.0117L1.98244 5.79102C2.21095 4.86523 2.87892 4.34375 3.82228 4.34375H5.9258V3.79883C5.24025 3.55859 4.73634 2.90234 4.73634 2.14648C4.73634 1.17969 5.53908 0.376953 6.50001 0.376953C7.46095 0.376953 8.26955 1.17969 8.26955 2.14648C8.26955 2.90234 7.76564 3.55859 7.07423 3.79883V4.34375H9.17775C10.127 4.34375 10.7891 4.86523 11.0176 5.79102L12.3067 11.0117C12.6289 12.3066 12.0723 13.0625 10.8184 13.0625H2.18751C0.927749 13.0625 0.376968 12.3066 0.693374 11.0117ZM6.50001 2.9375C6.93947 2.9375 7.30275 2.57422 7.30275 2.14648C7.30275 1.70703 6.93361 1.33789 6.50001 1.33789C6.06642 1.33789 5.70314 1.71289 5.70314 2.14648C5.70314 2.57422 6.06642 2.9375 6.50001 2.9375ZM1.81251 11.0879C1.67189 11.6328 1.88283 11.9141 2.35158 11.9141H10.6543C11.1172 11.9141 11.3281 11.6328 11.1875 11.0879L9.93947 6.14844C9.82228 5.70898 9.56447 5.49219 9.12501 5.49219H3.87501C3.44142 5.49219 3.17775 5.70898 3.06642 6.14844L1.81251 11.0879Z"
+                          d="M0.693374 11.0117C1.72266 11.0117 2.49219 10.2422 2.49219 9.19922C2.49219 8.15625 1.72266 7.38672 0.693374 7.38672C-0.335938 7.38672 -1.10547 8.15625 -1.10547 9.19922C-1.10547 10.2422 -0.335938 11.0117 0.693374 11.0117ZM6.5 0.75C3.00977 0.75 0.5 3.25977 0.5 6.75C0.5 10.2402 3.00977 12.75 6.5 12.75C9.99023 12.75 12.5 10.2402 12.5 6.75C12.5 3.25977 9.99023 0.75 6.5 0.75ZM6.5 11.75C4.84375 11.75 3.5 10.4062 3.5 8.75C3.5 7.09375 4.84375 5.75 6.5 5.75C8.15625 5.75 9.5 7.09375 9.5 8.75C9.5 10.4062 8.15625 11.75 6.5 11.75ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
                           fill="#EAFFE2"
                         />
                       </svg>
                       {item.weight.weight} {item.weight.unit}
                     </p>
-                  ) : null}
-                  {item.calories ? (
+                  )}
+                  {item.calories && (
                     <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {/* SVG Icon for Calories */}
                       <svg
                         className="tag-icon"
                         viewBox="0 0 11 10"
@@ -464,48 +576,99 @@ export default function IndexPage() {
                       </svg>
                       {item.calories} kcal
                     </p>
-                  ) : null}
+                  )}
                 </div>
               </div>
+              {/* Delete Button */}
+              <div className="flex gap-x-2 ml-auto">
+                <button
+                  className="button-ghost flex gap-x-2 h-fit align-middle"
+                  onClick={() => setIsEditDialogOpen(item)}
+                >
+                  <Icon name="edit" width={24} height={24} fill="#EAFFE2" />
+                </button>
 
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button
-                    className="button-ghost flex gap-x-2 h-fit ml-auto align-middle"
-                    onClick={() => setItemToDelete(item._id)} // Open dialog
-                  >
-                    <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="dialog gap-y-8">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl font-normal text-accent">
-                      Er du sikker på at du vil slette &quot;{item.name}&quot;?
-                    </DialogTitle>
-                  </DialogHeader>
-
-                  <DialogFooter className="gap-y-4 gap-x-1">
+                <Dialog>
+                  <DialogTrigger asChild>
                     <button
-                      className="button-primary-accent"
-                      onClick={confirmDeleteItem}
+                      className="button-ghost flex gap-x-2 h-fit ml-auto align-middle"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the edit dialog
+                        setItemToDelete(item._id);
+                      }}
                     >
-                      Slett
+                      <Icon
+                        name="delete"
+                        width={24}
+                        height={24}
+                        fill="#EAFFE2"
+                      />
                     </button>
-                    <DialogClose asChild>
+                  </DialogTrigger>
+                  <DialogContent className="dialog gap-y-8">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-normal text-accent">
+                        Er du sikker på at du vil slette &quot;{item.name}
+                        &quot;?
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    {errorMessage && (
+                      <div className="text-red-500">{errorMessage}</div>
+                    )}
+
+                    <DialogFooter className="gap-y-4 gap-x-1">
                       <button
-                        className="button-secondary"
-                        onClick={() => setItemToDelete(null)}
+                        className="button-primary-accent"
+                        onClick={confirmDeleteItem}
+                        disabled={isLoadingDelete}
                       >
-                        Avbryt
+                        {isLoadingDelete ? "Sletter..." : "Slett"}
                       </button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          className="button-secondary"
+                          onClick={() => {
+                            setItemToDelete(null);
+                            setErrorMessage("");
+                          }}
+                        >
+                          Avbryt
+                        </button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </li>
         ))}
       </ul>
+
+      {/* Edit Dialog Rendered Once Outside the List */}
+      <Dialog
+        open={!!isEditDialogOpen}
+        onOpenChange={() => setIsEditDialogOpen(null)}
+      >
+        <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-normal text-accent">
+              Rediger utstyr
+            </DialogTitle>
+          </DialogHeader>
+          {isEditDialogOpen && (
+            <EditItemForm
+              item={isEditDialogOpen}
+              onSuccess={async () => {
+                await refreshItems();
+                setIsEditDialogOpen(null); // Close the dialog after success
+              }}
+            />
+          )}
+          <DialogFooter></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

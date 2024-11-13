@@ -1,12 +1,14 @@
 import React from "react";
 import { AddIcon } from "./icons/AddIcon";
 import { DeleteIcon } from "./icons/DeleteIcon";
+import { EditIcon } from "./icons/EditIcon";
 // Import other icons as needed
 
 // Define a mapping from icon names to components
 const iconMap = {
   add: AddIcon,
   delete: DeleteIcon,
+  edit: EditIcon,
   // ... add other icons here
 };
 

@@ -77,6 +77,7 @@ export default function AddListDialog() {
         onClick={() => setIsDialogOpen(true)}
         className="button-create flex flex-row items-center gap-x-2 text-md"
       >
+        Opprett pakkliste
         <span className="icon-wrapper">
           <svg
             className="tag-icon"
@@ -90,7 +91,6 @@ export default function AddListDialog() {
             />
           </svg>
         </span>
-        Opprett pakkliste
       </button>
 
       {/* The Dialog for adding a new list */}
