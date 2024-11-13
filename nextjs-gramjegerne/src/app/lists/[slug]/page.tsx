@@ -228,6 +228,48 @@ export default function ListPage() {
     return filteredItemsForList.length;
   }, [filteredItemsForList]);
 
+  const calculateCategoryTotals = (items: Item[]) => {
+    const categoryTotals = new Map<
+      string,
+      {
+        title: string;
+        items: number;
+        weight: number;
+        calories: number;
+      }
+    >();
+
+    items.forEach((item) => {
+      item.categories?.forEach((category) => {
+        const current = categoryTotals.get(category._id) || {
+          title: category.title,
+          items: 0,
+          weight: 0,
+          calories: 0,
+        };
+
+        let weight = 0;
+        if (item.weight?.weight) {
+          weight = item.weight.weight;
+          if (item.weight.unit === "g") {
+            weight = weight / 1000; // Convert to kg
+          }
+        }
+
+        categoryTotals.set(category._id, {
+          title: category.title,
+          items: current.items + 1,
+          weight: current.weight + weight,
+          calories: current.calories + (item.calories || 0),
+        });
+      });
+    });
+
+    // Convert to array and sort by category title
+    return Array.from(categoryTotals.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, "nb"),
+    );
+  };
   // Handle loading state
   if (isLoading) {
     return (
@@ -455,7 +497,32 @@ export default function ListPage() {
 
       <ul className="product flex flex-wrap items-center gap-4 py-2">
         <li>
-          {" "}
+          {selectedCategory === null && ( // Only show in overview
+            <div className="flex flex-col gap-y-4 py-4">
+              {/* Per category totals */}
+              {calculateCategoryTotals(selectedItems).map((categoryTotal) => (
+                <div
+                  key={categoryTotal.title}
+                  className="flex items-center gap-x-4"
+                >
+                  <h3 className="text-xl">{categoryTotal.title}</h3>
+                  <div className="flex gap-x-4">
+                    <p className="text-accent text-xl">
+                      {categoryTotal.items} stk
+                    </p>
+                    <p className="text-accent text-xl">
+                      {categoryTotal.weight.toFixed(3)} kg
+                    </p>
+                    {categoryTotal.calories > 0 && (
+                      <p className="text-accent text-xl">
+                        {categoryTotal.calories} kcal
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-x-4 items-center">
             <p className="text-lg">Totalt</p>
             <p className="text-xl text-accent">{totalItems} stk</p>
