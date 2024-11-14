@@ -6,6 +6,7 @@ import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { useState, useEffect } from "react";
 import EditItemForm from "../components/EditItemForm";
+import ImportForm from "@/components/ImportForm";
 import NewItemForm from "../components/NewItemForm";
 import Icon from "@/components/Icon";
 import {
@@ -427,6 +428,22 @@ export default function IndexPage() {
             </ul>
 
             <DialogFooter></DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="button-create flex flex-row items-center gap-x-2 text-md">
+              Import fra Excel
+              <span className="icon-wrapper">{/* Add your icon */}</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="dialog p-10 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-normal text-accent">
+                Import fra Excel
+              </DialogTitle>
+            </DialogHeader>
+            <ImportForm onSuccess={refreshItems} />
           </DialogContent>
         </Dialog>
 
