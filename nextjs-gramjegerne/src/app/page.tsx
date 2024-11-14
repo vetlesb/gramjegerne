@@ -346,7 +346,7 @@ export default function IndexPage() {
               </span>
             </button>
           </DialogTrigger>
-          <DialogContent className="dialog p-10 sm:p-4 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+          <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal text-accent">
                 Opprett utstyr
@@ -379,7 +379,7 @@ export default function IndexPage() {
               </span>
             </button>
           </DialogTrigger>
-          <DialogContent className="dialog p-8 sm:p-4 rounded-2xl">
+          <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl text-accent font-normal">
                 Legg til kategori
@@ -450,7 +450,7 @@ export default function IndexPage() {
               </span>
             </button>
           </DialogTrigger>
-          <DialogContent className="dialog p-10 sm:p-4 rounded-2xl">
+          <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal text-accent">
                 Import fra Excel
@@ -684,7 +684,7 @@ export default function IndexPage() {
         open={!!isEditDialogOpen}
         onOpenChange={() => setIsEditDialogOpen(null)}
       >
-        <DialogContent className="dialog p-10 sm:p-4 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+        <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-xl font-normal text-accent">
               Rediger utstyr

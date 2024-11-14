@@ -316,7 +316,7 @@ export default function ListPage() {
             </button>
           </DialogTrigger>
           {/* Updated DialogContent */}
-          <DialogContent className="dialog p-10 sm:p-4 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
+          <DialogContent className="dialog p-4 md:p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-xl text-accent font-normal">
                 Legg til utstyr
@@ -500,7 +500,7 @@ export default function ListPage() {
       </div>
       {/* Totalt for weight and calories */}
 
-      <ul className="product flex flex-wrap items-center gap-4 py-2">
+      <ul className="product flex flex-wrap items-center gap-4">
         <li>
           {selectedCategory === null && ( // Only show in overview
             <div className="flex flex-col gap-y-4 py-4">
