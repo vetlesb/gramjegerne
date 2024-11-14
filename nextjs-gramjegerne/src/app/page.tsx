@@ -5,6 +5,7 @@
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import EditItemForm from "../components/EditItemForm";
 import ImportForm from "@/components/ImportForm";
 import NewItemForm from "../components/NewItemForm";
@@ -434,7 +435,19 @@ export default function IndexPage() {
           <DialogTrigger asChild>
             <button className="button-create flex flex-row items-center gap-x-2 text-md">
               Import fra Excel
-              <span className="icon-wrapper">{/* Add your icon */}</span>
+              <span className="icon-wrapper">
+                <svg
+                  className="tag-icon"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M-0.0078125 7.35938C-0.0078125 6.88281 0.390625 6.48438 0.867188 6.48438H5.65625V1.69531C5.65625 1.21875 6.05469 0.820312 6.53125 0.820312C7.00781 0.820312 7.40625 1.21875 7.40625 1.69531V6.48438H12.1953C12.6719 6.48438 13.0703 6.88281 13.0703 7.35938C13.0703 7.84375 12.6719 8.23438 12.1953 8.23438H7.40625V13.0234C7.40625 13.5 7.00781 13.8984 6.53125 13.8984C6.05469 13.8984 5.65625 13.5 5.65625 13.0234V8.23438H0.867188C0.390625 8.23438 -0.0078125 7.84375 -0.0078125 7.35938Z"
+                    fill="#EAFFE2"
+                  />
+                </svg>
+              </span>
             </button>
           </DialogTrigger>
           <DialogContent className="dialog p-10 rounded-2xl">
@@ -515,11 +528,13 @@ export default function IndexPage() {
           >
             <div className="flex flex-grow items-center gap-x-4">
               <div className="h-16 w-16">
-                {item.image ? (
-                  <img
+                {item.image?.asset ? (
+                  <Image
                     className="rounded-md h-full w-full object-cover"
                     src={urlFor(item.image.asset)}
-                    alt={item.name}
+                    alt={`Bilde av ${item.name}`}
+                    width={64}
+                    height={64}
                   />
                 ) : (
                   <div className="h-16 w-16 flex items-center justify-center placeholder_image">

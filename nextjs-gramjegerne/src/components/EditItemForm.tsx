@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Category {
   _id: string;
@@ -75,7 +76,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [selectedCategories.length]);
 
   useEffect(() => {
     if (name) {
@@ -210,9 +211,11 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
           </label>
           {(imagePreview || item.image) && (
             <div className="mt-4 relative">
-              <img
+              <Image
                 src={imagePreview || item.image?.asset?.url || ""}
-                alt="Image preview"
+                alt={`Forhåndsvisning av ${name}`}
+                width={96}
+                height={96}
                 className="h-24 w-24 object-cover rounded-md"
               />
             </div>

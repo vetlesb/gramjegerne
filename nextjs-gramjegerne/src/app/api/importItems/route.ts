@@ -1,6 +1,6 @@
+import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
-// Add the ImportResult type
 interface ImportResult {
   success: boolean;
   name: string;
@@ -8,8 +8,28 @@ interface ImportResult {
   error?: string;
 }
 
-// Sanity client with write permissions
-const writeClient = createClient({
+interface ImportItem {
+  name: string;
+  size?: string;
+  weight?: string;
+  weight_unit?: string;
+  calories?: string | number;
+  category?: string;
+  image_url?: string;
+}
+
+interface CategoryReference {
+  _type: "reference";
+  _ref: string;
+  _key: string;
+}
+
+interface SanityCategory {
+  _id: string;
+  title: string;
+}
+
+const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   token: process.env.SANITY_API_TOKEN,
@@ -17,76 +37,115 @@ const writeClient = createClient({
   apiVersion: "2023-01-01",
 });
 
-async function downloadImage(url: string) {
-  try {
-    const response = await fetch(url);
-    const buffer = await response.arrayBuffer();
-    return buffer;
-  } catch (error) {
-    console.error("Error downloading image:", error);
-    return null;
-  }
-}
+const generateKey = () => Math.random().toString(36).substr(2, 9);
 
 export async function POST(request: Request) {
   try {
-    const items = await request.json();
+    const items = (await request.json()) as ImportItem[];
     const results: ImportResult[] = [];
 
-    // Process each item in the batch
     for (const item of items) {
       try {
-        // 1. Check/Create Category
-        let category = await writeClient.fetch(
-          `*[_type == "category" && title == $title][0]`,
-          { title: item.category },
-        );
+        console.log("Processing item:", item);
 
-        if (!category) {
-          category = await writeClient.create({
-            _type: "category",
-            title: item.category,
-            slug: {
-              _type: "slug",
-              current: item.category.toLowerCase().replace(/\s+/g, "-"),
-            },
-          });
+        let categoryRefs: CategoryReference[] = [];
+
+        if (item.category) {
+          const categoryNames = item.category
+            .split(",")
+            .map((cat) => cat.trim());
+          console.log("Category names to process:", categoryNames);
+
+          // First, check which categories exist
+          const existingCategories = await client.fetch<SanityCategory[]>(
+            `*[_type == "category" && title in $names]{
+              _id,
+              title
+            }`,
+            { names: categoryNames },
+          );
+
+          console.log("Found existing categories:", existingCategories);
+
+          // Find categories that need to be created
+          const existingTitles = existingCategories.map((c) => c.title);
+          const newCategoryNames = categoryNames.filter(
+            (name) => !existingTitles.includes(name),
+          );
+
+          // Create new categories
+          for (const categoryName of newCategoryNames) {
+            try {
+              console.log("Creating new category:", categoryName);
+              const newCategory = await client.create({
+                _type: "category",
+                title: categoryName,
+                slug: {
+                  _type: "slug",
+                  current: categoryName.toLowerCase().replace(/\s+/g, "-"),
+                },
+              });
+              console.log("Created new category:", newCategory);
+              existingCategories.push(newCategory);
+            } catch (error) {
+              console.error(`Error creating category ${categoryName}:`, error);
+            }
+          }
+
+          // Create references for all categories (both existing and newly created)
+          categoryRefs = existingCategories.map((category: SanityCategory) => ({
+            _type: "reference",
+            _ref: category._id,
+            _key: generateKey(),
+          }));
+
+          console.log("Final category references:", categoryRefs);
         }
 
-        // 2. Handle Image Upload
-        let imageAsset = null;
+        // Handle image upload if URL exists
+        let imageAsset;
         if (item.image_url) {
-          const imageBuffer = await downloadImage(item.image_url);
-          if (imageBuffer) {
-            imageAsset = await writeClient.assets.upload(
+          try {
+            console.log("Fetching image from:", item.image_url);
+
+            // Fetch the image
+            const imageResponse = await fetch(item.image_url);
+            if (!imageResponse.ok) throw new Error("Failed to fetch image");
+
+            const imageBuffer = await imageResponse.arrayBuffer();
+
+            // Upload to Sanity
+            imageAsset = await client.assets.upload(
               "image",
               Buffer.from(imageBuffer),
+              {
+                filename: `${item.name.toLowerCase().replace(/\s+/g, "-")}.jpg`,
+              },
             );
+
+            console.log("Uploaded image:", imageAsset);
+          } catch (error) {
+            console.error("Error uploading image:", error);
           }
         }
 
-        // 3. Create Item
-        const newItem = await writeClient.create({
+        const newItem = {
           _type: "item",
           name: item.name,
           slug: {
             _type: "slug",
-            current: item.name.toLowerCase().replace(/\s+/g, "-"),
+            current: item.name.toLowerCase().replace(/\s+/g, "-").slice(0, 200),
           },
-          size: item.size || undefined,
+          size: item.size,
           weight: item.weight
             ? {
-                weight: parseFloat(item.weight),
+                weight: Number(item.weight),
                 unit: item.weight_unit || "g",
               }
             : undefined,
-          calories: item.calories ? parseInt(item.calories) : undefined,
-          categories: [
-            {
-              _type: "reference",
-              _ref: category._id,
-            },
-          ],
+          calories: item.calories ? Number(item.calories) : undefined,
+          categories: categoryRefs,
+          // Add image reference if upload was successful
           ...(imageAsset && {
             image: {
               _type: "image",
@@ -96,12 +155,17 @@ export async function POST(request: Request) {
               },
             },
           }),
-        });
+        };
+
+        console.log("Creating item with data:", newItem);
+
+        const createdItem = await client.create(newItem);
+        console.log("Created item:", createdItem);
 
         results.push({
           success: true,
           name: item.name,
-          id: newItem._id,
+          id: createdItem._id,
         });
       } catch (error) {
         console.error(`Error processing item ${item.name}:`, error);
@@ -113,21 +177,12 @@ export async function POST(request: Request) {
       }
     }
 
-    return new Response(JSON.stringify({ results }), {
-      headers: { "Content-Type": "application/json" },
-      status: 200,
-    });
+    return NextResponse.json({ results });
   } catch (error) {
     console.error("Import error:", error);
-    return new Response(
-      JSON.stringify({
-        error: "Failed to process items",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        headers: { "Content-Type": "application/json" },
-        status: 500,
-      },
+    return NextResponse.json(
+      { error: "Failed to process items" },
+      { status: 500 },
     );
   }
 }

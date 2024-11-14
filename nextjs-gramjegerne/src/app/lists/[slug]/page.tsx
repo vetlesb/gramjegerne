@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import imageUrlBuilder from "@sanity/image-url";
+import Image from "next/image";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client } from "@/sanity/client";
 import Icon from "@/components/Icon";
@@ -350,9 +351,12 @@ export default function ListPage() {
                       <div className="flex flex-grow items-center gap-x-4">
                         <div className="h-16 w-16">
                           {item.image ? (
-                            <img
+                            <Image
                               className="rounded-md h-full w-full object-cover"
                               src={urlFor(item.image).url()}
+                              alt={`Bilde av ${item.name}`}
+                              width={64}
+                              height={64}
                             />
                           ) : (
                             <div className="h-16 w-16 flex items-center placeholder_image">
@@ -468,28 +472,29 @@ export default function ListPage() {
       </div>
 
       <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
-        {/* Show categories with items and include "All Categories" button */}
         {filteredCategoriesForList.length > 0 && (
           <>
             <button
-              onClick={() => handleCategorySelect(null)} // Set selectedCategory to null for "All Categories"
+              onClick={() => handleCategorySelect(null)}
               className={`menu-category text-md ${
                 selectedCategory === null ? "menu-active" : ""
               }`}
             >
               Oversikt
             </button>
-            {filteredCategoriesForList.map((category) => (
-              <button
-                key={category._id}
-                onClick={() => handleCategorySelect(category._id)}
-                className={`menu-category text-md ${
-                  selectedCategory === category._id ? "menu-active" : ""
-                }`}
-              >
-                {category.title}
-              </button>
-            ))}
+            {[...filteredCategoriesForList]
+              .sort((a, b) => a.title.localeCompare(b.title, "nb"))
+              .map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategorySelect(category._id)}
+                  className={`menu-category text-md ${
+                    selectedCategory === category._id ? "menu-active" : ""
+                  }`}
+                >
+                  {category.title}
+                </button>
+              ))}
           </>
         )}
       </div>
@@ -540,9 +545,12 @@ export default function ListPage() {
             <div className="flex flex-grow items-center gap-x-4">
               <div className="h-16 w-16">
                 {item.image ? (
-                  <img
+                  <Image
                     className="rounded-md h-full w-full object-cover"
                     src={urlFor(item.image).url()}
+                    alt={`Bilde av ${item.name}`}
+                    width={64}
+                    height={64}
                   />
                 ) : (
                   <div className="h-16 w-16 flex items-center placeholder_image">

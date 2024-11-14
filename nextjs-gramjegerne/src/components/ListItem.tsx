@@ -2,6 +2,7 @@
 
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import imageUrlBuilder from "@sanity/image-url";
 import DeleteListButton from "./deleteListButton";
 import { client } from "@/sanity/client";
@@ -29,9 +30,12 @@ export default function ListItem({ list }: ListItemProps) {
       <div className="flex flex-col gap-y-4">
         <div>
           {list.image ? (
-            <img
+            <Image
               className="rounded-md h-full w-full aspect-video object-cover"
               src={urlFor(list.image).url()}
+              alt={`Bilde av ${list.name}`}
+              width={400}
+              height={300}
             />
           ) : (
             <div className="h-full w-full aspect-video flex items-center placeholder_image">

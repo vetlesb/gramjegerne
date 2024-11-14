@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Category {
   _id: string;
@@ -211,9 +212,11 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
           </label>
           {imagePreview && (
             <div className="mt-4 relative">
-              <img
+              <Image
                 src={imagePreview}
-                alt="Image preview"
+                alt="Forhåndsvisning"
+                width={96}
+                height={96}
                 className="h-24 w-24 object-cover rounded-md"
               />
               <button
