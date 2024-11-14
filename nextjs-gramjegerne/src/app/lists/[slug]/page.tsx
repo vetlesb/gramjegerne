@@ -115,9 +115,12 @@ export default function ListPage() {
           if (fetchedList && fetchedList.length > 0) {
             setList(fetchedList[0]);
             setSelectedItems(
-              fetchedList[0].items.map((listItem: ListItem) => listItem.item) ||
-                [],
+              fetchedList[0].items?.map(
+                (listItem: ListItem) => listItem.item,
+              ) || [],
             );
+          } else {
+            setError("List Not Found");
           }
         }
       } catch (err) {
@@ -159,12 +162,17 @@ export default function ListPage() {
 
   const handleRemoveFromList = async (item: Item) => {
     try {
+      if (!list) {
+        console.error("No list found");
+        return;
+      }
+
       // Update the list in the backend
       const response = await fetch("/api/updateList", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          listId: list?._id,
+          listId: list._id,
           items: selectedItems
             .filter((i) => i._id !== item._id)
             .map((i) => i._id),
@@ -288,7 +296,7 @@ export default function ListPage() {
     return Array.from(categoryTotals.values());
   };
 
-  // Handle loading state
+  // First, let's add a loading and error state check at the start of the component render
   if (isLoading) {
     return (
       <main className="container mx-auto min-h-screen p-16">
@@ -297,20 +305,12 @@ export default function ListPage() {
     );
   }
 
-  // Handle list not found
-  if (!list) {
+  if (error || !list) {
+    // Add !list check here
     return (
       <main className="container mx-auto min-h-screen p-16">
-        <h1 className="text-2xl font-bold mb-4">List Not Found</h1>
+        <div className="text-accent text-xl">{error || "List not found"}</div>
       </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-red-500">Error: {error}</p>
-      </div>
     );
   }
 
@@ -463,12 +463,17 @@ export default function ListPage() {
               <button
                 onClick={async () => {
                   try {
+                    if (!list) {
+                      console.error("No list found");
+                      return;
+                    }
+
                     // Update the list in the backend
                     const response = await fetch("/api/updateList", {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        listId: list?._id,
+                        listId: list._id,
                         items: tempSelectedItems.map((i) => i._id),
                       }),
                     });
