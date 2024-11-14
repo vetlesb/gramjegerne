@@ -1,9 +1,6 @@
-// src/app/api/updateList/route.ts
-
 import { NextResponse } from "next/server";
-import { createClient } from "next-sanity";
+import { createClient } from "@sanity/client";
 
-// Initialize a Sanity client with the token from environment variables
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
@@ -16,18 +13,22 @@ export async function PUT(request: Request) {
   try {
     const { listId, items } = await request.json();
 
-    // Update the list document in Sanity
-    await client
-      .patch(listId) // Specify the document ID of the list to patch
+    // Update the list with new items array
+    const result = await client
+      .patch(listId)
       .set({
-        items: items.map((itemId: string) => ({
-          _type: "reference",
-          _ref: itemId,
+        items: items.map((item: { _id: string; quantity: number }) => ({
+          _type: "object",
+          item: {
+            _type: "reference",
+            _ref: item._id,
+          },
+          quantity: item.quantity,
         })),
       })
       .commit();
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error("Error updating list:", error);
     return NextResponse.json(

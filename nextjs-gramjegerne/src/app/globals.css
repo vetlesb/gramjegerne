@@ -30,6 +30,9 @@ body {
 .text-accent {
   color: var(--fg-accent);
 }
+.bg-accent {
+  background-color: var(--bg-accent);
+}
 .nav-mobile {
   background-color: var(--bg-primary);
   padding: 1rem;

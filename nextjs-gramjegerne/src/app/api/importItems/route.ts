@@ -1,5 +1,12 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
+
+// Add the ImportResult type
+interface ImportResult {
+  success: boolean;
+  name: string;
+  id?: string;
+  error?: string;
+}
 
 // Sanity client with write permissions
 const writeClient = createClient({
@@ -24,9 +31,9 @@ async function downloadImage(url: string) {
 export async function POST(request: Request) {
   try {
     const items = await request.json();
+    const results: ImportResult[] = [];
 
-    const results = [];
-
+    // Process each item in the batch
     for (const item of items) {
       try {
         // 1. Check/Create Category
@@ -96,19 +103,31 @@ export async function POST(request: Request) {
           name: item.name,
           id: newItem._id,
         });
-      } catch (itemError) {
+      } catch (error) {
+        console.error(`Error processing item ${item.name}:`, error);
         results.push({
           success: false,
           name: item.name,
-          error:
-            itemError instanceof Error ? itemError.message : "Unknown error",
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
 
-    return NextResponse.json({ results });
-  } catch (importError) {
-    console.error("Import failed:", importError);
-    return NextResponse.json({ error: "Import failed" }, { status: 500 });
+    return new Response(JSON.stringify({ results }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Import error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Failed to process items",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      },
+    );
   }
 }

@@ -322,7 +322,7 @@ export default function IndexPage() {
   return (
     <main className="container mx-auto min-h-screen p-16">
       <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-        Digger Utstyr
+        digger utstyr
       </h1>
       <div className="flex flex-wrap gap-y-4 gap-x-4 pb-8">
         {/* New Item Dialog */}
