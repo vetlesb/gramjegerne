@@ -25,7 +25,7 @@ interface Category {
 interface Item {
   _id: string;
   name: string;
-  categories?: { _id: string; title: string }[];
+  categories?: { _id: string; title: string }[] | null;
   image?: SanityImageSource;
   size?: string;
   weight?: { weight: number; unit: string };
@@ -80,39 +80,37 @@ export default function ListPage() {
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]); // Temporary selection state
   const pathname = usePathname();
   const listSlug = pathname?.split("/")[2];
+  const [error, setError] = useState<string | null>(null);
 
   // Data fetching useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch categories and items
-        const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY);
-        const fetchedCategories: Category[] =
-          await client.fetch(CATEGORIES_QUERY);
+        if (!listSlug) {
+          setError("No list slug provided");
+          return;
+        }
 
-        setItems(fetchedItems);
-        setCategories(fetchedCategories);
+        const [fetchedItems, fetchedCategories] = await Promise.all([
+          client.fetch(ITEMS_QUERY),
+          client.fetch(CATEGORIES_QUERY),
+        ]);
 
-        // Fetch the current list if the slug exists
+        setItems(fetchedItems || []);
+        setCategories(fetchedCategories || []);
+
         if (listSlug) {
-          const fetchedList: List[] = await client.fetch(LIST_QUERY(listSlug));
-          if (fetchedList[0]) {
+          const fetchedList = await client.fetch(LIST_QUERY(listSlug));
+          if (fetchedList && fetchedList.length > 0) {
             setList(fetchedList[0]);
             setSelectedItems(fetchedList[0].items || []);
-          } else {
-            setList(null);
-            setSelectedItems([]);
           }
-        } else {
-          setList(null);
-          setSelectedItems([]);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setSelectedItems([]);
-        setList(null); // Ensure list is set to null on error
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data");
       } finally {
-        setIsLoading(false); // Set loading to false after data is fetched or on error
+        setIsLoading(false);
       }
     };
 
@@ -172,15 +170,25 @@ export default function ListPage() {
 
   // Filter items for the category selection
   const filteredItemsForList = useMemo(() => {
-    if (!selectedItems) return [];
+    // If no items, return empty array
+    if (!selectedItems || selectedItems.length === 0) {
+      return [];
+    }
 
+    // If no category selected, return all items
     if (selectedCategory === null) {
       return selectedItems;
     }
 
-    return selectedItems.filter((item) =>
-      item?.categories?.some((category) => category?._id === selectedCategory),
-    );
+    // Filter items with proper null checks
+    return selectedItems.filter((item) => {
+      if (!item) return false;
+      if (!item.categories) return false;
+
+      return item.categories.some(
+        (category) => category && category._id === selectedCategory,
+      );
+    });
   }, [selectedItems, selectedCategory]);
 
   // Filter categories to only those with items in the selectedItems
@@ -232,13 +240,17 @@ export default function ListPage() {
   }, [filteredItemsForList]);
 
   const calculateCategoryTotals = (items: Item[]) => {
-    if (!items) return [];
+    if (!items || items.length === 0) {
+      return [];
+    }
 
     const categoryTotals = new Map();
 
     items.forEach((item) => {
-      item?.categories?.forEach((category) => {
-        if (!category) return;
+      if (!item || !item.categories) return;
+
+      item.categories.forEach((category) => {
+        if (!category || !category._id || !category.title) return;
 
         const current = categoryTotals.get(category._id) || {
           title: category.title,
@@ -247,11 +259,14 @@ export default function ListPage() {
           calories: 0,
         };
 
+        const itemWeight = item.weight?.weight || 0;
+        const itemCalories = item.calories || 0;
+
         categoryTotals.set(category._id, {
           ...current,
-          weight: current.weight + (item.weight?.weight || 0),
+          weight: current.weight + itemWeight,
           items: current.items + 1,
-          calories: current.calories + (item.calories || 0),
+          calories: current.calories + itemCalories,
         });
       });
     });
@@ -273,6 +288,14 @@ export default function ListPage() {
       <main className="container mx-auto min-h-screen p-16">
         <h1 className="text-2xl font-bold mb-4">List Not Found</h1>
       </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
     );
   }
 
