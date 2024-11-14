@@ -316,7 +316,7 @@ export default function ListPage() {
             </button>
           </DialogTrigger>
           {/* Updated DialogContent */}
-          <DialogContent className="dialog p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
+          <DialogContent className="dialog p-10 sm:p-4 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-xl text-accent font-normal">
                 Legg til utstyr
