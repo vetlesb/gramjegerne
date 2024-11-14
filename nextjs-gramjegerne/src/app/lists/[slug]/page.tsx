@@ -172,13 +172,15 @@ export default function ListPage() {
 
   // Filter items for the category selection
   const filteredItemsForList = useMemo(() => {
-    return selectedCategory
-      ? selectedItems.filter((item) =>
-          item.categories?.some(
-            (category) => category._id === selectedCategory,
-          ),
-        )
-      : selectedItems; // When selectedCategory is null, show all items
+    if (!selectedItems) return [];
+
+    if (selectedCategory === null) {
+      return selectedItems;
+    }
+
+    return selectedItems.filter((item) =>
+      item?.categories?.some((category) => category?._id === selectedCategory),
+    );
   }, [selectedItems, selectedCategory]);
 
   // Filter categories to only those with items in the selectedItems
@@ -230,46 +232,31 @@ export default function ListPage() {
   }, [filteredItemsForList]);
 
   const calculateCategoryTotals = (items: Item[]) => {
-    const categoryTotals = new Map<
-      string,
-      {
-        title: string;
-        items: number;
-        weight: number;
-        calories: number;
-      }
-    >();
+    if (!items) return [];
+
+    const categoryTotals = new Map();
 
     items.forEach((item) => {
-      item.categories?.forEach((category) => {
+      item?.categories?.forEach((category) => {
+        if (!category) return;
+
         const current = categoryTotals.get(category._id) || {
           title: category.title,
-          items: 0,
           weight: 0,
+          items: 0,
           calories: 0,
         };
 
-        let weight = 0;
-        if (item.weight?.weight) {
-          weight = item.weight.weight;
-          if (item.weight.unit === "g") {
-            weight = weight / 1000; // Convert to kg
-          }
-        }
-
         categoryTotals.set(category._id, {
-          title: category.title,
+          ...current,
+          weight: current.weight + (item.weight?.weight || 0),
           items: current.items + 1,
-          weight: current.weight + weight,
           calories: current.calories + (item.calories || 0),
         });
       });
     });
 
-    // Convert to array and sort by category title
-    return Array.from(categoryTotals.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, "nb"),
-    );
+    return Array.from(categoryTotals.values());
   };
   // Handle loading state
   if (isLoading) {
