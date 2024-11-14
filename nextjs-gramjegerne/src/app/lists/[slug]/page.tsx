@@ -31,10 +31,16 @@ interface Item {
   weight?: { weight: number; unit: string };
   calories?: number;
 }
+interface ListItem {
+  _key: string;
+  _ref: string;
+  _type: string;
+  item: Item;
+}
 interface List {
   _id: string;
   name: string;
-  items: Item[];
+  items: ListItem[];
 }
 
 const builder = imageUrlBuilder(client);
@@ -56,14 +62,19 @@ const LIST_QUERY = (
 ) => `*[_type == "list" && slug.current == "${listSlug}"]{
   _id,
   name,
-  "items": items[]->{
-    _id,
-    name,
-    "categories": categories[]->{_id, title},
-    image,
-    size,
-    weight,
-    calories
+  "items": items[]{
+    _key,
+    _ref,
+    _type,
+    "item": @->{
+      _id,
+      name,
+      "categories": categories[]->{_id, title},
+      image,
+      size,
+      weight,
+      calories
+    }
   }
 }`;
 
@@ -103,7 +114,10 @@ export default function ListPage() {
           const fetchedList = await client.fetch(LIST_QUERY(listSlug));
           if (fetchedList && fetchedList.length > 0) {
             setList(fetchedList[0]);
-            setSelectedItems(fetchedList[0].items || []);
+            setSelectedItems(
+              fetchedList[0].items.map((listItem: ListItem) => listItem.item) ||
+                [],
+            );
           }
         }
       } catch (err) {
@@ -273,6 +287,7 @@ export default function ListPage() {
 
     return Array.from(categoryTotals.values());
   };
+
   // Handle loading state
   if (isLoading) {
     return (

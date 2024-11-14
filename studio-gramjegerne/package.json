@@ -9,7 +9,8 @@
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy-graphql": "sanity graphql deploy",
+    "fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts"
   },
   "keywords": [
     "sanity"
@@ -19,19 +20,24 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sanity": "^3.64.1",
-    "styled-components": "^6.1.8"
+    "styled-components": "^6.1.8",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",
+    "@types/node": "^22.9.0",
     "@types/react": "^18.0.25",
+    "@types/uuid": "^10.0.0",
     "eslint": "^8.6.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.1.6"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   },
   "prettier": {
     "semi": false,
     "printWidth": 100,
     "bracketSpacing": false,
     "singleQuote": true
-  }
+  },
+  "type": "module"
 }
