@@ -18,12 +18,6 @@ interface ImportItem {
   image_url?: string;
 }
 
-interface CategoryReference {
-  _type: "reference";
-  _ref: string;
-  _key: string;
-}
-
 interface SanityCategory {
   _id: string;
   title: string;
@@ -37,8 +31,6 @@ const client = createClient({
   apiVersion: "2023-01-01",
 });
 
-const generateKey = () => Math.random().toString(36).substr(2, 9);
-
 export async function POST(request: Request) {
   try {
     const items = (await request.json()) as ImportItem[];
@@ -48,58 +40,31 @@ export async function POST(request: Request) {
       try {
         console.log("Processing item:", item);
 
-        let categoryRefs: CategoryReference[] = [];
+        let categoryRef = null;
 
         if (item.category) {
-          const categoryNames = item.category
-            .split(",")
-            .map((cat) => cat.trim());
-          console.log("Category names to process:", categoryNames);
+          const categoryName = item.category.trim();
 
-          // First, check which categories exist
-          const existingCategories = await client.fetch<SanityCategory[]>(
-            `*[_type == "category" && title in $names]{
-              _id,
-              title
-            }`,
-            { names: categoryNames },
+          let category = await client.fetch<SanityCategory>(
+            `*[_type == "category" && title == $name][0]`,
+            { name: categoryName },
           );
 
-          console.log("Found existing categories:", existingCategories);
-
-          // Find categories that need to be created
-          const existingTitles = existingCategories.map((c) => c.title);
-          const newCategoryNames = categoryNames.filter(
-            (name) => !existingTitles.includes(name),
-          );
-
-          // Create new categories
-          for (const categoryName of newCategoryNames) {
-            try {
-              console.log("Creating new category:", categoryName);
-              const newCategory = await client.create({
-                _type: "category",
-                title: categoryName,
-                slug: {
-                  _type: "slug",
-                  current: categoryName.toLowerCase().replace(/\s+/g, "-"),
-                },
-              });
-              console.log("Created new category:", newCategory);
-              existingCategories.push(newCategory);
-            } catch (error) {
-              console.error(`Error creating category ${categoryName}:`, error);
-            }
+          if (!category) {
+            category = await client.create({
+              _type: "category",
+              title: categoryName,
+              slug: {
+                _type: "slug",
+                current: categoryName.toLowerCase().replace(/\s+/g, "-"),
+              },
+            });
           }
 
-          // Create references for all categories (both existing and newly created)
-          categoryRefs = existingCategories.map((category: SanityCategory) => ({
+          categoryRef = {
             _type: "reference",
             _ref: category._id,
-            _key: generateKey(),
-          }));
-
-          console.log("Final category references:", categoryRefs);
+          };
         }
 
         // Handle image upload if URL exists
@@ -144,7 +109,7 @@ export async function POST(request: Request) {
               }
             : undefined,
           calories: item.calories ? Number(item.calories) : undefined,
-          categories: categoryRefs,
+          category: categoryRef,
           // Add image reference if upload was successful
           ...(imageAsset && {
             image: {

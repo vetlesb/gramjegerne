@@ -22,7 +22,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [size, setSize] = useState<string>("");
   const [weight, setWeight] = useState<{ weight: number; unit: string }>({
     weight: 0,
@@ -51,7 +51,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
 
         // Set the first category as selected by default
         if (sortedCategories.length > 0) {
-          setSelectedCategories([sortedCategories[0]._id]);
+          setSelectedCategory(sortedCategories[0]._id);
         }
       } catch (error) {
         console.error(error);
@@ -114,10 +114,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       formData.append("image", image);
     }
 
-    // Append selected categories
-    selectedCategories.forEach((categoryId) =>
-      formData.append("categories", categoryId),
-    );
+    formData.append("category", selectedCategory);
 
     formData.append("size", size);
     formData.append("weight.weight", weight.weight.toString()); // Updated key
@@ -153,7 +150,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       setSlug("");
       setImage(null);
       setImagePreview(null);
-      setSelectedCategories([]);
+      setSelectedCategory("");
       setSize("");
       setWeight({ weight: 0, unit: "g" });
       setQuantity(0);
@@ -237,10 +234,8 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
             Kategori
             <select
               className="w-full max-w-full p-4"
-              value={selectedCategories[0]}
-              onChange={(e) => {
-                setSelectedCategories([e.target.value]);
-              }}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               required
             >
               {categories.map((category) => (

@@ -4,7 +4,7 @@
 
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import EditItemForm from "../components/EditItemForm";
 import ImportForm from "@/components/ImportForm";
@@ -35,6 +35,10 @@ interface ImageAsset {
 interface Item {
   _id: string;
   name: string;
+  category?: {
+    _id: string;
+    title: string;
+  };
   slug: string;
   image?: {
     asset: ImageAsset;
@@ -43,7 +47,6 @@ interface Item {
   weight?: { weight: number; unit: string };
   quantity?: number;
   calories?: number;
-  categories?: { _id: string; title: string }[]; // Populated categories
 }
 
 const builder = imageUrlBuilder(client);
@@ -64,7 +67,7 @@ const ITEMS_QUERY = `*[_type == "item"]{
       url
     }
   },
-  "categories": categories[]-> {_id, title},
+  "category": category->{_id, title},
   size,
   weight,
   quantity,
@@ -99,9 +102,7 @@ export default function IndexPage() {
 
         // Filter categories to only those with items
         const categoriesWithEntries = sortedCategories.filter((category) =>
-          fetchedItems.some((item) =>
-            item.categories?.some((cat) => cat._id === category._id),
-          ),
+          fetchedItems.some((item) => item.category?._id === category._id),
         );
 
         setItems(fetchedItems);
@@ -147,15 +148,18 @@ export default function IndexPage() {
     };
   }, [categories]);
 
-  const filteredItems = selectedCategory
-    ? items.filter((item) =>
-        item.categories?.some((category) => category._id === selectedCategory),
-      )
-    : items;
-
-  const sortedItems = [...filteredItems].sort((a, b) =>
-    a.name.localeCompare(b.name),
+  const sortedItems: Item[] = useMemo(
+    () =>
+      [...items].sort((a: Item, b: Item) => a.name.localeCompare(b.name, "nb")),
+    [items],
   );
+
+  const filteredItems: Item[] = useMemo(() => {
+    if (!selectedCategory) return sortedItems;
+    return sortedItems.filter(
+      (item: Item) => item.category?._id === selectedCategory,
+    );
+  }, [sortedItems, selectedCategory]);
 
   const handleCategorySelect = (category: Category | null) => {
     if (category) {
@@ -256,8 +260,9 @@ export default function IndexPage() {
   };
 
   const hasReferences = async (categoryId: string): Promise<boolean> => {
-    const itemsWithCategory = await client.fetch(
-      `*[_type == "item" && references("${categoryId}")]`,
+    const itemsWithCategory = await client.fetch<Item[]>(
+      `*[_type == "item" && category._ref == $categoryId]`,
+      { categoryId },
     );
     return itemsWithCategory.length > 0;
   };
@@ -521,7 +526,7 @@ export default function IndexPage() {
       )}
 
       <ul className="flex flex-col">
-        {sortedItems.map((item) => (
+        {filteredItems.map((item) => (
           <li
             className="product flex items-center gap-4 py-2 hover:bg-gray-100 rounded-md p-2"
             key={item._id}

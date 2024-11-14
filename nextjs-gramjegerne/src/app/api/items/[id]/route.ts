@@ -6,10 +6,10 @@ import { createClient } from "@sanity/client";
 interface UpdateData {
   name: string | null;
   slug: string | null;
-  categories?: Array<{
+  category?: {
     _type: "reference";
     _ref: string;
-  }>;
+  };
   size?: string;
   weight?: {
     weight: number;
@@ -53,12 +53,12 @@ export async function PUT(request: NextRequest) {
       slug: formData.get("slug")?.toString() ?? null,
     };
     // Handle categories
-    const categories = formData.getAll("categories").map((category) => ({
-      _type: "reference" as const,
-      _ref: category.toString(),
-    }));
-    if (categories.length > 0) {
-      updateData.categories = categories;
+    const category = formData.get("category");
+    if (category) {
+      updateData.category = {
+        _type: "reference",
+        _ref: category.toString(),
+      };
     }
 
     // Handle optional fields

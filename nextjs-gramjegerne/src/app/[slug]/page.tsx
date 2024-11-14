@@ -32,7 +32,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     `*[_type == "category" && slug.current == $slug][0]{
       _id,
       title,
-      "items": *[_type == "item" && references(^._id)]{
+      "items": *[_type == "item" && category._ref == ^._id]{
         _id, name, image, size, weight, quantity, calories
       }
     }`,

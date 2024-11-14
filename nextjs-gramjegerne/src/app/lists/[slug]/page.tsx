@@ -25,7 +25,10 @@ interface Category {
 interface Item {
   _id: string;
   name: string;
-  categories?: { _id: string; title: string }[] | null;
+  category?: {
+    _id: string;
+    title: string;
+  } | null;
   image?: SanityImageSource;
   size?: string;
   weight?: { weight: number; unit: string };
@@ -50,9 +53,15 @@ function urlFor(source: SanityImageSource) {
 }
 
 const ITEMS_QUERY = `*[_type == "item"]{
-  _id, name, slug, image,
-  "categories": categories[]-> {_id, title},
-  size, weight, quantity, calories
+  _id, 
+  name, 
+  slug, 
+  image,
+  "category": category->{_id, title}, 
+  size, 
+  weight, 
+  quantity, 
+  calories
 }`;
 
 const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
@@ -69,7 +78,7 @@ const LIST_QUERY = (
     "item": @->{
       _id,
       name,
-      "categories": categories[]->{_id, title},
+      "category": category->{_id, title},
       image,
       size,
       weight,
@@ -77,6 +86,11 @@ const LIST_QUERY = (
     }
   }
 }`;
+
+// Add a helper function to generate unique keys
+function generateKey(): string {
+  return Math.random().toString(36).substr(2, 9);
+}
 
 export default function ListPage() {
   // State variables and Hooks
@@ -175,7 +189,11 @@ export default function ListPage() {
           listId: list._id,
           items: selectedItems
             .filter((i) => i._id !== item._id)
-            .map((i) => i._id),
+            .map((item) => ({
+              _key: generateKey(),
+              _type: "reference",
+              _ref: item._id,
+            })),
         }),
       });
 
@@ -192,32 +210,18 @@ export default function ListPage() {
 
   // Filter items for the category selection
   const filteredItemsForList = useMemo(() => {
-    // If no items, return empty array
-    if (!selectedItems || selectedItems.length === 0) {
-      return [];
-    }
+    if (!selectedItems || selectedItems.length === 0) return [];
+    if (selectedCategory === null) return selectedItems;
 
-    // If no category selected, return all items
-    if (selectedCategory === null) {
-      return selectedItems;
-    }
-
-    // Filter items with proper null checks
-    return selectedItems.filter((item) => {
-      if (!item) return false;
-      if (!item.categories) return false;
-
-      return item.categories.some(
-        (category) => category && category._id === selectedCategory,
-      );
-    });
+    return selectedItems.filter(
+      (item) => item.category?._id === selectedCategory, // Changed from categories array check
+    );
   }, [selectedItems, selectedCategory]);
 
   // Filter categories to only those with items in the selectedItems
-  const filteredCategoriesForList = categories.filter((category) =>
-    selectedItems.some((item) =>
-      item.categories?.some((cat) => cat._id === category._id),
-    ),
+  const filteredCategoriesForList = categories.filter(
+    (category) =>
+      selectedItems.some((item) => item.category?._id === category._id), // Changed from categories array check
   );
 
   // Filter items based on the search query in the dialog
@@ -262,38 +266,38 @@ export default function ListPage() {
   }, [filteredItemsForList]);
 
   const calculateCategoryTotals = (items: Item[]) => {
-    if (!items || items.length === 0) {
-      return [];
-    }
-
-    const categoryTotals = new Map();
+    const totals = new Map<
+      string,
+      {
+        title: string;
+        weight: number;
+        items: number;
+        calories: number;
+      }
+    >();
 
     items.forEach((item) => {
-      if (!item || !item.categories) return;
+      if (!item.category) return;
 
-      item.categories.forEach((category) => {
-        if (!category || !category._id || !category.title) return;
+      const categoryId = item.category._id;
+      const categoryTitle = item.category.title;
 
-        const current = categoryTotals.get(category._id) || {
-          title: category.title,
-          weight: 0,
-          items: 0,
-          calories: 0,
-        };
+      const current = totals.get(categoryId) || {
+        title: categoryTitle,
+        weight: 0,
+        items: 0,
+        calories: 0,
+      };
 
-        const itemWeight = item.weight?.weight || 0;
-        const itemCalories = item.calories || 0;
-
-        categoryTotals.set(category._id, {
-          ...current,
-          weight: current.weight + itemWeight,
-          items: current.items + 1,
-          calories: current.calories + itemCalories,
-        });
+      totals.set(categoryId, {
+        ...current,
+        weight: current.weight + (item.weight?.weight || 0),
+        items: current.items + 1,
+        calories: current.calories + (item.calories || 0),
       });
     });
 
-    return Array.from(categoryTotals.values());
+    return Array.from(totals.values());
   };
 
   // First, let's add a loading and error state check at the start of the component render
@@ -474,7 +478,11 @@ export default function ListPage() {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         listId: list._id,
-                        items: tempSelectedItems.map((i) => i._id),
+                        items: tempSelectedItems.map((item) => ({
+                          _key: generateKey(),
+                          _type: "reference",
+                          _ref: item._id,
+                        })),
                       }),
                     });
 

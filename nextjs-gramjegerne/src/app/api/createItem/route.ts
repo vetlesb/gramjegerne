@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       (formData.get("slug") as string) ||
       name.toLowerCase().replace(/\s+/g, "-").slice(0, 200);
     const imageFile = formData.get("image") as File | null;
-    const categories = formData.getAll("categories") as string[];
+    const categoryId = formData.get("category") as string;
     const size = formData.get("size") as string;
     const weight_weight = formData.get("weight.weight") as string;
     const weight_unit = formData.get("weight.unit") as string;
@@ -47,11 +47,10 @@ export async function POST(request: Request) {
     }
 
     // Create category references with unique _key
-    const categoryRefs = categories.map((categoryId) => ({
+    const categoryRef = {
       _type: "reference",
       _ref: categoryId,
-      _key: Math.random().toString(36).substr(2, 9), // Generate a unique key
-    }));
+    };
 
     // Construct the new item object
     const newItem = {
@@ -64,7 +63,7 @@ export async function POST(request: Request) {
       ...(imageAsset && {
         image: { _type: "image", asset: { _ref: imageAsset } },
       }),
-      categories: categoryRefs,
+      category: categoryRef,
       size,
       weight: {
         weight: Number(weight_weight),

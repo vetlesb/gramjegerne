@@ -19,7 +19,7 @@ interface EditItemFormProps {
         url?: string;
       };
     };
-    categories?: { _id: string; title: string }[];
+    category?: { _id: string; title: string };
     size?: string;
     weight?: { weight: number; unit: string };
     quantity?: number;
@@ -36,11 +36,8 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     item.image?.asset.url || null,
   );
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    // Initialize with the first category if it exists
-    item.categories && item.categories.length > 0
-      ? [item.categories[0]._id]
-      : [],
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    item.category?._id || "",
   );
   const [size, setSize] = useState<string>(item.size || "");
   const [weight, setWeight] = useState<{ weight: number; unit: string }>({
@@ -67,8 +64,8 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
         setCategories(sortedCategories);
 
         // If no category is selected and we have categories, select the first one
-        if (selectedCategories.length === 0 && sortedCategories.length > 0) {
-          setSelectedCategories([sortedCategories[0]._id]);
+        if (selectedCategory.length === 0 && sortedCategories.length > 0) {
+          setSelectedCategory(sortedCategories[0]._id);
         }
       } catch (error) {
         console.error("Category fetch error:", error);
@@ -76,7 +73,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       }
     };
     fetchCategories();
-  }, [selectedCategories.length]);
+  }, [selectedCategory.length]);
 
   useEffect(() => {
     if (name) {
@@ -128,9 +125,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       formData.append("image", image);
     }
 
-    selectedCategories.forEach((categoryId) =>
-      formData.append("categories", categoryId),
-    );
+    formData.append("category", selectedCategory);
     formData.append("size", size);
     formData.append("weight.weight", weight.weight.toString());
     formData.append("weight.unit", weight.unit);
@@ -228,10 +223,8 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
             Kategori
             <select
               className="w-full max-w-full p-4"
-              value={selectedCategories[0] || ""} // Use first selected category or empty string
-              onChange={(e) => {
-                setSelectedCategories([e.target.value]); // Wrap the selected value in an array
-              }}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               required
             >
               {categories.map((category) => (

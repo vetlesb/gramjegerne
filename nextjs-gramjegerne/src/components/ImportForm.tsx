@@ -14,7 +14,7 @@ interface ExcelRow {
   weight?: string;
   unit?: string;
   calories?: string;
-  categories?: string;
+  category?: string;
   [key: string]: string | undefined;
 }
 
