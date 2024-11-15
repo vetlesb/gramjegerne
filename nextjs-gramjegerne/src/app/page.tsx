@@ -87,6 +87,7 @@ export default function IndexPage() {
   const [allCategories, setAllCategories] = useState<Category[]>([]); // Fetch all categories
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<Item | null>(null); // Track item for editing
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -325,6 +326,21 @@ export default function IndexPage() {
     }
   };
 
+  const handleImportSuccess = async () => {
+    // Don't refresh immediately, let the ImportForm handle its own state
+    // We'll refresh only when the dialog is actually closed
+  };
+
+  const handleDialogClose = async () => {
+    await refreshItems(); // Refresh items when dialog actually closes
+    setIsImportDialogOpen(false);
+  };
+
+  // Add this handler to open the dialog
+  const handleOpenImportDialog = () => {
+    setIsImportDialogOpen(true);
+  };
+
   return (
     <main className="container mx-auto min-h-screen p-16">
       <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
@@ -436,32 +452,32 @@ export default function IndexPage() {
             <DialogFooter></DialogFooter>
           </DialogContent>
         </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="button-create flex flex-row items-center gap-x-2 text-md">
-              Import fra Excel
-              <span className="icon-wrapper">
-                <svg
-                  className="tag-icon"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M-0.0078125 7.35938C-0.0078125 6.88281 0.390625 6.48438 0.867188 6.48438H5.65625V1.69531C5.65625 1.21875 6.05469 0.820312 6.53125 0.820312C7.00781 0.820312 7.40625 1.21875 7.40625 1.69531V6.48438H12.1953C12.6719 6.48438 13.0703 6.88281 13.0703 7.35938C13.0703 7.84375 12.6719 8.23438 12.1953 8.23438H7.40625V13.0234C7.40625 13.5 7.00781 13.8984 6.53125 13.8984C6.05469 13.8984 5.65625 13.5 5.65625 13.0234V8.23438H0.867188C0.390625 8.23438 -0.0078125 7.84375 -0.0078125 7.35938Z"
-                    fill="#EAFFE2"
-                  />
-                </svg>
-              </span>
-            </button>
-          </DialogTrigger>
-          <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
+        <button className="button-primary" onClick={handleOpenImportDialog}>
+          Importer utstyr
+        </button>
+
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent
+            className="dialog p-4 md:p-10 rounded-2xl"
+            onInteractOutside={(e) => e.preventDefault()}
+          >
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal text-accent">
-                Import fra Excel
+              <DialogTitle className="text-xl text-accent font-normal">
+                Importer utstyr
               </DialogTitle>
             </DialogHeader>
-            <ImportForm onSuccess={refreshItems} />
+            <ImportForm onSuccess={handleImportSuccess} />
+            <DialogFooter>
+              <DialogClose asChild>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={handleDialogClose}
+                >
+                  Lukk
+                </button>
+              </DialogClose>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 

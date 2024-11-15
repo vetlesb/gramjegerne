@@ -42,6 +42,8 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
 
+      console.log("Parsed Excel data:", jsonData);
+
       const totalItems = jsonData.length;
       setTotalLines(totalItems);
 
@@ -53,6 +55,8 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         const batch = jsonData.slice(i, i + batchSize);
 
         try {
+          console.log(`Processing batch ${i / batchSize + 1}:`, batch);
+
           const response = await fetch("/api/importItems", {
             method: "POST",
             headers: {
@@ -62,29 +66,37 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(
+              `HTTP error! status: ${response.status}, message: ${errorText}`,
+            );
           }
 
           const { results: batchResults } = await response.json();
+
+          console.log(`Batch ${i / batchSize + 1} results:`, batchResults);
+
           processedResults = [...processedResults, ...batchResults];
 
-          // Update progress
           const currentCompleted = Math.min(i + batch.length, totalItems);
           setCompletedLines(currentCompleted);
           setProgress(Math.round((currentCompleted / totalItems) * 100));
-          setResults(processedResults); // Update results after each batch
+          setResults(processedResults);
         } catch (error) {
-          console.error(`Error processing batch:`, error);
-          // Add failed results for this batch
+          console.error(`Error processing batch ${i / batchSize + 1}:`, error);
+
+          // Add more detailed error information for failed items
           const failedResults = batch.map((item) => ({
             success: false,
-            name: item.name,
+            name: item.name || "Unknown item",
             error:
-              error instanceof Error ? error.message : "Failed to process item",
+              error instanceof Error
+                ? `Failed to process item: ${error.message}`
+                : "Failed to process item: Unknown error",
           }));
+
           processedResults = [...processedResults, ...failedResults];
 
-          // Still update progress even for failed items
           const currentCompleted = Math.min(i + batch.length, totalItems);
           setCompletedLines(currentCompleted);
           setProgress(Math.round((currentCompleted / totalItems) * 100));
@@ -92,10 +104,15 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         }
       }
 
-      // Final update of results
       setResults(processedResults);
 
-      // Check if all items were successful
+      // Log final results
+      console.log("Final import results:", {
+        total: totalItems,
+        successful: processedResults.filter((r) => r.success).length,
+        failed: processedResults.filter((r) => !r.success).length,
+      });
+
       if (processedResults.every((r) => r.success)) {
         onSuccess();
       }
@@ -105,7 +122,10 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         {
           success: false,
           name: "Import",
-          error: "Failed to process Excel file",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to process Excel file",
         },
       ]);
     } finally {

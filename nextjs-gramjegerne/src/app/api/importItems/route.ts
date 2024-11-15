@@ -41,6 +41,22 @@ export async function POST(request: Request) {
       try {
         console.log("Processing item:", item);
 
+        // Check if item already exists
+        const existingItem = await client.fetch(
+          `*[_type == "item" && name == $name][0]`,
+          { name: item.name },
+        );
+
+        if (existingItem) {
+          results.push({
+            success: false,
+            name: item.name,
+            error: "Item already exists in the database",
+            id: existingItem._id,
+          });
+          continue;
+        }
+
         let categoryRef = null;
 
         if (item.category) {
@@ -111,7 +127,6 @@ export async function POST(request: Request) {
             : undefined,
           calories: item.calories ? Number(item.calories) : undefined,
           category: categoryRef,
-          // Add image reference if upload was successful
           ...(imageAsset && {
             image: {
               _type: "image",
@@ -138,7 +153,10 @@ export async function POST(request: Request) {
         results.push({
           success: false,
           name: item.name,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error:
+            error instanceof Error
+              ? `Error: ${error.message}`
+              : "Unknown error occurred",
         });
       }
     }
