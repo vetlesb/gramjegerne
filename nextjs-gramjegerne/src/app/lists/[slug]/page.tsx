@@ -47,6 +47,14 @@ interface List {
   items: ListItem[];
 }
 
+// Update the interface for Sanity item response
+interface SanityItemResponse {
+  _key: string;
+  _ref: string;
+  _type: string;
+  item: Item;
+}
+
 const builder = imageUrlBuilder(client);
 
 function urlFor(source: SanityImageSource) {
@@ -100,7 +108,7 @@ function generateKey(): string {
   return Math.random().toString(36).substring(2, 15);
 }
 
-export default function ListPage({ params }: { params: { slug: string } }) {
+export default function ListPage() {
   // State variables and Hooks
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -333,14 +341,12 @@ export default function ListPage({ params }: { params: { slug: string } }) {
         return;
       }
 
-      // Create references to items
       const itemReferences = tempSelectedItems.map((item) => ({
         _type: "reference",
         _ref: item._id,
         _key: generateKey(),
       }));
 
-      // Update the list through the API route
       const response = await fetch("/api/updateList", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -354,14 +360,14 @@ export default function ListPage({ params }: { params: { slug: string } }) {
         throw new Error(`Failed to update list: ${response.statusText}`);
       }
 
-      // Refetch the list to get the resolved references
       const fetchedList = await client.fetch(LIST_QUERY(listSlug));
       if (fetchedList && fetchedList.length > 0) {
         const updatedList = fetchedList[0];
         setList(updatedList);
-        // Create proper ListItem objects from the fetched items
+
+        // Use the new interface for type safety
         const updatedListItems =
-          updatedList.items?.map((item: any) => ({
+          updatedList.items?.map((item: SanityItemResponse) => ({
             _key: item._key || generateKey(),
             _type: "reference",
             _ref: item._ref,
