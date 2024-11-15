@@ -293,7 +293,6 @@ export default function ListPage() {
     >();
 
     items.forEach((item) => {
-      // Skip if item or item.category is null/undefined
       if (!item?.category?._id || !item?.category?.title) return;
 
       const categoryId = item.category._id;
@@ -306,15 +305,20 @@ export default function ListPage() {
         calories: 0,
       };
 
-      // Safely access optional properties
-      const weight = item.weight?.weight || 0;
-      const calories = item.calories || 0;
+      // Convert weight to kg if needed
+      let weight = 0;
+      if (item.weight?.weight) {
+        weight = item.weight.weight;
+        if (item.weight.unit === "g") {
+          weight = weight / 1000; // Convert grams to kilograms
+        }
+      }
 
       totals.set(categoryId, {
         ...current,
         weight: current.weight + weight,
         items: current.items + 1,
-        calories: current.calories + calories,
+        calories: current.calories + (item.calories || 0),
       });
     });
 
