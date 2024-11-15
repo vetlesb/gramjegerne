@@ -37,19 +37,17 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     setCompletedLines(0);
 
     try {
-      // Read Excel file
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
 
-      // Set total lines at the start
-      setTotalLines(jsonData.length);
+      const totalItems = jsonData.length;
+      setTotalLines(totalItems);
 
       // Process items in batches
       const batchSize = 10;
-      const totalItems = jsonData.length;
-      const results: ImportResult[] = [];
+      let processedResults: ImportResult[] = [];
 
       for (let i = 0; i < totalItems; i += batchSize) {
         const batch = jsonData.slice(i, i + batchSize);
@@ -67,34 +65,38 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const batchResults = await response.json();
-          results.push(...batchResults.results);
+          const { results: batchResults } = await response.json();
+          processedResults = [...processedResults, ...batchResults];
 
-          // Update progress and completed lines
+          // Update progress
           const currentCompleted = Math.min(i + batch.length, totalItems);
           setCompletedLines(currentCompleted);
           setProgress(Math.round((currentCompleted / totalItems) * 100));
-          setResults(results);
+          setResults(processedResults); // Update results after each batch
         } catch (error) {
-          console.error(`Error processing batch ${i}-${i + batchSize}:`, error);
-          // Add error results for failed batch
-          batch.forEach((item: ExcelRow) => {
-            results.push({
-              success: false,
-              name: item.name || "Unknown item",
-              error: "Failed to process item",
-            });
-          });
-          // Still update completed lines even for failures
-          setCompletedLines(i + batch.length);
+          console.error(`Error processing batch:`, error);
+          // Add failed results for this batch
+          const failedResults = batch.map((item) => ({
+            success: false,
+            name: item.name,
+            error:
+              error instanceof Error ? error.message : "Failed to process item",
+          }));
+          processedResults = [...processedResults, ...failedResults];
+
+          // Still update progress even for failed items
+          const currentCompleted = Math.min(i + batch.length, totalItems);
+          setCompletedLines(currentCompleted);
+          setProgress(Math.round((currentCompleted / totalItems) * 100));
+          setResults(processedResults);
         }
       }
 
-      // Final results update
-      setResults(results);
+      // Final update of results
+      setResults(processedResults);
 
-      // If all successful, trigger refresh
-      if (results.every((r) => r.success)) {
+      // Check if all items were successful
+      if (processedResults.every((r) => r.success)) {
         onSuccess();
       }
     } catch (error) {
@@ -109,6 +111,7 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     } finally {
       setImporting(false);
       setProgress(100);
+      setCompletedLines(totalLines);
     }
   };
 

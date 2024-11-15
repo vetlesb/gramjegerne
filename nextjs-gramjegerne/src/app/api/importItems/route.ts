@@ -34,6 +34,7 @@ const client = createClient({
 export async function POST(request: Request) {
   try {
     const items = (await request.json()) as ImportItem[];
+    console.log("Received items:", JSON.stringify(items, null, 2));
     const results: ImportResult[] = [];
 
     for (const item of items) {
