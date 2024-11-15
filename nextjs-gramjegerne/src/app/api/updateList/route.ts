@@ -13,18 +13,19 @@ export async function PUT(request: Request) {
   try {
     const { listId, items } = await request.json();
 
+    if (!listId) {
+      return NextResponse.json(
+        { error: "List ID is required" },
+        { status: 400 },
+      );
+    }
+
     // Update the list with new items array
+    // Expecting items to be an array of references with _key, _type, and _ref
     const result = await client
       .patch(listId)
       .set({
-        items: items.map((item: { _id: string; quantity: number }) => ({
-          _type: "object",
-          item: {
-            _type: "reference",
-            _ref: item._id,
-          },
-          quantity: item.quantity,
-        })),
+        items: items, // Items should already be in the correct reference format
       })
       .commit();
 
