@@ -100,7 +100,7 @@ function generateKey(): string {
   return Math.random().toString(36).substring(2, 15);
 }
 
-export default function ListPage() {
+export default function ListPage({ params }: { params: { slug: string } }) {
   // State variables and Hooks
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -325,6 +325,58 @@ export default function ListPage() {
     return Array.from(totals.values());
   };
 
+  // Add this function inside the component
+  const handleSaveChanges = async () => {
+    try {
+      if (!list || !listSlug) {
+        console.error("No list or list slug found");
+        return;
+      }
+
+      // Create references to items
+      const itemReferences = tempSelectedItems.map((item) => ({
+        _type: "reference",
+        _ref: item._id,
+        _key: generateKey(),
+      }));
+
+      // Update the list through the API route
+      const response = await fetch("/api/updateList", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listId: list._id,
+          items: itemReferences,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update list: ${response.statusText}`);
+      }
+
+      // Refetch the list to get the resolved references
+      const fetchedList = await client.fetch(LIST_QUERY(listSlug));
+      if (fetchedList && fetchedList.length > 0) {
+        const updatedList = fetchedList[0];
+        setList(updatedList);
+        // Create proper ListItem objects from the fetched items
+        const updatedListItems =
+          updatedList.items?.map((item: any) => ({
+            _key: item._key || generateKey(),
+            _type: "reference",
+            _ref: item._ref,
+            item: item.item,
+          })) || [];
+
+        setSelectedItems(updatedListItems);
+      }
+
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving list:", error);
+    }
+  };
+
   // First, let's add a loading and error state check at the start of the component render
   if (isLoading) {
     return (
@@ -494,57 +546,7 @@ export default function ListPage() {
             </div>
             <DialogFooter>
               <button
-                onClick={async () => {
-                  try {
-                    if (!list) {
-                      console.error("No list found");
-                      return;
-                    }
-
-                    // Create references to items
-                    const itemReferences = tempSelectedItems.map((item) => ({
-                      _type: "reference",
-                      _ref: item._id,
-                      _key: generateKey(),
-                    }));
-
-                    // Update the list through the API route
-                    const response = await fetch("/api/updateList", {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        listId: list._id,
-                        items: itemReferences,
-                      }),
-                    });
-
-                    if (!response.ok) {
-                      throw new Error(
-                        `Failed to update list: ${response.statusText}`,
-                      );
-                    }
-
-                    // Refetch the list to get the resolved references
-                    const fetchedList = await client.fetch(
-                      LIST_QUERY(listSlug),
-                    );
-                    if (fetchedList && fetchedList.length > 0) {
-                      setList(fetchedList[0]);
-                      setSelectedItems(
-                        fetchedList[0].items?.map((item: Item) => ({
-                          _key: generateKey(),
-                          _type: "reference",
-                          _ref: item._id,
-                          item: item,
-                        })) || [],
-                      );
-                    }
-
-                    setIsDialogOpen(false);
-                  } catch (error) {
-                    console.error("Error saving list:", error);
-                  }
-                }}
+                onClick={handleSaveChanges}
                 className="button-primary-accent"
               >
                 Lagre endringer
