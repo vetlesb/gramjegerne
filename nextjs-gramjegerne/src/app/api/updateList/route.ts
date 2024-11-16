@@ -33,13 +33,26 @@ export async function PUT(request: Request) {
       );
     }
 
-    const result = await client.patch(listId).set({ items }).commit();
+    console.log("Updating list:", listId);
+    console.log("With items:", items);
+
+    // Validate input
+    if (!listId || !Array.isArray(items)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid input" },
+        { status: 400 },
+      );
+    }
+
+    const result = await client.patch(listId).set({ items: items }).commit();
+
+    console.log("Sanity update result:", result);
 
     return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error("Error updating list:", error);
     return NextResponse.json(
-      { error: "Failed to update list" },
+      { success: false, error: (error as Error).message },
       { status: 500 },
     );
   }

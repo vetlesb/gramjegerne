@@ -74,6 +74,8 @@ li.list {
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
 }
 ul.product {
   display: grid;
