@@ -101,58 +101,68 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
 
     try {
       const formData = new FormData();
-      formData.append("name", name);
-      formData.append("slug", slug);
 
+      // Required fields
+      formData.append("name", name.trim());
+      formData.append("slug", slug);
+      formData.append("category", selectedCategory); // Make sure category is always sent
+
+      // Optional fields with validation
       if (image) {
         formData.append("image", image);
       }
 
-      if (selectedCategory) {
-        formData.append("category", selectedCategory);
+      if (size && size.trim()) {
+        formData.append("size", size.trim());
       }
 
-      if (size) {
-        formData.append("size", size);
-      }
-
+      // Weight handling
       if (weight.weight > 0) {
-        formData.append("weight.weight", weight.weight.toString());
-        formData.append("weight.unit", weight.unit);
+        formData.append(
+          "weight",
+          JSON.stringify({
+            weight: weight.weight,
+            unit: weight.unit,
+          }),
+        );
       }
 
       if (calories > 0) {
         formData.append("calories", calories.toString());
       }
 
-      console.log("Client: Sending form data:", Object.fromEntries(formData));
+      // Debug log
+      console.log("Sending form data:", {
+        name: name.trim(),
+        slug,
+        category: selectedCategory,
+        size: size.trim(),
+        weight: weight.weight > 0 ? weight : null,
+        calories: calories > 0 ? calories : null,
+      });
 
       const response = await fetch("/api/createItem", {
         method: "POST",
         body: formData,
       });
 
-      const responseText = await response.text();
-      console.log("Client: Raw response:", responseText);
-
       if (!response.ok) {
-        let errorMessage = "Failed to create item";
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-          console.error("Client: Error parsing response:", e);
-        }
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create item");
       }
 
-      const result = JSON.parse(responseText);
-      console.log("Client: Item created:", result);
+      const result = await response.json();
+      console.log("Item created:", result);
 
       // Reset form
       setName("");
       setSlug("");
-      setSelectedCategory("");
+      setImage(null);
+      setImagePreview(null);
+      setSelectedCategory(categories[0]?._id || "");
+      setSize("");
+      setWeight({ weight: 0, unit: "g" });
+      setCalories(0);
 
       setSuccessMessage("Utstyr opprettet!");
 
@@ -160,7 +170,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
         onSuccess(result);
       }
     } catch (error) {
-      console.error("Client: Detailed error:", error);
+      console.error("Error creating item:", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -188,16 +198,17 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-y-4">
-        {/* Item Name */}
+        {/* Name field */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Navn
+            Navn *
             <input
               className="w-full max-w-full p-4"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              minLength={1}
               placeholder="Skriv inn utstyrsnavn"
             />
           </label>
@@ -235,17 +246,17 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
           )}
         </div>
 
-        {/* Categories */}
+        {/* Category field - make sure it's required */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Kategori
+            Kategori *
             <select
               className="w-full max-w-full p-4"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               required
             >
-              <option value="">Select a category</option>
+              <option value="">Velg kategori</option>
               {categories.map((category) => (
                 <option key={category._id} value={category._id}>
                   {category.title}
@@ -269,20 +280,24 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
           </label>
         </div>
 
-        {/* Weight */}
+        {/* Weight field - make sure it's properly validated */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Vekt
+            Vekt *
             <div className="flex flex-row gap-x-2">
               <input
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
                 onChange={(e) =>
-                  setWeight({ ...weight, weight: parseFloat(e.target.value) })
+                  setWeight({
+                    ...weight,
+                    weight: Math.max(0, parseFloat(e.target.value) || 0),
+                  })
                 }
                 placeholder="Vekt"
                 min="0"
+                step="0.1"
                 required
               />
               <select

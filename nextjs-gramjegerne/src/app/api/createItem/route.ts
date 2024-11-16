@@ -20,6 +20,19 @@ interface SanityDocument {
     _type: string;
     _ref: string;
   };
+  size?: string;
+  weight?: {
+    weight: number;
+    unit: string;
+  };
+  calories?: number;
+  image?: {
+    _type: string;
+    asset: {
+      _type: string;
+      _ref: string;
+    };
+  };
 }
 
 export async function POST(request: Request) {
@@ -35,46 +48,91 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     console.log("API: Received form data:", Object.fromEntries(formData));
 
-    const name = formData.get("name")?.toString() || "";
-    const slug = formData.get("slug")?.toString() || "";
+    // Required fields
+    const name = formData.get("name")?.toString();
+    const slug = formData.get("slug")?.toString();
+    const categoryId = formData.get("category")?.toString();
 
-    if (!name || !slug) {
+    if (!name || !slug || !categoryId) {
       return new Response(
-        JSON.stringify({ message: "Name and slug are required" }),
+        JSON.stringify({
+          message: "Name, slug, and category are required",
+        }),
         { status: 400 },
       );
     }
 
-    // Use the consistent user ID format
-    const userId = session.user.id;
-
-    // Create item document with reference to user's ID
+    // Create base document
     const document: SanityDocument = {
       _type: "item",
-      name: name,
+      name: name.trim(),
       slug: {
         _type: "slug",
         current: slug,
       },
       user: {
         _type: "reference",
-        _ref: userId, // Use the formatted ID directly
+        _ref: session.user.id,
+      },
+      category: {
+        _type: "reference",
+        _ref: categoryId,
       },
     };
 
-    // Only add category if it exists and is not empty
-    const categoryId = formData.get("category")?.toString();
-    if (categoryId && categoryId !== "") {
-      document.category = {
-        _type: "reference",
-        _ref: categoryId,
-      };
+    // Optional fields
+    const size = formData.get("size")?.toString();
+    if (size && size.trim()) {
+      document.size = size.trim();
+    }
+
+    // Handle weight
+    const weightData = formData.get("weight")?.toString();
+    if (weightData) {
+      try {
+        const parsedWeight = JSON.parse(weightData);
+        if (parsedWeight.weight > 0) {
+          document.weight = {
+            weight: parsedWeight.weight,
+            unit: parsedWeight.unit || "g",
+          };
+        }
+      } catch (e) {
+        console.error("Error parsing weight:", e);
+      }
+    }
+
+    // Handle calories
+    const calories = formData.get("calories")?.toString();
+    if (calories && !isNaN(Number(calories))) {
+      const caloriesNum = Number(calories);
+      if (caloriesNum > 0) {
+        document.calories = caloriesNum;
+      }
+    }
+
+    // Handle image if present
+    const image = formData.get("image") as File | null;
+    if (image) {
+      try {
+        const imageAsset = await client.assets.upload("image", image);
+        document.image = {
+          _type: "image",
+          asset: {
+            _type: "reference",
+            _ref: imageAsset._id,
+          },
+        };
+      } catch (e) {
+        console.error("Error uploading image:", e);
+      }
     }
 
     console.log("API: Creating document:", document);
 
     const result = await client.create(document);
     console.log("API: Created document:", result);
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("API: Server error:", error);
