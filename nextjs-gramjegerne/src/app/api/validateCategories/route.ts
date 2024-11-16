@@ -1,6 +1,41 @@
 import { NextResponse } from "next/server";
-import { client } from "@/lib/sanity";
+import { client } from "@/sanity/client";
 import { getUserSession } from "@/lib/auth-helpers";
+
+// Helper function for slugify
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[æå]/g, "a")
+    .replace(/[ø]/g, "o")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-");
+}
+
+interface SanityCategory {
+  _id: string;
+  title: string;
+  slug?: {
+    current: string;
+  };
+}
+
+// Define the document structure without the Sanity metadata
+interface CategoryInput {
+  _type: "category";
+  title: string;
+  slug: {
+    _type: "slug";
+    current: string;
+  };
+  user: {
+    _type: "reference";
+    _ref: string;
+  };
+}
 
 export async function POST(request: Request) {
   try {
@@ -10,38 +45,42 @@ export async function POST(request: Request) {
     }
 
     const { categories } = await request.json();
+    const userId = session.user.id;
 
-    // Get existing categories
-    const existingCategories = await client.fetch(
+    const existingCategories = await client.fetch<SanityCategory[]>(
       `*[_type == "category" && user._ref == $userId]{
         _id,
         title
       }`,
-      { userId: session.user.id },
+      { userId },
     );
 
     const categoryMap: Record<string, string> = {};
 
-    // Process each category
     for (const categoryTitle of categories) {
-      // Check if category exists
-      let category = existingCategories.find(
-        (c: any) => c.title.toLowerCase() === categoryTitle.toLowerCase(),
+      const category = existingCategories.find(
+        (c) => c.title.toLowerCase() === categoryTitle.toLowerCase(),
       );
 
       if (!category) {
-        // Create new category if it doesn't exist
-        category = await client.create({
+        const newCategoryData: CategoryInput = {
           _type: "category",
           title: categoryTitle,
+          slug: {
+            _type: "slug",
+            current: slugify(categoryTitle),
+          },
           user: {
             _type: "reference",
-            _ref: session.user.id,
+            _ref: userId,
           },
-        });
-      }
+        };
 
-      categoryMap[categoryTitle] = category._id;
+        const newCategory = await client.create(newCategoryData);
+        categoryMap[categoryTitle] = newCategory._id;
+      } else {
+        categoryMap[categoryTitle] = category._id;
+      }
     }
 
     return NextResponse.json({ categoryMap });

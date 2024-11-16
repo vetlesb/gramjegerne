@@ -22,8 +22,6 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
   const [progress, setProgress] = useState(0);
-  const [totalLines, setTotalLines] = useState(0);
-  const [completedLines, setCompletedLines] = useState(0);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -129,9 +127,6 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <p>Importing... {progress}%</p>
-            <p className="text-sm text-gray-600">
-              {completedLines} / {totalLines} lines processed
-            </p>
           </div>
           <div className="w-full bg-white/5 rounded-full h-2.5">
             <div
