@@ -34,85 +34,69 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     setImporting(true);
     setResults([]);
     setProgress(0);
-    setCompletedLines(0);
 
     try {
+      // Parse Excel file
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
 
-      console.log("Parsed Excel data:", jsonData);
+      // First, collect and create all missing categories
+      const uniqueCategories = new Set(
+        jsonData
+          .map((item) => item.category)
+          .filter((category): category is string => !!category),
+      );
 
-      const totalItems = jsonData.length;
-      setTotalLines(totalItems);
+      console.log("Categories to check:", Array.from(uniqueCategories));
 
-      // Process items in batches
-      const batchSize = 10;
+      // Create missing categories first
+      const categoryResponse = await fetch("/api/validateCategories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categories: Array.from(uniqueCategories),
+        }),
+      });
+
+      if (!categoryResponse.ok) {
+        throw new Error("Failed to validate/create categories");
+      }
+
+      const { categoryMap } = await categoryResponse.json();
+      console.log("Category mapping:", categoryMap);
+
+      // Now process items with the correct category IDs
       let processedResults: ImportResult[] = [];
+      const CHUNK_SIZE = 20;
 
-      for (let i = 0; i < totalItems; i += batchSize) {
-        const batch = jsonData.slice(i, i + batchSize);
+      for (let i = 0; i < jsonData.length; i += CHUNK_SIZE) {
+        const chunk = jsonData.slice(i, i + CHUNK_SIZE);
 
-        try {
-          console.log(`Processing batch ${i / batchSize + 1}:`, batch);
+        // Map categories to their IDs
+        const mappedChunk = chunk.map((item) => ({
+          ...item,
+          categoryId: item.category ? categoryMap[item.category] : undefined,
+        }));
 
-          const response = await fetch("/api/importItems", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(batch),
-          });
+        const response = await fetch("/api/importItems", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mappedChunk),
+        });
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-              `HTTP error! status: ${response.status}, message: ${errorText}`,
-            );
-          }
-
-          const { results: batchResults } = await response.json();
-
-          console.log(`Batch ${i / batchSize + 1} results:`, batchResults);
-
-          processedResults = [...processedResults, ...batchResults];
-
-          const currentCompleted = Math.min(i + batch.length, totalItems);
-          setCompletedLines(currentCompleted);
-          setProgress(Math.round((currentCompleted / totalItems) * 100));
-          setResults(processedResults);
-        } catch (error) {
-          console.error(`Error processing batch ${i / batchSize + 1}:`, error);
-
-          // Add more detailed error information for failed items
-          const failedResults = batch.map((item) => ({
-            success: false,
-            name: item.name || "Unknown item",
-            error:
-              error instanceof Error
-                ? `Failed to process item: ${error.message}`
-                : "Failed to process item: Unknown error",
-          }));
-
-          processedResults = [...processedResults, ...failedResults];
-
-          const currentCompleted = Math.min(i + batch.length, totalItems);
-          setCompletedLines(currentCompleted);
-          setProgress(Math.round((currentCompleted / totalItems) * 100));
-          setResults(processedResults);
+        if (!response.ok) {
+          throw new Error(`Import failed at item ${i + 1}`);
         }
+
+        const { results } = await response.json();
+        processedResults = [...processedResults, ...results];
+
+        setProgress(Math.round(((i + chunk.length) / jsonData.length) * 100));
       }
 
       setResults(processedResults);
-
-      // Log final results
-      console.log("Final import results:", {
-        total: totalItems,
-        successful: processedResults.filter((r) => r.success).length,
-        failed: processedResults.filter((r) => !r.success).length,
-      });
-
       if (processedResults.every((r) => r.success)) {
         onSuccess();
       }
@@ -123,15 +107,11 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           success: false,
           name: "Import",
           error:
-            error instanceof Error
-              ? error.message
-              : "Failed to process Excel file",
+            error instanceof Error ? error.message : "Unknown import error",
         },
       ]);
     } finally {
       setImporting(false);
-      setProgress(100);
-      setCompletedLines(totalLines);
     }
   };
 
