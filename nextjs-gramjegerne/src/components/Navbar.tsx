@@ -15,7 +15,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           {/* Left side - Logo/Brand */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl text-accent">Gramjegerne</span>
+            <span className="text-3xl text-accent">Gramjegerne</span>
           </Link>
         </div>
         {/* Right side - Auth */}

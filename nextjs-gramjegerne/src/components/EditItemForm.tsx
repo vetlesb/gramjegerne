@@ -126,10 +126,18 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     }
 
     formData.append("category", selectedCategory);
-    formData.append("size", size);
-    formData.append("weight.weight", weight.weight.toString());
-    formData.append("weight.unit", weight.unit);
-    formData.append("calories", calories.toString());
+    if (size.trim()) {
+      formData.append("size", size);
+    }
+
+    if (weight.weight > 0) {
+      formData.append("weight.weight", weight.weight.toString());
+      formData.append("weight.unit", weight.unit);
+    }
+
+    if (calories > 0) {
+      formData.append("calories", calories.toString());
+    }
 
     try {
       const response = await fetch(`/api/items/${item._id}`, {
@@ -286,10 +294,9 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
               type="number"
               className="w-full max-w-full p-4"
               value={calories}
-              onChange={(e) => setCalories(parseInt(e.target.value, 10))}
+              onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
               min="0"
-              required
             />
           </label>
         </div>

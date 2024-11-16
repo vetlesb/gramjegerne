@@ -369,11 +369,12 @@ export default function ListPage() {
         const weightMultiplier = item.weight?.unit === "kg" ? 1 : 0.001;
         const weightInKg = itemWeight * weightMultiplier;
 
-        const itemCalories = item.calories || 0;
+        if (item.calories && item.calories > 0) {
+          categoryTotals[categoryTitle].calories += item.calories * quantity;
+        }
 
         categoryTotals[categoryTitle].weight += weightInKg * quantity;
         categoryTotals[categoryTitle].items += quantity;
-        categoryTotals[categoryTitle].calories += itemCalories * quantity;
       }
     });
 
@@ -673,7 +674,7 @@ export default function ListPage() {
                                   {item.weight.weight} {item.weight.unit}
                                 </p>
                               )}
-                              {item?.calories && (
+                              {item?.calories && item.calories > 0 && (
                                 <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                                   <svg
                                     className="tag-icon"
@@ -848,11 +849,12 @@ export default function ListPage() {
                           {listItem.item.weight.unit}
                         </p>
                       )}
-                      {listItem.item?.calories && (
-                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                          {listItem.item.calories} kcal
-                        </p>
-                      )}
+                      {listItem.item?.calories &&
+                        listItem.item.calories > 0 && (
+                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                            {listItem.item.calories} kcal
+                          </p>
+                        )}
                     </div>
                   </div>
 

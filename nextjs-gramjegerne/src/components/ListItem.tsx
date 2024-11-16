@@ -55,7 +55,7 @@ export default function ListItem({ list }: ListItemProps) {
           )}
         </div>
         <div className="flex flex-col gap-y-2 gap-x-4">
-          <h2 className="text-xl text-accent">{list.name}</h2>
+          <h2 className="text-3xl text-accent">{list.name}</h2>
           <div className="flex flex-wrap gap-x-1 gap-y-1">
             {list.weight && (
               <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
@@ -73,20 +73,7 @@ export default function ListItem({ list }: ListItemProps) {
                 {list.weight} kg
               </p>
             )}
-            <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-              <svg
-                className="tag-icon"
-                viewBox="0 0 13 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M0.693374 11.0117L1.98244 5.79102C2.21095 4.86523 2.87892 4.34375 3.82228 4.34375H5.9258V3.79883C5.24025 3.55859 4.73634 2.90234 4.73634 2.14648C4.73634 1.17969 5.53908 0.376953 6.50001 0.376953C7.46095 0.376953 8.26955 1.17969 8.26955 2.14648C8.26955 2.90234 7.76564 3.55859 7.07423 3.79883V4.34375H9.17775C10.127 4.34375 10.7891 4.86523 11.0176 5.79102L12.3067 11.0117C12.6289 12.3066 12.0723 13.0625 10.8184 13.0625H2.18751C0.927749 13.0625 0.376968 12.3066 0.693374 11.0117ZM6.50001 2.9375C6.93947 2.9375 7.30275 2.57422 7.30275 2.14648C7.30275 1.70703 6.93361 1.33789 6.50001 1.33789C6.06642 1.33789 5.70314 1.71289 5.70314 2.14648C5.70314 2.57422 6.06642 2.9375 6.50001 2.9375ZM1.81251 11.0879C1.67189 11.6328 1.88283 11.9141 2.35158 11.9141H10.6543C11.1172 11.9141 11.3281 11.6328 11.1875 11.0879L9.93947 6.14844C9.82228 5.70898 9.56447 5.49219 9.12501 5.49219H3.87501C3.44142 5.49219 3.17775 5.70898 3.06642 6.14844L1.81251 11.0879Z"
-                  fill="#EAFFE2"
-                />
-              </svg>
-              0 kcal
-            </p>
+
             {list.days && (
               <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                 <svg

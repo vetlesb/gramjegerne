@@ -144,21 +144,7 @@ export default function AddListDialog() {
                   />
                 </label>
               </div>
-              <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2">
-                  Vekt
-                  <input
-                    type="number"
-                    value={newListWeight ?? ""}
-                    onChange={(e) =>
-                      setNewListWeight(
-                        e.target.value ? parseInt(e.target.value) : null,
-                      )
-                    }
-                    className="w-full max-w-full p-4"
-                  />
-                </label>
-              </div>
+
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2">
                   Deltakere

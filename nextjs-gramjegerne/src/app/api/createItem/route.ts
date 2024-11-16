@@ -50,13 +50,27 @@ export async function POST(request: Request) {
 
     // Required fields
     const name = formData.get("name")?.toString();
-    const slug = formData.get("slug")?.toString();
+    const slugData = formData.get("slug")?.toString();
     const categoryId = formData.get("category")?.toString();
 
-    if (!name || !slug || !categoryId) {
+    if (!name || !slugData || !categoryId) {
       return new Response(
         JSON.stringify({
           message: "Name, slug, and category are required",
+        }),
+        { status: 400 },
+      );
+    }
+
+    // Parse the slug JSON
+    let slug;
+    try {
+      slug = JSON.parse(slugData);
+    } catch (e) {
+      console.error("Error parsing slug:", e);
+      return new Response(
+        JSON.stringify({
+          message: "Invalid slug format",
         }),
         { status: 400 },
       );
@@ -68,7 +82,7 @@ export async function POST(request: Request) {
       name: name.trim(),
       slug: {
         _type: "slug",
-        current: slug,
+        current: slug.current,
       },
       user: {
         _type: "reference",
@@ -103,12 +117,9 @@ export async function POST(request: Request) {
     }
 
     // Handle calories
-    const calories = formData.get("calories")?.toString();
-    if (calories && !isNaN(Number(calories))) {
-      const caloriesNum = Number(calories);
-      if (caloriesNum > 0) {
-        document.calories = caloriesNum;
-      }
+    const calories = formData.get("calories");
+    if (calories && parseInt(calories.toString(), 10) > 0) {
+      document.calories = parseInt(calories.toString(), 10);
     }
 
     // Handle image if present

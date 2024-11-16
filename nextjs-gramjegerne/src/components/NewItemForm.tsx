@@ -104,7 +104,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
 
       // Required fields
       formData.append("name", name.trim());
-      formData.append("slug", slug);
+      formData.append("slug", JSON.stringify({ current: slug }));
       formData.append("category", selectedCategory); // Make sure category is always sent
 
       // Optional fields with validation
@@ -129,6 +129,9 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
 
       if (calories > 0) {
         formData.append("calories", calories.toString());
+      } else {
+        // Don't append calories at all if it's 0 or less
+        console.log("Skipping calories as it's 0 or less");
       }
 
       // Debug log
@@ -320,10 +323,9 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               type="number"
               className="w-full max-w-full p-4"
               value={calories}
-              onChange={(e) => setCalories(parseInt(e.target.value, 10))}
+              onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
               min="0"
-              required
             />
           </label>
         </div>
