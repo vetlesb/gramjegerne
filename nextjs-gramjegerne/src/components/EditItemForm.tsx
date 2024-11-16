@@ -25,7 +25,7 @@ interface EditItemFormProps {
     quantity?: number;
     calories?: number;
   };
-  onSuccess: () => Promise<void>;
+  onSuccess: () => void;
 }
 
 const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
@@ -107,7 +107,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     };
   }, [imagePreview]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !slug) {
       setErrorMessage("Navn og slug er obligatorisk.");
@@ -150,7 +150,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       const updatedItem = await response.json();
       console.log("Utstyr oppdatert:", updatedItem);
       setSuccessMessage("Utstyr oppdatert suksessfullt!");
-      await onSuccess();
+      onSuccess();
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Detailed error message:", error.message);

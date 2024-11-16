@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  images: {
-    domains: ["cdn.sanity.io"],
-  },
-};
-
-module.exports = {
   images: {
     remotePatterns: [
       {
@@ -16,7 +9,14 @@ module.exports = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };
+
 export default nextConfig;

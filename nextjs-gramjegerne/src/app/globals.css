@@ -106,9 +106,7 @@ li.stats {
   border-radius: 8px;
   padding: 16px;
 }
-li.product:hover {
-  background-color: var(--bg-dimmed-hover);
-}
+
 li.product.active {
   background-color: var(--bg-primary);
   outline: 2px solid var(--fg-accent);

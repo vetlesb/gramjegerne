@@ -1,19 +1,20 @@
 // app/api/createList/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "next-sanity";
+import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
 import { nanoid } from "nanoid";
-
-// Initialize Sanity client with server-side token
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: "2023-01-01",
-  token: process.env.SANITY_API_TOKEN, // Ensure this token has write permissions
-  useCdn: false,
-});
 
 export async function POST(request: Request) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    const userId = session.user.id;
     const formData = await request.formData();
 
     const name = formData.get("name") as string;
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
       };
     }
 
-    // Create new list document
+    // Create new list document with user reference
     const newList = {
       _type: "list",
       _id: nanoid(),
@@ -72,18 +73,25 @@ export async function POST(request: Request) {
       weight,
       participants,
       items: [],
+      user: {
+        _type: "reference",
+        _ref: userId,
+      },
     };
 
-    // Save the new list to Sanity
     await client.create(newList);
-
     return NextResponse.json(
       { message: "List created successfully" },
       { status: 201 },
     );
   } catch (error) {
-    console.error("Error creating list on server:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (error instanceof Response && error.status === 401) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    console.error("Error creating list:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    );
   }
 }

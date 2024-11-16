@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { createClient } from "next-sanity";
+import { client } from "@/lib/sanity";
 import { handleApiError } from "@/lib/errorHandler";
-
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
+import { getUserSession } from "@/lib/auth-helpers";
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("itemId");
 
@@ -22,7 +22,20 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Check for references to this item
+    // Verify item belongs to user
+    const item = await client.fetch(
+      `*[_type == "item" && _id == $itemId && user._ref == $userId][0]`,
+      { itemId, userId: session.user.id },
+    );
+
+    if (!item) {
+      return NextResponse.json(
+        { message: "Item not found or unauthorized" },
+        { status: 404 },
+      );
+    }
+
+    // Check for references
     const references = await client.fetch(`*[references($itemId)]`, { itemId });
 
     if (references.length > 0) {
@@ -32,13 +45,11 @@ export async function DELETE(request: Request) {
             "Dette utstyret er i bruk i en eller flere lister. Fjern utstyret fra listene før du sletter det.",
           references: references,
         },
-        { status: 409 }, // Conflict status code
+        { status: 409 },
       );
     }
 
-    // If no references, proceed with deletion
     await client.delete(itemId);
-
     return NextResponse.json(
       { message: "Item deleted successfully" },
       { status: 200 },

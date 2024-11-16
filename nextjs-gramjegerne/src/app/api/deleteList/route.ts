@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@sanity/client";
-
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
+import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
     const { searchParams } = new URL(request.url);
     const listId = searchParams.get("listId");
 
@@ -21,46 +21,31 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Fetch the list to get associated items
-    const list = await client.getDocument(listId);
+    // Verify list belongs to user
+    const list = await client.fetch(
+      `*[_type == "list" && _id == $listId && user._ref == $userId][0]`,
+      { listId, userId: session.user.id },
+    );
 
     if (!list) {
       return NextResponse.json(
-        { success: false, error: "List not found" },
+        { success: false, error: "List not found or unauthorized" },
         { status: 404 },
       );
     }
 
-    // If items are separate documents, delete them
-    if (list.items && list.items.length > 0) {
-      const itemIds = list.items.map((item: { _ref: string }) => item._ref);
-
-      // Build a transaction to delete all items
-      const transaction = client.transaction();
-      itemIds.forEach((itemId: string) => {
-        transaction.delete(itemId);
-      });
-
-      // Delete the list
-      transaction.delete(listId);
-
-      await transaction.commit();
-    } else {
-      // If there are no items, just delete the list
-      await client.delete(listId);
-    }
-
+    await client.delete(listId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting list:", error);
-
-    let errorMessage = "An unknown error occurred";
-    if (error instanceof Error) {
-      errorMessage = error.message;
+    if (error instanceof Response && error.status === 401) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    console.error("Error deleting list:", error);
     return NextResponse.json(
-      { success: false, error: errorMessage },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

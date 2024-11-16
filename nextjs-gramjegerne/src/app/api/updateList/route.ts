@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@sanity/client";
-
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
+import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
 
 export async function PUT(request: Request) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
     const { listId, items } = await request.json();
 
     if (!listId) {
@@ -20,14 +20,20 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Update the list with new items array
-    // Expecting items to be an array of references with _key, _type, and _ref
-    const result = await client
-      .patch(listId)
-      .set({
-        items: items, // Items should already be in the correct reference format
-      })
-      .commit();
+    // Verify list belongs to user
+    const list = await client.fetch(
+      `*[_type == "list" && _id == $listId && user._ref == $userId][0]`,
+      { listId, userId: session.user.id },
+    );
+
+    if (!list) {
+      return NextResponse.json(
+        { error: "List not found or unauthorized" },
+        { status: 404 },
+      );
+    }
+
+    const result = await client.patch(listId).set({ items }).commit();
 
     return NextResponse.json({ success: true, result });
   } catch (error) {

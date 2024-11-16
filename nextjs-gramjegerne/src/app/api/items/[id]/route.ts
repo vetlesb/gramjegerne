@@ -1,6 +1,8 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/errorHandler";
-import { createClient } from "@sanity/client";
+import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
+import type { NextRequest } from "next/server";
 
 // Define interfaces for type safety
 interface UpdateData {
@@ -26,16 +28,16 @@ interface UpdateData {
   [key: string]: unknown;
 }
 
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN!,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
-
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const { pathname } = request.nextUrl;
     const id = pathname.split("/").pop();
 
@@ -46,12 +48,27 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const formData = await request.formData();
+    const userId = session.user.id;
 
+    // Verify item belongs to user
+    const item = await client.fetch(
+      `*[_type == "item" && _id == $id && user._ref == $userId][0]`,
+      { id, userId },
+    );
+
+    if (!item) {
+      return NextResponse.json(
+        { message: "Item not found or unauthorized" },
+        { status: 404 },
+      );
+    }
+
+    const formData = await request.formData();
     const updateData: UpdateData = {
       name: formData.get("name")?.toString() ?? null,
       slug: formData.get("slug")?.toString() ?? null,
     };
+
     // Handle categories
     const category = formData.get("category");
     if (category) {
@@ -100,13 +117,55 @@ export async function PUT(request: NextRequest) {
     }
 
     const updatedItem = await client.patch(id).set(updateData).commit();
-
     return NextResponse.json(updatedItem, { status: 200 });
   } catch (error: unknown) {
     return handleApiError(
       error,
       "Error updating item:",
       "Kunne ikke oppdatere utstyr.",
+    );
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const session = await getUserSession();
+
+    const id = request.url.split("/").pop();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Invalid or missing item ID." },
+        { status: 400 },
+      );
+    }
+
+    // Fetch item with user verification, using the formatted userId
+    const item = await client.fetch(
+      `*[_type == "item" && _id == $id && user._ref == $userId][0]`,
+      {
+        id,
+        userId: session.user.id, // getUserSession already formats this
+      },
+    );
+
+    if (!item) {
+      return NextResponse.json(
+        { message: "Item not found or unauthorized" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(item, { status: 200 });
+  } catch (error: unknown) {
+    return handleApiError(
+      error,
+      "Error fetching item:",
+      "Kunne ikke hente utstyr.",
     );
   }
 }

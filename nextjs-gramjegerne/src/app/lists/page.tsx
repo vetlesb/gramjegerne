@@ -5,6 +5,7 @@ import { groq } from "next-sanity";
 import AddListDialog from "../../components/addListDialog";
 import ListItem from "../../components/ListItem";
 import { ListDocument } from "@/types";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function Page() {
   const [lists, setLists] = useState<ListDocument[]>([]);
@@ -33,19 +34,21 @@ export default function Page() {
     };
   }, []);
   return (
-    <main className="container mx-auto min-h-screen p-16">
-      <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-        lager pakklister
-      </h1>
-      <div className="flex flex-col gap-y-8">
-        <AddListDialog />
+    <ProtectedRoute>
+      <main className="container mx-auto min-h-screen p-16">
+        <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
+          lager pakklister
+        </h1>
+        <div className="flex flex-col gap-y-8">
+          <AddListDialog />
 
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-8 gap-x-4">
-          {lists.map((list) => (
-            <ListItem key={list._id} list={list} />
-          ))}
-        </ul>
-      </div>
-    </main>
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-8 gap-x-4">
+            {lists.map((list) => (
+              <ListItem key={list._id} list={list} />
+            ))}
+          </ul>
+        </div>
+      </main>
+    </ProtectedRoute>
   );
 }

@@ -1,3 +1,4 @@
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { client } from "@/sanity/client";
 import { notFound } from "next/navigation";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -44,16 +45,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-16">
-      <h1 className="text-2xl font-bold mb-8">{category.title}</h1>
-      <ul className="flex flex-col gap-y-4">
-        {category.items.map((item) => (
-          <li key={item._id}>
-            <h2>{item.name}</h2>
-            {/* Additional item details */}
-          </li>
-        ))}
-      </ul>
-    </main>
+    <ProtectedRoute>
+      <main className="container mx-auto min-h-screen p-16">
+        <h1 className="text-2xl font-bold mb-8">{category.title}</h1>
+        <ul className="flex flex-col gap-y-4">
+          {category.items.map((item) => (
+            <li key={item._id}>
+              <h2>{item.name}</h2>
+              {/* Additional item details */}
+            </li>
+          ))}
+        </ul>
+      </main>
+    </ProtectedRoute>
   );
 }

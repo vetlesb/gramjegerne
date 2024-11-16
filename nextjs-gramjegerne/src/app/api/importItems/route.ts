@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@sanity/client";
+import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
 
 interface ImportResult {
   success: boolean;
@@ -23,35 +24,31 @@ interface SanityCategory {
   title: string;
 }
 
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
-
 export async function POST(request: Request) {
   try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
     const items = (await request.json()) as ImportItem[];
-    console.log("Received items:", JSON.stringify(items, null, 2));
     const results: ImportResult[] = [];
 
     for (const item of items) {
       try {
-        console.log("Processing item:", item);
-
-        // Check if item already exists
+        // Check if item already exists for this user
         const existingItem = await client.fetch(
-          `*[_type == "item" && name == $name][0]`,
-          { name: item.name },
+          `*[_type == "item" && name == $name && user._ref == $userId][0]`,
+          { name: item.name, userId: session.user.id },
         );
 
         if (existingItem) {
           results.push({
             success: false,
             name: item.name,
-            error: "Item already exists in the database",
+            error: "Item already exists in your inventory",
             id: existingItem._id,
           });
           continue;
@@ -127,6 +124,10 @@ export async function POST(request: Request) {
             : undefined,
           calories: item.calories ? Number(item.calories) : undefined,
           category: categoryRef,
+          user: {
+            _type: "reference",
+            _ref: session.user.id,
+          },
           ...(imageAsset && {
             image: {
               _type: "image",
@@ -138,11 +139,7 @@ export async function POST(request: Request) {
           }),
         };
 
-        console.log("Creating item with data:", newItem);
-
         const createdItem = await client.create(newItem);
-        console.log("Created item:", createdItem);
-
         results.push({
           success: true,
           name: item.name,
@@ -154,15 +151,16 @@ export async function POST(request: Request) {
           success: false,
           name: item.name,
           error:
-            error instanceof Error
-              ? `Error: ${error.message}`
-              : "Unknown error occurred",
+            error instanceof Error ? error.message : "Unknown error occurred",
         });
       }
     }
 
     return NextResponse.json({ results });
   } catch (error) {
+    if (error instanceof Response && error.status === 401) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     console.error("Import error:", error);
     return NextResponse.json(
       { error: "Failed to process items" },

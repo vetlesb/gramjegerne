@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {ReferenceDefinition, ReferenceRule} from '@sanity/types'
 
 export const listType = defineType({
   name: 'list',
@@ -16,8 +17,8 @@ export const listType = defineType({
       title: 'Slug',
       options: {
         source: 'name',
-        maxLength: 200, // Will be ignored if slugify is set
-        slugify: (input) => input.toLowerCase().replace(/\s+/g, '-').slice(0, 200),
+        maxLength: 200,
+        slugify: (input: string) => input.toLowerCase().replace(/\s+/g, '-').slice(0, 200),
       },
     }),
     defineField({
@@ -46,6 +47,12 @@ export const listType = defineType({
       type: 'array',
       title: 'Items',
       of: [{type: 'reference', to: [{type: 'item'}]}],
+    }),
+    defineField({
+      name: 'user',
+      type: 'reference',
+      to: [{type: 'user'}],
+      validation: (rule: ReferenceRule) => rule.required(),
     }),
   ],
 })

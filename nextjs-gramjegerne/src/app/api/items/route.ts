@@ -1,20 +1,67 @@
 // src/app/api/items/route.ts
 
 import { NextResponse } from "next/server";
-import { createClient } from "@sanity/client";
+import { client } from "@/lib/sanity";
+import { getUserSession, formatUserId } from "@/lib/auth-helpers";
 
-// Initialize Sanity client
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!, // Non-null assertion if you are sure it's set
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN!,
-  useCdn: false,
-  apiVersion: "2023-01-01",
-});
+export async function GET() {
+  try {
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    const userId = formatUserId(session.user.id);
+
+    // Fetch items for the authenticated user
+    const items = await client.fetch(
+      `*[_type == "item" && user._ref == $userId]{
+        _id,
+        name,
+        slug,
+        image{
+          asset->{
+            _ref,
+            url
+          }
+        },
+        "category": category->{_id, title},
+        size,
+        weight,
+        quantity,
+        calories
+      }`,
+      { userId },
+    );
+
+    return NextResponse.json(items, { status: 200 });
+  } catch (error: unknown) {
+    if (error instanceof Response && error.status === 401) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    console.error("Error fetching items:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch items." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {
-    // Parse FormData
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    const userId = formatUserId(session.user.id);
+
     const formData = await request.formData();
 
     const name = formData.get("name") as string;
@@ -29,7 +76,6 @@ export async function POST(request: Request) {
     const quantity = formData.get("quantity") as string;
     const calories = formData.get("calories") as string;
 
-    // Validate required fields
     if (!name || !slug) {
       return NextResponse.json(
         { message: "Navn og slug er obligatorisk." },
@@ -37,7 +83,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Handle image upload if provided
+    // Verify category exists
+    const category = await client.fetch(
+      `*[_type == "category" && _id == $categoryId][0]`,
+      { categoryId },
+    );
+
+    if (!category) {
+      return NextResponse.json(
+        { message: "Invalid category." },
+        { status: 400 },
+      );
+    }
+
     let imageAsset: string | undefined = undefined;
     if (imageFile) {
       const imageResponse = await client.assets.upload("image", imageFile, {
@@ -46,24 +104,15 @@ export async function POST(request: Request) {
       imageAsset = imageResponse._id;
     }
 
-    // Create category references with unique _key
-    const categoryRef = {
-      _type: "reference",
-      _ref: categoryId,
-    };
-
-    // Construct the new item object
     const newItem = {
       _type: "item",
       name,
-      slug: {
-        _type: "slug",
-        current: slug,
-      },
+      slug: { _type: "slug", current: slug },
       ...(imageAsset && {
         image: { _type: "image", asset: { _ref: imageAsset } },
       }),
-      category: categoryRef,
+      category: { _type: "reference", _ref: categoryId },
+      user: { _type: "reference", _ref: userId },
       size,
       weight: {
         weight: Number(weight_weight),
@@ -73,11 +122,12 @@ export async function POST(request: Request) {
       calories: Number(calories),
     };
 
-    // Create the item in Sanity
     const createdItem = await client.create(newItem);
-
     return NextResponse.json(createdItem, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof Response && error.status === 401) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     console.error("Error creating item:", error);
     return NextResponse.json(
       { message: "Failed to create item." },

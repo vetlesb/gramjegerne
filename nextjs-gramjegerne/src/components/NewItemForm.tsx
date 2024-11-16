@@ -12,7 +12,7 @@ interface Category {
 }
 
 interface NewItemFormProps {
-  onSuccess: () => Promise<void>; // Callback to refresh the items list
+  onSuccess?: (item: Record<string, unknown>) => void;
 }
 
 const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
@@ -28,7 +28,6 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
     weight: 0,
     unit: "g",
   });
-  const [quantity, setQuantity] = useState<number>(0);
   const [calories, setCalories] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -95,72 +94,80 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   };
 
   // Handle Form Submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Validate required fields
-    if (!name || !slug) {
-      setErrorMessage("Navn og slug er obligatorisk.");
-      return;
-    }
-
     setIsLoading(true);
     setErrorMessage(null);
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("slug", slug);
-    if (image) {
-      formData.append("image", image);
-    }
-
-    formData.append("category", selectedCategory);
-
-    formData.append("size", size);
-    formData.append("weight.weight", weight.weight.toString()); // Updated key
-    formData.append("weight.unit", weight.unit); // Updated key
-    formData.append("quantity", quantity.toString());
-    formData.append("calories", calories.toString());
-
     try {
-      const response = await fetch("/api/items", {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("slug", slug);
+
+      if (image) {
+        formData.append("image", image);
+      }
+
+      if (selectedCategory) {
+        formData.append("category", selectedCategory);
+      }
+
+      if (size) {
+        formData.append("size", size);
+      }
+
+      if (weight.weight > 0) {
+        formData.append("weight.weight", weight.weight.toString());
+        formData.append("weight.unit", weight.unit);
+      }
+
+      if (calories > 0) {
+        formData.append("calories", calories.toString());
+      }
+
+      console.log("Client: Sending form data:", Object.fromEntries(formData));
+
+      const response = await fetch("/api/createItem", {
         method: "POST",
         body: formData,
       });
 
+      const responseText = await response.text();
+      console.log("Client: Raw response:", responseText);
+
       if (!response.ok) {
-        // Attempt to parse error message from response
-        let errorData;
+        let errorMessage = "Failed to create item";
         try {
-          errorData = await response.json();
-        } catch {
-          throw new Error("Kunne ikke opprette utstyr.");
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error("Client: Error parsing response:", e);
         }
-        throw new Error(errorData.message || "Kunne ikke opprette utstyr.");
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
-      console.log("Utstyr opprettet:", result);
+      const result = JSON.parse(responseText);
+      console.log("Client: Item created:", result);
 
-      setSuccessMessage("Utstyr opprettet suksessfullt!");
-      await onSuccess(); // Refresh the items list
-
-      // Reset Form
+      // Reset form
       setName("");
       setSlug("");
-      setImage(null);
-      setImagePreview(null);
       setSelectedCategory("");
-      setSize("");
-      setWeight({ weight: 0, unit: "g" });
-      setQuantity(0);
-      setCalories(0);
-    } catch (error: unknown) {
-      console.error("Feil ved opprettelse av utstyr:", error);
-      setErrorMessage("Kunne ikke opprette utstyr.");
+
+      setSuccessMessage("Utstyr opprettet!");
+
+      if (onSuccess) {
+        onSuccess(result);
+      }
+    } catch (error) {
+      console.error("Client: Detailed error:", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not create item. Please try again.",
+      );
     } finally {
       setIsLoading(false);
-      setTimeout(() => setSuccessMessage(""), 3000); // Clear success message after 3 seconds
     }
   };
 
@@ -238,6 +245,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               onChange={(e) => setSelectedCategory(e.target.value)}
               required
             >
+              <option value="">Select a category</option>
               {categories.map((category) => (
                 <option key={category._id} value={category._id}>
                   {category.title}
