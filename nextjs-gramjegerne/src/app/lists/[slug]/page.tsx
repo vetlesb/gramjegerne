@@ -17,7 +17,6 @@ import {
 } from "../../../components/ui/dialog";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { nanoid } from "nanoid";
-import debounce from "lodash/debounce";
 import { useSession } from "next-auth/react";
 
 // Define Category and Item types
@@ -56,17 +55,6 @@ interface List {
   _id: string;
   name: string;
   items: ListItem[];
-}
-
-// Add this interface near your other interfaces
-interface SanityListItem {
-  _key: string;
-  _type: string;
-  item: {
-    _type: string;
-    _ref: string;
-  };
-  quantity: number;
 }
 
 const builder = imageUrlBuilder(client);
@@ -118,23 +106,6 @@ const LIST_QUERY = (
     }
   }
 }`;
-
-// Update the debounced function with proper typing
-const debouncedUpdateServer = debounce(
-  (listId: string, items: SanityListItem[]) => {
-    fetch("/api/updateList", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        listId,
-        items,
-      }),
-    }).catch((error) => {
-      console.error("Error in debounced update:", error);
-    });
-  },
-  500,
-);
 
 // First, let's create a more specific type for our filtered items
 interface ValidListItem extends ListItem {
@@ -329,7 +300,16 @@ export default function ListPage() {
   const filteredItemsForList = useMemo(() => {
     if (!currentItems) return [];
 
-    return currentItems
+    // Create a Map to deduplicate items by _id
+    const uniqueItems = new Map();
+
+    currentItems.forEach((item) => {
+      if (item?.item?._id) {
+        uniqueItems.set(item.item._id, item);
+      }
+    });
+
+    return Array.from(uniqueItems.values())
       .filter((item) => {
         const isValidItem =
           item?.item?._id && item?.item?.name && item?.item?.category?._id;
@@ -479,16 +459,34 @@ export default function ListPage() {
         throw new Error("Missing required data");
       }
 
-      // Create new items array with temporary selections
-      const newItems = tempSelectedItems.map((item) => ({
-        _key: nanoid(),
-        _type: "reference",
+      // Keep existing items with their current quantities
+      const existingItems = selectedItems.map((item) => ({
+        _key: item._key,
+        _type: "listItem",
         item: {
           _type: "reference",
-          _ref: item._id,
+          _ref: item.item?._id,
         },
-        quantity: 1,
+        quantity: item.quantity || 1,
       }));
+
+      // Add only truly new items
+      const newItems = tempSelectedItems
+        .filter(
+          (newItem) =>
+            !selectedItems.some(
+              (existing) => existing.item?._id === newItem._id,
+            ),
+        )
+        .map((item) => ({
+          _key: nanoid(),
+          _type: "listItem",
+          item: {
+            _type: "reference",
+            _ref: item._id,
+          },
+          quantity: 1,
+        }));
 
       // Update in Sanity
       const response = await fetch("/api/updateList", {
@@ -496,7 +494,7 @@ export default function ListPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listId: list._id,
-          items: [...selectedItems, ...newItems],
+          items: [...existingItems, ...newItems],
         }),
       });
 
@@ -504,7 +502,7 @@ export default function ListPage() {
         throw new Error("Failed to update list");
       }
 
-      // Refresh the list data
+      // Fetch fresh data instead of updating state directly
       const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
         userId,
       });
@@ -514,49 +512,89 @@ export default function ListPage() {
         setSelectedItems(fetchedList.items);
       }
 
-      setIsDialogOpen(false);
       setTempSelectedItems([]);
+      setIsDialogOpen(false);
+      setIsLoading(false);
     } catch (err) {
-      console.error("Error saving list:", err);
-      setError("Failed to save changes");
-    } finally {
+      console.error("Error saving changes:", err);
       setIsLoading(false);
     }
   };
 
   // Update quantity change handler
-  const handleQuantityChange = (itemKey: string, newQuantity: number) => {
+  const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
     if (!list || !session?.user?.id || newQuantity < 1) return;
 
-    // Update pending quantities immediately
+    // Update pending quantities immediately for optimistic UI
     setPendingQuantities((prev) => ({
       ...prev,
       [itemKey]: newQuantity,
     }));
 
-    // Prepare items for server update using currentItems
-    const itemsForUpdate = currentItems
-      .filter((item): item is ValidListItem => {
-        return (
-          item.item !== null &&
-          typeof item.item._id === "string" &&
-          typeof item.quantity === "number"
-        );
-      })
-      .map((item) => ({
-        _key: item._key,
-        _type: "listItem",
-        item: {
-          _type: "reference",
-          _ref: item.item._id, // Now TypeScript knows this is safe
-        },
-        quantity: item._key === itemKey ? newQuantity : item.quantity,
-      }));
+    // Also update selectedItems for persistence
+    setSelectedItems((prev) =>
+      prev.map((item) =>
+        item._key === itemKey ? { ...item, quantity: newQuantity } : item,
+      ),
+    );
 
-    if (itemsForUpdate.length === 0) return; // Don't update if no valid items
+    try {
+      // Prepare items for server update
+      const itemsForUpdate = currentItems
+        .filter((item): item is ValidListItem => {
+          return (
+            item.item !== null &&
+            typeof item.item._id === "string" &&
+            typeof item.quantity === "number"
+          );
+        })
+        .map((item) => ({
+          _key: item._key,
+          _type: "listItem",
+          item: {
+            _type: "reference",
+            _ref: item.item._id,
+          },
+          quantity: item._key === itemKey ? newQuantity : item.quantity,
+        }));
 
-    // Fire and forget the debounced update
-    debouncedUpdateServer(list._id, itemsForUpdate);
+      if (itemsForUpdate.length === 0) return;
+
+      const response = await fetch("/api/updateList", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listId: list._id,
+          items: itemsForUpdate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update quantity");
+      }
+
+      // Clear pending after successful update
+      setPendingQuantities((prev) => {
+        const newPending = { ...prev };
+        delete newPending[itemKey];
+        return newPending;
+      });
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      // Revert both optimistic updates on error
+      setPendingQuantities((prev) => {
+        const newPending = { ...prev };
+        delete newPending[itemKey];
+        return newPending;
+      });
+      setSelectedItems((prev) =>
+        prev.map((item) =>
+          item._key === itemKey
+            ? { ...item, quantity: item.quantity || 1 }
+            : item,
+        ),
+      );
+    }
   };
 
   // Update the useEffect for dialog items
@@ -845,12 +883,13 @@ export default function ListPage() {
             )}
             <div className="flex flex-wrap gap-x-4 items-center">
               <p className="text-xl text-accent w-32">Totalt</p>
-
               <p className="text-xl text-accent w-32">
                 {calculateTotalWeight().toFixed(3)} kg
               </p>
               <p className="text-xl text-accent w-32">{totalItems} stk</p>
-              <p className="text-xl text-accent w-32">{totalCalories} kcal</p>
+              {totalCalories > 0 && (
+                <p className="text-xl text-accent w-32">{totalCalories} kcal</p>
+              )}
             </div>
           </li>
         </ul>
@@ -929,7 +968,9 @@ export default function ListPage() {
                         –
                       </button>
                       <span className="text-sm min-w-[2rem] text-center">
-                        {listItem.quantity || 1}
+                        {pendingQuantities[listItem._key] !== undefined
+                          ? pendingQuantities[listItem._key]
+                          : listItem.quantity || 1}
                       </span>
                       <button
                         onClick={() =>
