@@ -225,18 +225,25 @@ export default function ListPage() {
 
   // Keep the existing useMemo for filtering
   const filteredItemsForList = useMemo<ListItem[]>(() => {
-    return selectedItems.filter((item) => {
-      // Basic validation
-      const isValidItem =
-        item?.item?._id && item?.item?.name && item?.item?.category?._id;
+    return selectedItems
+      .filter((item) => {
+        // Basic validation
+        const isValidItem =
+          item?.item?._id && item?.item?.name && item?.item?.category?._id;
 
-      // Category filtering
-      const matchesCategory =
-        selectedCategory === null ||
-        item?.item?.category?._id === selectedCategory;
+        // Category filtering
+        const matchesCategory =
+          selectedCategory === null ||
+          item?.item?.category?._id === selectedCategory;
 
-      return isValidItem && matchesCategory;
-    });
+        return isValidItem && matchesCategory;
+      })
+      .sort((a, b) => {
+        // Sort by item name, handling potential null items
+        const nameA = a.item?.name || "";
+        const nameB = b.item?.name || "";
+        return nameA.localeCompare(nameB, "nb");
+      });
   }, [selectedItems, selectedCategory]);
 
   // Filter categories to only those with items in the selectedItems
@@ -789,25 +796,29 @@ export default function ListPage() {
                       }
                       return isValid;
                     }),
-                ).map((categoryTotal) => (
-                  <div
-                    key={categoryTotal.title}
-                    className="flex items-center gap-x-4 border-b border-white/5 pb-4"
-                  >
-                    <h3 className="text-xl w-32">{categoryTotal.title}</h3>
-                    <div className="flex gap-x-4">
-                      <p className="text-xl w-32">
-                        {categoryTotal.weight.toFixed(3)} kg
-                      </p>
-                      <p className="text-xl w-32">{categoryTotal.items} stk</p>
-                      {categoryTotal.calories > 0 && (
+                )
+                  .sort((a, b) => a.title.localeCompare(b.title, "nb"))
+                  .map((categoryTotal) => (
+                    <div
+                      key={categoryTotal.title}
+                      className="flex items-center gap-x-4 border-b border-white/5 pb-4"
+                    >
+                      <h3 className="text-xl w-32">{categoryTotal.title}</h3>
+                      <div className="flex gap-x-4">
                         <p className="text-xl w-32">
-                          {categoryTotal.calories} kcal
+                          {categoryTotal.weight.toFixed(3)} kg
                         </p>
-                      )}
+                        <p className="text-xl w-32">
+                          {categoryTotal.items} stk
+                        </p>
+                        {categoryTotal.calories > 0 && (
+                          <p className="text-xl w-32">
+                            {categoryTotal.calories} kcal
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
             <div className="flex flex-wrap gap-x-4 items-center">
