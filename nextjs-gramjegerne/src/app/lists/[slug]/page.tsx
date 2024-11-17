@@ -17,6 +17,7 @@ import {
 } from "../../../components/ui/dialog";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { nanoid } from "nanoid";
+import debounce from "lodash/debounce";
 
 // Define Category and Item types
 interface Category {
@@ -391,10 +392,19 @@ export default function ListPage() {
         return;
       }
 
-      console.log("Current list:", list);
-      console.log("Items to add:", tempSelectedItems);
+      // Get existing items
+      const existingItems = list.items || [];
 
-      const itemsForUpdate = tempSelectedItems.map((item) => ({
+      // Filter out items that are already in the list
+      const newItems = tempSelectedItems.filter(
+        (newItem) =>
+          !existingItems.some(
+            (existingItem) => existingItem.item?._id === newItem._id,
+          ),
+      );
+
+      // Format new items
+      const newItemsFormatted = newItems.map((item) => ({
         _key: nanoid(),
         _type: "listItem",
         item: {
@@ -404,14 +414,26 @@ export default function ListPage() {
         quantity: 1,
       }));
 
-      console.log("Formatted items for Sanity:", itemsForUpdate);
+      // Combine existing items (preserving quantities) with new items
+      const combinedItems = [
+        ...existingItems.map((item) => ({
+          _key: item._key,
+          _type: "listItem",
+          item: {
+            _type: "reference",
+            _ref: item.item?._id,
+          },
+          quantity: item.quantity || 1,
+        })),
+        ...newItemsFormatted,
+      ];
 
       const response = await fetch("/api/updateList", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listId: list._id,
-          items: [...(list.items || []), ...itemsForUpdate],
+          items: combinedItems,
         }),
       });
 
@@ -440,58 +462,59 @@ export default function ListPage() {
     try {
       if (!list || newQuantity < 1) return;
 
-      // Update local state first, but preserve all item data
-      const updatedItems = selectedItems.map((item) =>
-        item._key === itemKey
-          ? { ...item, quantity: newQuantity } // Preserve all item data
-          : item,
+      // Immediately update local state
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) =>
+          item._key === itemKey ? { ...item, quantity: newQuantity } : item,
+        ),
       );
-      setSelectedItems(updatedItems);
 
-      // Prepare the items for Sanity update
-      const itemsForUpdate = updatedItems.map((item) => ({
-        _key: item._key,
-        _type: "listItem",
-        item: {
-          _type: "reference",
-          _ref: item.item?._id,
-        },
-        quantity: item.quantity || 1,
-      }));
+      // Debounce the server update
+      const updateServer = async () => {
+        const itemsForUpdate = selectedItems.map((item) => ({
+          _key: item._key,
+          _type: "listItem",
+          item: {
+            _type: "reference",
+            _ref: item.item?._id,
+          },
+          quantity: item._key === itemKey ? newQuantity : item.quantity || 1,
+        }));
 
-      // Update in Sanity
-      const response = await fetch("/api/updateList", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listId: list._id,
-          items: itemsForUpdate,
-        }),
-      });
+        const response = await fetch("/api/updateList", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            listId: list._id,
+            items: itemsForUpdate,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to update quantity");
-      }
+        if (!response.ok) {
+          throw new Error("Failed to update quantity");
+        }
 
-      // Only refresh from server if needed
+        // Remove the server refresh since we're already updating local state
+        // Only refresh if there's an error
+        if (!response.ok) {
+          const fetchedList = await client.fetch(LIST_QUERY(listSlug));
+          if (fetchedList) {
+            setList(fetchedList);
+            setSelectedItems(fetchedList.items);
+          }
+        }
+      };
+
+      // Debounce the server update
+      await debounce(updateServer, 500)();
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      // Optionally revert the local state if server update fails
       const fetchedList = await client.fetch(LIST_QUERY(listSlug));
       if (fetchedList) {
         setList(fetchedList);
-        // Merge new data with existing items to preserve local state
-        setSelectedItems((prevItems) =>
-          fetchedList.items.map((newItem: ListItem) => ({
-            ...newItem,
-            item: {
-              ...newItem.item,
-              image:
-                prevItems.find((pi) => pi.item?._id === newItem.item?._id)?.item
-                  ?.image || newItem.item?.image,
-            },
-          })),
-        );
+        setSelectedItems(fetchedList.items);
       }
-    } catch (error) {
-      console.error("Error updating quantity:", error);
     }
   };
 
