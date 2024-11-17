@@ -14,7 +14,12 @@ export async function POST(request: Request) {
       });
     }
 
-    const userId = session.user.id;
+    const fullUserId = session.user.id.startsWith("google_")
+      ? session.user.id.slice(7) // Remove 'google_'
+      : session.user.id;
+
+    const shortUserId = fullUserId.slice(-6);
+
     const formData = await request.formData();
 
     const name = formData.get("name") as string;
@@ -34,8 +39,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    // Prepare slug
-    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    // Prepare slug with user ID
+    const baseSlug = name.toLowerCase().replace(/\s+/g, "-");
+    const uniqueSlug = `${baseSlug}-${shortUserId}`;
 
     // Prepare image asset if provided
     let imageAsset = null;
@@ -59,14 +65,18 @@ export async function POST(request: Request) {
       };
     }
 
-    // Create new list document with user reference
+    // Create new list document with user reference and unique slug
+    const fullUserRef = session.user.id.startsWith("google_")
+      ? session.user.id
+      : `google_${session.user.id}`;
+
     const newList = {
       _type: "list",
       _id: nanoid(),
       name,
       slug: {
         _type: "slug",
-        current: slug,
+        current: uniqueSlug,
       },
       image: imageAsset,
       days,
@@ -75,7 +85,7 @@ export async function POST(request: Request) {
       items: [],
       user: {
         _type: "reference",
-        _ref: userId,
+        _ref: fullUserRef,
       },
     };
 

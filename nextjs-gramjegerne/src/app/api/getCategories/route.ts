@@ -6,14 +6,20 @@ import { getUserSession } from "@/lib/auth-helpers";
 
 export async function GET() {
   try {
-    // Categories are shared across users, so we just verify authentication
-    await getUserSession();
+    const session = await getUserSession();
 
-    const categories = await client.fetch(`*[_type == "category"]{
-      _id,
-      title,
-      slug
-    }`);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const categories = await client.fetch(
+      `*[_type == "category" && user._ref == $userId]{
+        _id,
+        title,
+        slug
+      }`,
+      { userId: session.user.id },
+    );
 
     return NextResponse.json(categories, { status: 200 });
   } catch (error: unknown) {

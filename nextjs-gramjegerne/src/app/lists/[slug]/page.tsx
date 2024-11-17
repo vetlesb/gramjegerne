@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -18,6 +18,7 @@ import {
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { nanoid } from "nanoid";
 import debounce from "lodash/debounce";
+import { useSession } from "next-auth/react";
 
 // Define Category and Item types
 interface Category {
@@ -57,13 +58,24 @@ interface List {
   items: ListItem[];
 }
 
+// Add this interface near your other interfaces
+interface SanityListItem {
+  _key: string;
+  _type: string;
+  item: {
+    _type: string;
+    _ref: string;
+  };
+  quantity: number;
+}
+
 const builder = imageUrlBuilder(client);
 
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-const ITEMS_QUERY = `*[_type == "item"] {
+const ITEMS_QUERY = `*[_type == "item" && user._ref == $userId] {
   _id,
   name,
   "category": category->{
@@ -79,11 +91,9 @@ const ITEMS_QUERY = `*[_type == "item"] {
   calories
 } | order(name asc)`;
 
-const CATEGORIES_QUERY = `*[_type == "category"]{_id, title, slug}`;
-
 const LIST_QUERY = (
   slug: string,
-) => `*[_type == "list" && slug.current == "${slug}"][0] {
+) => `*[_type == "list" && slug.current == "${slug}" && user._ref == $userId][0] {
   _id,
   name,
   days,
@@ -109,9 +119,41 @@ const LIST_QUERY = (
   }
 }`;
 
+// Update the debounced function with proper typing
+const debouncedUpdateServer = debounce(
+  (listId: string, items: SanityListItem[]) => {
+    fetch("/api/updateList", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listId,
+        items,
+      }),
+    }).catch((error) => {
+      console.error("Error in debounced update:", error);
+    });
+  },
+  500,
+);
+
+// First, let's create a more specific type for our filtered items
+interface ValidListItem extends ListItem {
+  item: Item; // This removes the null possibility
+  quantity: number; // This makes quantity required
+}
+
 export default function ListPage() {
+  const { data: session } = useSession();
+
+  // Move getUserId into useCallback
+  const getUserId = useCallback(() => {
+    if (!session?.user?.id) return null;
+    return session.user.id.startsWith("google_")
+      ? session.user.id
+      : `google_${session.user.id}`;
+  }, [session?.user?.id]);
+
   // State variables and Hooks
-  const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [list, setList] = useState<List | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -124,38 +166,52 @@ export default function ListPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Consolidate all useEffect hooks at the top
+  // Add state for optimistic updates
+  const [pendingQuantities, setPendingQuantities] = useState<{
+    [key: string]: number;
+  }>({});
+
+  // Keep this as our single source of truth for categories
+  const categories = useMemo(() => {
+    if (!selectedItems?.length) return [];
+
+    // Get unique categories from selected items
+    const uniqueCategories = new Map<string, Category>();
+
+    selectedItems.forEach((listItem) => {
+      if (listItem.item?.category) {
+        const cat = listItem.item.category;
+        uniqueCategories.set(cat._id, cat);
+      }
+    });
+
+    return Array.from(uniqueCategories.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, "nb"),
+    );
+  }, [selectedItems]);
+
+  // Add initial data fetch useEffect
   useEffect(() => {
     const fetchData = async () => {
+      const userId = getUserId();
+      if (!listSlug || !userId) return;
+
       try {
-        if (!listSlug) {
-          setError("No list slug provided");
-          return;
-        }
-
-        setIsLoading(true);
-        const [fetchedList, fetchedCategories] = await Promise.all([
-          client.fetch(LIST_QUERY(listSlug)),
-          client.fetch(CATEGORIES_QUERY),
-        ]);
-
+        const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
+          userId,
+        });
         if (fetchedList) {
           setList(fetchedList);
-          setSelectedItems(fetchedList.items || []);
-        } else {
-          setError("List not found");
+          setSelectedItems(fetchedList.items);
         }
-        setCategories(fetchedCategories || []);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load list data");
-      } finally {
-        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching list:", error);
+        setError("Failed to load list");
       }
     };
 
     fetchData();
-  }, [listSlug]);
+  }, [listSlug, session?.user?.id, getUserId]);
 
   // Handle category selection
   const handleCategorySelect = (categoryId: string | null) => {
@@ -180,23 +236,51 @@ export default function ListPage() {
 
   const handleRemoveFromList = async (itemToRemove: Item) => {
     try {
-      if (!list) return;
+      if (!list || !session?.user?.id) return;
+      const userId = getUserId();
+      if (!userId) return;
 
-      const updatedItems = selectedItems.filter(
+      // Optimistically update the UI first
+      const updatedItems = currentItems.filter(
         (item) => item.item?._id !== itemToRemove._id,
       );
-      setSelectedItems(updatedItems);
+
+      // Update local state immediately
+      setPendingQuantities((prev) => {
+        const newPending = { ...prev };
+        // Remove any pending quantities for the removed item
+        const itemKey = currentItems.find(
+          (item) => item.item?._id === itemToRemove._id,
+        )?._key;
+        if (itemKey) {
+          delete newPending[itemKey];
+        }
+        return newPending;
+      });
 
       // Prepare the items for Sanity update
       const itemsForUpdate = updatedItems.map((item) => ({
         _key: item._key,
-        _type: "reference",
+        _type: "listItem",
         item: {
           _type: "reference",
           _ref: item.item?._id,
         },
         quantity: item.quantity || 1,
       }));
+
+      // First verify the list belongs to the user
+      const userList = await client.fetch(
+        `*[_type == "list" && _id == $listId && user._ref == $userId][0]._id`,
+        {
+          listId: list._id,
+          userId,
+        },
+      );
+
+      if (!userList) {
+        throw new Error("Unauthorized to modify this list");
+      }
 
       // Update in Sanity
       const response = await fetch("/api/updateList", {
@@ -209,57 +293,57 @@ export default function ListPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update quantity");
+        throw new Error("Failed to update list");
       }
 
-      // Refresh the list data to ensure categories are preserved
-      const fetchedList = await client.fetch(LIST_QUERY(listSlug));
+      // Only after successful server update, update the actual state
+      setSelectedItems(updatedItems);
+    } catch (error) {
+      console.error("Error removing item:", error);
+      // Revert optimistic update on error by refetching
+      const userId = getUserId();
+      if (!userId) return;
+
+      const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
+        userId,
+      });
       if (fetchedList) {
         setList(fetchedList);
         setSelectedItems(fetchedList.items);
       }
-    } catch (error) {
-      console.error("Error removing item:", error);
     }
   };
 
-  // Keep the existing useMemo for filtering
-  const filteredItemsForList = useMemo<ListItem[]>(() => {
-    return selectedItems
+  // Create a single source of truth for current items
+  const currentItems = useMemo(() => {
+    return selectedItems.map((item) => ({
+      ...item,
+      quantity:
+        pendingQuantities[item._key] !== undefined
+          ? pendingQuantities[item._key]
+          : item.quantity || 1,
+    }));
+  }, [selectedItems, pendingQuantities]);
+
+  // Single definition of filteredItemsForList
+  const filteredItemsForList = useMemo(() => {
+    if (!currentItems) return [];
+
+    return currentItems
       .filter((item) => {
-        // Basic validation
         const isValidItem =
           item?.item?._id && item?.item?.name && item?.item?.category?._id;
-
-        // Category filtering
         const matchesCategory =
           selectedCategory === null ||
           item?.item?.category?._id === selectedCategory;
-
         return isValidItem && matchesCategory;
       })
       .sort((a, b) => {
-        // Sort by item name, handling potential null items
         const nameA = a.item?.name || "";
         const nameB = b.item?.name || "";
         return nameA.localeCompare(nameB, "nb");
       });
-  }, [selectedItems, selectedCategory]);
-
-  // Filter categories to only those with items in the selectedItems
-  const filteredCategoriesForList = useMemo(() => {
-    // Get unique category IDs from selected items
-    const categoryIds = new Set(
-      selectedItems
-        .filter((item) => item.item?.category?._id)
-        .map((item) => item.item?.category?._id),
-    );
-
-    // Filter categories to only those that have items in the list
-    return categories
-      .filter((category) => categoryIds.has(category._id))
-      .sort((a, b) => a.title.localeCompare(b.title, "nb"));
-  }, [categories, selectedItems]);
+  }, [currentItems, selectedCategory]);
 
   // Filter items based on the search query in the dialog
   const filteredItemsForDialog = useMemo(() => {
@@ -293,8 +377,8 @@ export default function ListPage() {
   const calculateTotalWeight = () => {
     const itemsToCalculate =
       selectedCategory === null
-        ? selectedItems
-        : selectedItems.filter(
+        ? currentItems
+        : currentItems.filter(
             (item) => item.item?.category?._id === selectedCategory,
           );
 
@@ -311,8 +395,8 @@ export default function ListPage() {
   const totalCalories = useMemo(() => {
     const itemsToCalculate =
       selectedCategory === null
-        ? selectedItems
-        : selectedItems.filter(
+        ? currentItems
+        : currentItems.filter(
             (item) => item.item?.category?._id === selectedCategory,
           );
 
@@ -321,14 +405,14 @@ export default function ListPage() {
         total + (listItem.item?.calories || 0) * (listItem.quantity || 1),
       0,
     );
-  }, [selectedItems, selectedCategory]);
+  }, [currentItems, selectedCategory]);
 
   // Calculate total items based on filtered items
   const totalItems = useMemo(() => {
     const itemsToCalculate =
       selectedCategory === null
-        ? selectedItems
-        : selectedItems.filter(
+        ? currentItems
+        : currentItems.filter(
             (item) => item.item?.category?._id === selectedCategory,
           );
 
@@ -336,11 +420,10 @@ export default function ListPage() {
       (total, item) => total + (item.quantity || 1),
       0,
     );
-  }, [selectedItems, selectedCategory]);
+  }, [currentItems, selectedCategory]);
 
+  // Update calculateCategoryTotals to use currentItems
   const calculateCategoryTotals = (items: Item[]) => {
-    console.log("Calculating totals for items:", items);
-
     const categoryTotals: {
       [key: string]: {
         title: string;
@@ -351,10 +434,7 @@ export default function ListPage() {
     } = {};
 
     items.forEach((item) => {
-      if (!item || !item.category) {
-        console.log("Skipping item due to missing data:", item);
-        return;
-      }
+      if (!item?.category) return;
 
       const categoryTitle = item.category.title;
       const categoryId = item.category._id;
@@ -369,51 +449,40 @@ export default function ListPage() {
           };
         }
 
-        const quantity =
-          selectedItems.find((si) => si.item?._id === item._id)?.quantity || 1;
+        // Find the current quantity using currentItems instead of selectedItems
+        const listItem = currentItems.find((si) => si.item?._id === item._id);
+        const quantity = listItem?.quantity || 1;
 
-        // Convert weight to kg based on unit
         const itemWeight = item.weight?.weight || 0;
         const weightMultiplier = item.weight?.unit === "kg" ? 1 : 0.001;
         const weightInKg = itemWeight * weightMultiplier;
 
+        categoryTotals[categoryTitle].weight += weightInKg * quantity;
+        categoryTotals[categoryTitle].items += quantity;
+
         if (item.calories && item.calories > 0) {
           categoryTotals[categoryTitle].calories += item.calories * quantity;
         }
-
-        categoryTotals[categoryTitle].weight += weightInKg * quantity;
-        categoryTotals[categoryTitle].items += quantity;
       }
     });
 
-    console.log("Calculated category totals:", categoryTotals);
     return Object.values(categoryTotals);
   };
 
-  // Add this function inside the component
+  // Update the handleSaveChanges function
   const handleSaveChanges = async () => {
     try {
       setIsLoading(true);
-      if (!list || !listSlug) {
-        console.error("No list or list slug found");
-        return;
+      const userId = getUserId();
+
+      if (!list || !listSlug || !userId) {
+        throw new Error("Missing required data");
       }
 
-      // Get existing items
-      const existingItems = list.items || [];
-
-      // Filter out items that are already in the list
-      const newItems = tempSelectedItems.filter(
-        (newItem) =>
-          !existingItems.some(
-            (existingItem) => existingItem.item?._id === newItem._id,
-          ),
-      );
-
-      // Format new items
-      const newItemsFormatted = newItems.map((item) => ({
+      // Create new items array with temporary selections
+      const newItems = tempSelectedItems.map((item) => ({
         _key: nanoid(),
-        _type: "listItem",
+        _type: "reference",
         item: {
           _type: "reference",
           _ref: item._id,
@@ -421,35 +490,25 @@ export default function ListPage() {
         quantity: 1,
       }));
 
-      // Combine existing items (preserving quantities) with new items
-      const combinedItems = [
-        ...existingItems.map((item) => ({
-          _key: item._key,
-          _type: "listItem",
-          item: {
-            _type: "reference",
-            _ref: item.item?._id,
-          },
-          quantity: item.quantity || 1,
-        })),
-        ...newItemsFormatted,
-      ];
-
+      // Update in Sanity
       const response = await fetch("/api/updateList", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listId: list._id,
-          items: combinedItems,
+          items: [...selectedItems, ...newItems],
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update list: ${response.statusText}`);
+        throw new Error("Failed to update list");
       }
 
       // Refresh the list data
-      const fetchedList = await client.fetch(LIST_QUERY(listSlug));
+      const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
+        userId,
+      });
+
       if (fetchedList) {
         setList(fetchedList);
         setSelectedItems(fetchedList.items);
@@ -465,73 +524,51 @@ export default function ListPage() {
     }
   };
 
-  const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
-    try {
-      if (!list || newQuantity < 1) return;
+  // Update quantity change handler
+  const handleQuantityChange = (itemKey: string, newQuantity: number) => {
+    if (!list || !session?.user?.id || newQuantity < 1) return;
 
-      // Immediately update local state
-      setSelectedItems((prevItems) =>
-        prevItems.map((item) =>
-          item._key === itemKey ? { ...item, quantity: newQuantity } : item,
-        ),
-      );
+    // Update pending quantities immediately
+    setPendingQuantities((prev) => ({
+      ...prev,
+      [itemKey]: newQuantity,
+    }));
 
-      // Debounce the server update
-      const updateServer = async () => {
-        const itemsForUpdate = selectedItems.map((item) => ({
-          _key: item._key,
-          _type: "listItem",
-          item: {
-            _type: "reference",
-            _ref: item.item?._id,
-          },
-          quantity: item._key === itemKey ? newQuantity : item.quantity || 1,
-        }));
+    // Prepare items for server update using currentItems
+    const itemsForUpdate = currentItems
+      .filter((item): item is ValidListItem => {
+        return (
+          item.item !== null &&
+          typeof item.item._id === "string" &&
+          typeof item.quantity === "number"
+        );
+      })
+      .map((item) => ({
+        _key: item._key,
+        _type: "listItem",
+        item: {
+          _type: "reference",
+          _ref: item.item._id, // Now TypeScript knows this is safe
+        },
+        quantity: item._key === itemKey ? newQuantity : item.quantity,
+      }));
 
-        const response = await fetch("/api/updateList", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            listId: list._id,
-            items: itemsForUpdate,
-          }),
-        });
+    if (itemsForUpdate.length === 0) return; // Don't update if no valid items
 
-        if (!response.ok) {
-          throw new Error("Failed to update quantity");
-        }
-
-        // Remove the server refresh since we're already updating local state
-        // Only refresh if there's an error
-        if (!response.ok) {
-          const fetchedList = await client.fetch(LIST_QUERY(listSlug));
-          if (fetchedList) {
-            setList(fetchedList);
-            setSelectedItems(fetchedList.items);
-          }
-        }
-      };
-
-      // Debounce the server update
-      await debounce(updateServer, 500)();
-    } catch (error) {
-      console.error("Error updating quantity:", error);
-      // Optionally revert the local state if server update fails
-      const fetchedList = await client.fetch(LIST_QUERY(listSlug));
-      if (fetchedList) {
-        setList(fetchedList);
-        setSelectedItems(fetchedList.items);
-      }
-    }
+    // Fire and forget the debounced update
+    debouncedUpdateServer(list._id, itemsForUpdate);
   };
 
-  // Add this effect to load items when dialog opens
+  // Update the useEffect for dialog items
   useEffect(() => {
     const fetchItems = async () => {
-      if (isDialogOpen) {
+      if (isDialogOpen && session?.user?.id) {
+        // Add session check
         try {
           console.log("Fetching items...");
-          const fetchedItems = await client.fetch(ITEMS_QUERY);
+          const fetchedItems = await client.fetch(ITEMS_QUERY, {
+            userId: session.user.id, // Add userId parameter
+          });
           console.log("Fetched items:", fetchedItems);
           setItems(fetchedItems);
         } catch (error) {
@@ -541,7 +578,7 @@ export default function ListPage() {
     };
 
     fetchItems();
-  }, [isDialogOpen]);
+  }, [isDialogOpen, session?.user?.id]); // Add session?.user?.id to dependencies
 
   // First, let's add a loading and error state check at the start of the component render
   if (error) {
@@ -747,7 +784,7 @@ export default function ListPage() {
         </div>
 
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
-          {filteredCategoriesForList.length > 0 && (
+          {categories.length > 0 && (
             <>
               <button
                 onClick={() => handleCategorySelect(null)}
@@ -757,19 +794,17 @@ export default function ListPage() {
               >
                 Oversikt
               </button>
-              {[...filteredCategoriesForList]
-                .sort((a, b) => a.title.localeCompare(b.title, "nb"))
-                .map((category) => (
-                  <button
-                    key={category._id}
-                    onClick={() => handleCategorySelect(category._id)}
-                    className={`menu-category text-md ${
-                      selectedCategory === category._id ? "menu-active" : ""
-                    }`}
-                  >
-                    {category.title}
-                  </button>
-                ))}
+              {categories.map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategorySelect(category._id)}
+                  className={`menu-category text-md ${
+                    selectedCategory === category._id ? "menu-active" : ""
+                  }`}
+                >
+                  {category.title}
+                </button>
+              ))}
             </>
           )}
         </div>
@@ -779,23 +814,10 @@ export default function ListPage() {
           <li>
             {selectedCategory === null && ( // Only show in overview
               <div className="flex flex-col gap-y-4 py-4">
-                {/* Per category totals */}
-                <>
-                  {console.log("Selected items for categories:", selectedItems)}
-                </>
                 {calculateCategoryTotals(
                   selectedItems
-                    .map((item: ListItem) => {
-                      console.log("Processing item for category:", item);
-                      return item.item;
-                    })
-                    .filter((item): item is Item => {
-                      const isValid = item !== null && item.category !== null;
-                      if (!isValid) {
-                        console.log("Filtered out item:", item);
-                      }
-                      return isValid;
-                    }),
+                    .map((item) => item.item)
+                    .filter((item): item is Item => item !== null),
                 )
                   .sort((a, b) => a.title.localeCompare(b.title, "nb"))
                   .map((categoryTotal) => (

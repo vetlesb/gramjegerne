@@ -3,6 +3,7 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import EditItemForm from "../components/EditItemForm";
@@ -17,6 +18,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogClose,
+  DialogDescription,
 } from "../components/ui/dialog";
 import { useSession } from "next-auth/react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -672,6 +674,12 @@ export default function IndexPage() {
                 Importer utstyr
               </DialogTitle>
             </DialogHeader>
+            <DialogDescription>
+              Last opp en Excel-fil for å importere utstyr.
+              <Link href="https://www.dropbox.com/scl/fi/ashfqy2f6c8s8wf4iwqpc/items_import_01.xlsx?rlkey=qwhflwgumnwxe094ki0jq4i3i&st=ogjoqt8n&dl=0">
+                Se eksempelfil
+              </Link>
+            </DialogDescription>
             <ImportForm onSuccess={handleImportSuccess} />
             <DialogFooter>
               <DialogClose asChild>

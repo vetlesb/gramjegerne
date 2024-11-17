@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
@@ -6,33 +7,47 @@ import AddListDialog from "../../components/addListDialog";
 import ListItem from "../../components/ListItem";
 import { ListDocument } from "@/types";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useSession } from "next-auth/react";
 
 export default function Page() {
+  const { data: session } = useSession();
   const [lists, setLists] = useState<ListDocument[]>([]);
 
   useEffect(() => {
-    const query = groq`*[_type == "list"]{_id, slug, name, image, days, weight, participants}`;
+    if (!session?.user?.id) return;
 
-    // Initial fetch
-    client.fetch(query).then((data) => setLists(data));
+    const query = groq`*[_type == "list" && user._ref == $userId]{
+      _id, 
+      slug, 
+      name, 
+      image, 
+      days, 
+      weight, 
+      participants
+    }`;
 
-    // Subscribe to real-time updates
-    const subscription = client.listen(query).subscribe({
-      next: () => {
-        // Removed 'update' parameter
-        // Re-fetch the lists when there's a mutation
-        client.fetch(query).then((data) => setLists(data));
-      },
-      error: (error) => {
-        console.error("Subscription error:", error);
-      },
-    });
+    // Initial fetch with user ID
+    client
+      .fetch(query, { userId: session.user.id })
+      .then((data) => setLists(data));
 
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    // Subscribe to real-time updates with user filter
+    const subscription = client
+      .listen(query, { userId: session.user.id })
+      .subscribe({
+        next: () => {
+          client
+            .fetch(query, { userId: session.user.id })
+            .then((data) => setLists(data));
+        },
+        error: (error) => {
+          console.error("Subscription error:", error);
+        },
+      });
+
+    return () => subscription.unsubscribe();
+  }, [session?.user?.id]);
+
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
