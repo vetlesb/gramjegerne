@@ -45,7 +45,12 @@ export async function POST(request: Request) {
     }
 
     const { categories } = await request.json();
-    const userId = session.user.id;
+    const userId = session.user.id.startsWith("google_")
+      ? session.user.id
+      : `google_${session.user.id}`;
+
+    console.log("Processing categories for user:", userId);
+    console.log("Categories to process:", categories);
 
     const existingCategories = await client.fetch<SanityCategory[]>(
       `*[_type == "category" && user._ref == $userId]{
@@ -55,14 +60,19 @@ export async function POST(request: Request) {
       { userId },
     );
 
+    console.log("Existing categories:", existingCategories);
+
     const categoryMap: Record<string, string> = {};
 
     for (const categoryTitle of categories) {
+      if (!categoryTitle?.trim()) continue;
+
       const category = existingCategories.find(
         (c) => c.title.toLowerCase() === categoryTitle.toLowerCase(),
       );
 
       if (!category) {
+        console.log("Creating new category:", categoryTitle);
         const newCategoryData: CategoryInput = {
           _type: "category",
           title: categoryTitle,
@@ -76,8 +86,14 @@ export async function POST(request: Request) {
           },
         };
 
-        const newCategory = await client.create(newCategoryData);
-        categoryMap[categoryTitle] = newCategory._id;
+        try {
+          const newCategory = await client.create(newCategoryData);
+          categoryMap[categoryTitle] = newCategory._id;
+          console.log("Created category:", newCategory);
+        } catch (createError) {
+          console.error("Error creating category:", createError);
+          throw createError;
+        }
       } else {
         categoryMap[categoryTitle] = category._id;
       }
@@ -87,7 +103,13 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Category validation error:", error);
     return NextResponse.json(
-      { message: "Failed to process categories" },
+      {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to process categories",
+        error: error,
+      },
       { status: 500 },
     );
   }

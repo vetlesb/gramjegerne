@@ -103,29 +103,44 @@ export default function IndexPage() {
 
       try {
         const [fetchedItems, fetchedCategories] = await Promise.all([
-          client.fetch(ITEMS_QUERY, {
+          client.fetch<Item[]>(ITEMS_QUERY, {
             userId: session.user.id,
           }),
-          client.fetch(CATEGORIES_QUERY, {
+          client.fetch<Category[]>(CATEGORIES_QUERY, {
             userId: session.user.id,
           }),
         ]);
 
-        const sortedCategories = [...fetchedCategories].sort((a, b) =>
-          a.title.localeCompare(b.title, "nb"),
+        console.log(
+          "Fetched items with categories:",
+          fetchedItems.map((item: Item) => ({
+            name: item.name,
+            categoryId: item.category?._id,
+            categoryTitle: item.category?.title,
+          })),
         );
 
-        // Set all categories first
+        console.log("All categories:", fetchedCategories);
+
+        const sortedCategories = [...fetchedCategories].sort(
+          (a: Category, b: Category) => a.title.localeCompare(b.title, "nb"),
+        );
+
         setAllCategories(sortedCategories);
 
-        // Then filter for the menu only those with items
-        const categoriesWithEntries = sortedCategories.filter((category) =>
-          fetchedItems.some(
-            (item: Item) => item.category?._id === category._id,
-          ),
+        const categoriesWithEntries = sortedCategories.filter(
+          (category: Category) => {
+            const hasItems = fetchedItems.some(
+              (item: Item) => item.category?._id === category._id,
+            );
+            console.log(
+              `Category ${category.title}: ${hasItems ? "has items" : "no items"}`,
+            );
+            return hasItems;
+          },
         );
-        setCategories(categoriesWithEntries);
 
+        setCategories(categoriesWithEntries);
         setItems(fetchedItems);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -290,11 +305,12 @@ export default function IndexPage() {
   };
 
   const handleImportSuccess = async () => {
-    // Don't refresh immediately, let the ImportForm handle its own state
+    // Refresh data immediately after successful import
+    await refreshData();
   };
 
   const handleDialogClose = async () => {
-    await refreshItems();
+    await refreshData(); // Use refreshData instead of just refreshItems
     setIsImportDialogOpen(false);
   };
 
@@ -491,7 +507,7 @@ export default function IndexPage() {
           >
             Oversikt
           </button>
-          {categories.map((category) => (
+          {categories.map((category: Category) => (
             <button
               key={category._id}
               onClick={() => handleCategorySelect(category)}
@@ -506,7 +522,7 @@ export default function IndexPage() {
 
         {/* Items Grid */}
         <ul className="flex flex-col">
-          {filteredItems.map((item) => (
+          {filteredItems.map((item: Item) => (
             <li
               key={item._id}
               className="product flex items-center gap-4 py-2 rounded-md"

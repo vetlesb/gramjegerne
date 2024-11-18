@@ -60,8 +60,13 @@ export async function POST(request: Request) {
           const categoryName = item.category.trim();
 
           let category = await client.fetch<SanityCategory>(
-            `*[_type == "category" && title == $name][0]`,
-            { name: categoryName },
+            `*[_type == "category" && title == $name && user._ref == $userId][0]`,
+            {
+              name: categoryName,
+              userId: session.user.id.startsWith("google_")
+                ? session.user.id
+                : `google_${session.user.id}`,
+            },
           );
 
           if (!category) {
