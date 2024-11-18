@@ -48,16 +48,11 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
         const data: Category[] = await response.json();
 
         // Sort categories alphabetically by title
-        const sortedCategories = [...data].sort(
-          (a, b) => a.title.localeCompare(b.title, "nb"), // 'nb' for Norwegian sorting
+        const sortedCategories = [...data].sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
         );
 
         setCategories(sortedCategories);
-
-        // Set the first category as selected by default
-        if (sortedCategories.length > 0) {
-          setSelectedCategory(sortedCategories[0]._id);
-        }
       } catch (error) {
         console.error(error);
         setErrorMessage("Kunne ikke hente kategorier.");
@@ -100,8 +95,10 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   };
 
   // Filter categories based on input
-  const filteredCategories = categories.filter((category) =>
-    category.title.toLowerCase().includes(categoryInput.toLowerCase()),
+  const filteredCategories = categories.filter(
+    (category) =>
+      !categoryInput ||
+      category.title.toLowerCase().includes(categoryInput.toLowerCase()),
   );
 
   // Handle new category creation
@@ -316,6 +313,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               <Command
                 className="relative"
                 shouldFilter={false}
+                loop={true}
                 onKeyDown={(e) => {
                   if (e.key === "Escape") {
                     setIsOpen(false);
@@ -324,16 +322,24 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               >
                 <div className="relative">
                   <Command.Input
-                    value={categoryInput}
+                    value={
+                      selectedCategory
+                        ? categories.find((c) => c._id === selectedCategory)
+                            ?.title || ""
+                        : categoryInput
+                    }
                     onValueChange={(value) => {
                       setCategoryInput(value);
+                      if (selectedCategory) {
+                        setSelectedCategory(""); // Clear selection only when actively typing
+                      }
                       setIsOpen(true);
                     }}
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.preventDefault();
                       setIsOpen(!isOpen);
                     }}
-                    readOnly={!isOpen}
+                    readOnly={selectedCategory !== ""} // Make input readonly when category is selected
                     placeholder="Velg eller søk etter kategori..."
                     className="w-full p-4 border border-gray-300 rounded cursor-pointer"
                   />
@@ -342,7 +348,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e.preventDefault();
                           setSelectedCategory("");
                           setCategoryInput("");
                         }}
@@ -355,7 +361,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                     <button
                       type="button"
                       onClick={(e) => {
-                        e.stopPropagation();
+                        e.preventDefault();
                         setIsOpen(!isOpen);
                       }}
                       className="p-1"
@@ -391,9 +397,12 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                           key={category._id}
                           value={category._id}
                           onSelect={() => {
-                            setSelectedCategory(category._id);
-                            setCategoryInput(category.title);
-                            setIsOpen(false);
+                            // Use setTimeout to ensure state updates happen after event handling
+                            setTimeout(() => {
+                              setSelectedCategory(category._id);
+                              setCategoryInput("");
+                              setIsOpen(false);
+                            }, 0);
                           }}
                           className="px-4 py-2 cursor-pointer hover:bg-dimmed focus:bg-dimmed outline-none rounded"
                         >
