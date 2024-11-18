@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Icon from "@/components/Icon";
 import {
   Dialog,
   DialogContent,
@@ -92,8 +93,9 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
     <div>
       <button
         onClick={() => setIsDialogOpen(true)}
-        className="button-create text-lg flex flex-row items-center gap-x-2 text-md"
+        className="button-create text-lg flex flex-row items-center gap-x-1 text-md"
       >
+        <Icon name="add" width={24} height={24} />
         Ny pakkliste
       </button>
 

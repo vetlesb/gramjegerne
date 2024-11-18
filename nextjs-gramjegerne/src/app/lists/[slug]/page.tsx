@@ -662,7 +662,8 @@ export default function ListPage() {
           {/* Button to open the Add Item Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-2 text-md">
+              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
+                <Icon name="add" width={24} height={24} />
                 Legg til utstyr
               </button>
             </DialogTrigger>
@@ -809,10 +810,10 @@ export default function ListPage() {
         </div>
         {/* Totalt for weight and calories */}
 
-        <ul className="product flex flex-wrap items-center gap-4">
+        <ul className="product flex flex-wrap items-center gap-4 mt-8">
           <li>
             {selectedCategory === null && ( // Only show in overview
-              <div className="flex flex-col gap-y-4 py-4">
+              <div className="flex flex-col gap-y-4 sm:gap-y-4 m-4">
                 {calculateCategoryTotals(
                   selectedItems
                     .map((item) => item.item)
@@ -822,34 +823,38 @@ export default function ListPage() {
                   .map((categoryTotal) => (
                     <div
                       key={categoryTotal.title}
-                      className="flex items-center gap-x-4 border-b border-white/5 pb-4"
+                      className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 border-b border-white/5 pb-3 sm:pb-3"
                     >
-                      <h3 className="text-xl w-32">{categoryTotal.title}</h3>
-                      <div className="flex gap-x-4">
-                        <p className="text-xl w-32">
-                          {categoryTotal.weight.toFixed(3)} kg
+                      <p className="text-md sm:text-xl sm:text-white">
+                        {categoryTotal.title}
+                      </p>
+                      <p className="text-md sm:text-xl">
+                        {categoryTotal.items} stk
+                      </p>
+                      <p className="text-md sm:text-xl ">
+                        {categoryTotal.weight.toFixed(3)} kg
+                      </p>
+
+                      {categoryTotal.calories > 0 && (
+                        <p className="text-md sm:text-xl ">
+                          {categoryTotal.calories} kcal
                         </p>
-                        <p className="text-xl w-32">
-                          {categoryTotal.items} stk
-                        </p>
-                        {categoryTotal.calories > 0 && (
-                          <p className="text-xl w-32">
-                            {categoryTotal.calories} kcal
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
                   ))}
               </div>
             )}
-            <div className="flex flex-wrap gap-x-4 items-center">
-              <p className="text-xl text-accent w-32">Totalt</p>
-              <p className="text-xl text-accent w-32">
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 pb-3 sm:pb-2 m-4">
+              <p className="text-md sm:text-xl text-accent">Totalt</p>
+              <p className="text-md sm:text-xl text-accent">{totalItems} stk</p>
+              <p className="text-md sm:text-xl text-accent">
                 {calculateTotalWeight().toFixed(3)} kg
               </p>
-              <p className="text-xl text-accent w-32">{totalItems} stk</p>
+
               {totalCalories > 0 && (
-                <p className="text-xl text-accent w-32">{totalCalories} kcal</p>
+                <p className="text-md sm:text-xl text-accent">
+                  {totalCalories} kcal
+                </p>
               )}
             </div>
           </li>

@@ -365,15 +365,13 @@ export default function IndexPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-          digger utstyr
-        </h1>
         <div className="flex flex-wrap gap-y-4 gap-x-2 pb-8">
           {/* New Item Dialog */}
           <Dialog>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-2 text-md">
-                Nytt utstyr
+              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
+                <Icon name="add" width={24} height={24} />
+                Legg til
               </button>
             </DialogTrigger>
             <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
@@ -406,7 +404,8 @@ export default function IndexPage() {
           {/* Add Category Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-2 text-md">
+              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
+                <Icon name="category" width={24} height={24} />
                 Kategorier
               </button>
             </DialogTrigger>
@@ -463,10 +462,11 @@ export default function IndexPage() {
 
           {/* Import Dialog Button */}
           <button
-            className="button-create text-lg flex flex-row items-center gap-x-2 text-md"
+            className="button-create text-lg flex flex-row items-center gap-x-1 text-md"
             onClick={handleOpenImportDialog}
           >
-            Importer .xslx
+            <Icon name="document" width={24} height={24} />
+            Importer
           </button>
         </div>
 

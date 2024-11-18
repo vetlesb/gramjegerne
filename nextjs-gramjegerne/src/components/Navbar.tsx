@@ -23,26 +23,26 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <ul className="text-xl flex flex-row gap-x-2">
             <li className={pathname === "/" ? "menu-active" : "menu-item"}>
-              <Link className="text-lg block py-2 pr-4 pl-3" href="../">
+              <Link className="text-lg" href="../">
                 Utstyr
               </Link>
             </li>
             <li className={pathname === "/lists" ? "menu-active" : "menu-item"}>
-              <Link className="block py-2 pr-4 pl-3" href="/lists">
+              <Link className="text-lg" href="/lists">
                 Pakklister
               </Link>
             </li>
             {isLoading ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
             ) : session ? (
-              <li className="menu-item">
+              <li className="menu-item flexitems-center">
                 <Link
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     signOut();
                   }}
-                  className="block py-2 pr-4 pl-3 flex items-center"
+                  className="flex items-center"
                 >
                   <Icon name="logout" width={24} height={24} />
                 </Link>

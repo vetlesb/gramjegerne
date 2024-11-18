@@ -21,6 +21,8 @@ body {
   outline: 2px solid var(--fg-accent);
   border-radius: 4px;
 }
+/* Total calulations */
+
 .truncate {
   width: 20ch;
   white-space: nowrap;
@@ -287,8 +289,8 @@ button:hover {
 .button-create {
   color: var(--fg-primary);
   background-color: var(--bg-dimmed);
-  padding: 1rem;
-  border-radius: 0.2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9rem;
 }
 .button-create:hover {
   background-color: var(--bg-dimmed-hover);
