@@ -478,7 +478,7 @@ export default function IndexPage() {
               selectedCategory === null ? "menu-active" : ""
             }`}
           >
-            Oversikt
+            Alle
           </button>
           {categories.map((category: Category) => (
             <button

@@ -792,7 +792,7 @@ export default function ListPage() {
                   selectedCategory === null ? "menu-active" : ""
                 }`}
               >
-                Oversikt
+                Alle
               </button>
               {categories.map((category) => (
                 <button
@@ -844,7 +844,7 @@ export default function ListPage() {
                   ))}
               </div>
             )}
-            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 pb-3 sm:pb-2 m-4">
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 pb-3 sm:pb-0 m-4">
               <p className="text-md sm:text-xl text-accent">Totalt</p>
               <p className="text-md sm:text-xl text-accent">{totalItems} stk</p>
               <p className="text-md sm:text-xl text-accent">

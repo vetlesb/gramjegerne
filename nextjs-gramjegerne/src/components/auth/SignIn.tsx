@@ -25,7 +25,7 @@ export function SignIn() {
           fill="#EA4335"
         />
       </svg>
-      Logg inn med Google
+      Logg inn med Google om du tørr
     </button>
   );
 }
