@@ -11,6 +11,7 @@ import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 interface ListItemProps {
   list: ListDocument;
+  onDelete?: () => Promise<void>;
 }
 
 const builder = imageUrlBuilder(client);
@@ -18,7 +19,7 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-export default function ListItem({ list }: ListItemProps) {
+export default function ListItem({ list, onDelete }: ListItemProps) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -120,6 +121,7 @@ export default function ListItem({ list }: ListItemProps) {
             listId={list._id}
             listName={list.name}
             redirectTo="/lists"
+            onSuccess={onDelete}
           />
         </div>
       </div>

@@ -30,6 +30,10 @@ body {
 .text-accent {
   color: var(--fg-accent);
 }
+.border-accent {
+  border-color: var(--fg-accent);
+  border: 2px solid var(--fg-accent);
+}
 .bg-accent {
   background-color: var(--bg-accent);
 }
@@ -283,11 +287,15 @@ button:hover {
 .button-create {
   color: var(--fg-primary);
   background-color: var(--bg-dimmed);
-  padding: 0.5rem 0.5rem 0.5rem 1rem;
-  border-radius: 99px;
+  padding: 1rem;
+  border-radius: 0.2rem;
 }
 .button-create:hover {
   background-color: var(--bg-dimmed-hover);
+}
+.is-loading {
+  background-color: var(--bg-accent);
+  color: var(--fg-secondary);
 }
 .container {
   width: 100%;
@@ -473,4 +481,60 @@ select {
     scrollbar-width: none; /* Firefox */
     overflow-x: scroll;
   }
+}
+
+[cmdk-dialog] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+}
+
+[cmdk-overlay] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+[cmdk-content] {
+  position: relative;
+  z-index: 51;
+}
+
+[cmdk-input] {
+  width: 100%;
+  padding: 1rem;
+  border: 0px;
+  border-radius: 0.2rem;
+}
+
+[cmdk-list] {
+  background: var(--bg-dimmed);
+  border-radius: 0.375rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-top: 0.25rem;
+  max-height: 300px;
+  overflow: auto;
+}
+
+[cmdk-item] {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+[cmdk-item][data-selected="true"] {
+  background: var(--bg-primary);
+}
+
+[cmdk-empty] {
+  padding: 1rem;
+  color: var(--fg-primary);
+  font-size: 0.875rem;
 }

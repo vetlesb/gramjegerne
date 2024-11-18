@@ -13,13 +13,15 @@ import {
 interface DeleteListButtonProps {
   listId: string;
   listName: string;
-  redirectTo?: string; // Optional prop for redirection
+  redirectTo?: string;
+  onSuccess?: () => void;
 }
 
 export default function DeleteListButton({
   listId,
   listName,
   redirectTo,
+  onSuccess,
 }: DeleteListButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,7 +30,8 @@ export default function DeleteListButton({
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    setError(null); // Reset previous errors
+    setError(null);
+
     try {
       const response = await fetch(
         `/api/deleteList?listId=${encodeURIComponent(listId)}`,
@@ -42,11 +45,13 @@ export default function DeleteListButton({
         throw new Error(data.error || "Failed to delete list");
       }
 
-      // If a redirect path is provided, navigate to it; otherwise, refresh the page
       if (redirectTo) {
         router.push(redirectTo);
-      } else {
-        router.refresh();
+      }
+      setIsDialogOpen(false);
+
+      if (onSuccess) {
+        onSuccess();
       }
     } catch (error) {
       console.error("Error deleting list:", error);
@@ -57,7 +62,6 @@ export default function DeleteListButton({
       );
     } finally {
       setIsDeleting(false);
-      setIsDialogOpen(false);
     }
   };
 

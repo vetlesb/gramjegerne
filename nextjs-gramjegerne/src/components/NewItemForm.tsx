@@ -4,6 +4,9 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { Command } from "cmdk";
+import Icon from "@/components/Icon";
+import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Add this import
 
 interface Category {
   _id: string;
@@ -32,6 +35,9 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [categoryInput, setCategoryInput] = useState("");
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Fetch Categories from the API
   useEffect(() => {
@@ -91,6 +97,43 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   const handleImageRemoval = () => {
     setImage(null);
     setImagePreview(null);
+  };
+
+  // Filter categories based on input
+  const filteredCategories = categories.filter((category) =>
+    category.title.toLowerCase().includes(categoryInput.toLowerCase()),
+  );
+
+  // Handle new category creation
+  const handleAddCategory = async (newCategoryName: string) => {
+    setIsAddingCategory(true);
+    try {
+      const response = await fetch("/api/addCategory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newCategoryName }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to add category");
+      }
+
+      const newCategory = await response.json();
+      setCategories((prev) =>
+        [...prev, newCategory].sort((a, b) =>
+          a.title.localeCompare(b.title, "nb"),
+        ),
+      );
+      setSelectedCategory(newCategory._id);
+      setCategoryInput(newCategory.title);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to add category",
+      );
+    } finally {
+      setIsAddingCategory(false);
+    }
   };
 
   // Handle Form Submission
@@ -155,7 +198,6 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       }
 
       const result = await response.json();
-      console.log("Item created:", result);
 
       // Reset form
       setName("");
@@ -169,6 +211,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
 
       setSuccessMessage("Utstyr opprettet!");
 
+      // Call onSuccess callback with the result
       if (onSuccess) {
         onSuccess(result);
       }
@@ -183,6 +226,22 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       setIsLoading(false);
     }
   };
+
+  // Add this useEffect near your other effects
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const commandRoot = document.querySelector("[cmdk-root]");
+      const isCommandInput = target.closest("[cmdk-input]");
+
+      if (commandRoot && !commandRoot.contains(target) && !isCommandInput) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div>
@@ -249,23 +308,103 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
           )}
         </div>
 
-        {/* Category field - make sure it's required */}
+        {/* Category field */}
         <div>
           <label className="flex flex-col gap-y-2">
             Kategori *
-            <select
-              className="w-full max-w-full p-4"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              required
-            >
-              <option value="">Velg kategori</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
+            <div className="relative w-full">
+              <Command
+                className="relative"
+                shouldFilter={false}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setIsOpen(false);
+                  }
+                }}
+              >
+                <div className="relative">
+                  <Command.Input
+                    value={categoryInput}
+                    onValueChange={(value) => {
+                      setCategoryInput(value);
+                      setIsOpen(true);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsOpen(!isOpen);
+                    }}
+                    readOnly={!isOpen}
+                    placeholder="Velg eller søk etter kategori..."
+                    className="w-full p-4 border border-gray-300 rounded cursor-pointer"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    {selectedCategory && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCategory("");
+                          setCategoryInput("");
+                        }}
+                        className="p-1 rounded-md"
+                        title="Fjern valgt kategori"
+                      >
+                        <Icon name="close" width={16} height={16} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(!isOpen);
+                      }}
+                      className="p-1"
+                    >
+                      <Icon name="chevrondown" width={16} height={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {isOpen && (
+                  <div className="absolute w-full mt-2 bg-dimmed border border-accent rounded-md shadow-lg z-[60]">
+                    <Command.List className="max-h-[300px] overflow-auto p-2">
+                      <Command.Empty className="p-4 text-sm text-gray-500">
+                        Ingen kategorier funnet.
+                        {categoryInput && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleAddCategory(categoryInput);
+                              setIsOpen(false);
+                            }}
+                            className="flex items-center gap-2 mt-2 text-accent"
+                          >
+                            <Icon name="add" width={16} height={16} />
+                            Opprett &ldquo;{categoryInput}&rdquo;
+                            {isAddingCategory && <LoadingSpinner size="sm" />}
+                          </button>
+                        )}
+                      </Command.Empty>
+
+                      {filteredCategories.map((category) => (
+                        <Command.Item
+                          key={category._id}
+                          value={category._id}
+                          onSelect={() => {
+                            setSelectedCategory(category._id);
+                            setCategoryInput(category.title);
+                            setIsOpen(false);
+                          }}
+                          className="px-4 py-2 cursor-pointer hover:bg-dimmed focus:bg-dimmed outline-none rounded"
+                        >
+                          {category.title}
+                        </Command.Item>
+                      ))}
+                    </Command.List>
+                  </div>
+                )}
+              </Command>
+            </div>
           </label>
         </div>
 

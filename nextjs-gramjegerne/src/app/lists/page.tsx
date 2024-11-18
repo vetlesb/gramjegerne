@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { client } from "@/sanity/client";
 import { groq } from "next-sanity";
 import AddListDialog from "../../components/addListDialog";
@@ -13,7 +13,7 @@ export default function Page() {
   const { data: session } = useSession();
   const [lists, setLists] = useState<ListDocument[]>([]);
 
-  useEffect(() => {
+  const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
 
     const query = groq`*[_type == "list" && user._ref == $userId]{
@@ -26,27 +26,28 @@ export default function Page() {
       participants
     }`;
 
-    // Initial fetch with user ID
-    client
-      .fetch(query, { userId: session.user.id })
-      .then((data) => setLists(data));
+    const data = await client.fetch(query, { userId: session.user.id });
+    setLists(data);
+  }, [session?.user?.id]);
 
-    // Subscribe to real-time updates with user filter
+  useEffect(() => {
+    fetchLists();
+
+    // Subscribe to real-time updates
+    if (!session?.user?.id) return;
+
+    const query = groq`*[_type == "list" && user._ref == $userId]`;
     const subscription = client
       .listen(query, { userId: session.user.id })
       .subscribe({
-        next: () => {
-          client
-            .fetch(query, { userId: session.user.id })
-            .then((data) => setLists(data));
-        },
+        next: fetchLists,
         error: (error) => {
           console.error("Subscription error:", error);
         },
       });
 
     return () => subscription.unsubscribe();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, fetchLists]);
 
   return (
     <ProtectedRoute>
@@ -55,11 +56,11 @@ export default function Page() {
           lager pakklister
         </h1>
         <div className="flex flex-col gap-y-8">
-          <AddListDialog />
+          <AddListDialog onSuccess={fetchLists} />
 
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-8 gap-x-4">
             {lists.map((list) => (
-              <ListItem key={list._id} list={list} />
+              <ListItem key={list._id} list={list} onDelete={fetchLists} />
             ))}
           </ul>
         </div>
