@@ -8,6 +8,7 @@ import { CloseIcon } from "./icons/CloseIcon";
 import { SizeIcon } from "./icons/SizeIcon";
 import { WeightIcon } from "./icons/WeightIcon";
 import { CaloriesIcon } from "./icons/CaloriesIcon";
+import { LogOutIcon } from "./icons/LogOutIcon";
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -21,6 +22,7 @@ const iconMap = {
   size: SizeIcon,
   weight: WeightIcon,
   calories: CaloriesIcon,
+  logout: LogOutIcon,
   // ... add other icons here
 };
 

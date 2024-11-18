@@ -340,7 +340,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                       setIsOpen(!isOpen);
                     }}
                     readOnly={selectedCategory !== ""} // Make input readonly when category is selected
-                    placeholder="Velg eller søk etter kategori..."
+                    placeholder="Søk eller legg til ny kategory..."
                     className="w-full p-4 border border-gray-300 rounded cursor-pointer"
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
@@ -383,9 +383,8 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                               handleAddCategory(categoryInput);
                               setIsOpen(false);
                             }}
-                            className="flex items-center gap-2 mt-2 text-accent"
+                            className="button-primary-accent text-md flex items-center gap-2 mt-2 text-accent"
                           >
-                            <Icon name="add" width={16} height={16} />
                             Opprett &ldquo;{categoryInput}&rdquo;
                             {isAddingCategory && <LoadingSpinner size="sm" />}
                           </button>

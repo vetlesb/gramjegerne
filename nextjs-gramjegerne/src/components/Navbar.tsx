@@ -2,6 +2,7 @@
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
@@ -41,9 +42,9 @@ export default function Navbar() {
                     e.preventDefault();
                     signOut();
                   }}
-                  className="block py-2 pr-4 pl-3"
+                  className="block py-2 pr-4 pl-3 flex items-center"
                 >
-                  Logg ut
+                  <Icon name="logout" width={24} height={24} />
                 </Link>
               </li>
             ) : (
