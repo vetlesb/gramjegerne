@@ -13,6 +13,9 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/auth/signin",
+  },
   callbacks: {
     async signIn({ user, account }) {
       if (!account || account.provider !== "google") return false;

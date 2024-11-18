@@ -6,6 +6,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
+import { usePathname } from "next/navigation";
 
 const apfel = localFont({
   src: [
@@ -30,11 +31,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isAuthPage = pathname?.startsWith("/auth/");
+
   return (
     <html lang="en">
       <body className={`${apfel.variable} antialiased`}>
         <Providers>
-          <Navbar />
+          {!isAuthPage && <Navbar />}
           {children}
         </Providers>
       </body>

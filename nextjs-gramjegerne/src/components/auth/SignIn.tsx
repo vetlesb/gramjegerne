@@ -25,7 +25,7 @@ export function SignIn() {
           fill="#EA4335"
         />
       </svg>
-      Logg inn med Google fra comp auth signin
+      Logg inn
     </button>
   );
 }
