@@ -821,7 +821,7 @@ export default function ListPage() {
           <ul className="product flex flex-wrap items-center gap-4 mt-8">
             <li>
               {selectedCategory === null && (
-                <div className="flex flex-col gap-y-4 sm:gap-y-4 m-4">
+                <div className="flex flex-col gap-y-4 sm:gap-y-4 mb-4 md:m-4">
                   {calculateCategoryTotals(
                     selectedItems
                       .map((item) => item.item)
@@ -831,7 +831,7 @@ export default function ListPage() {
                     .map((categoryTotal) => (
                       <div
                         key={categoryTotal.title}
-                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 border-b border-white/5 pb-3 sm:pb-3"
+                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-3 border-b border-white/5 pb-4"
                       >
                         <p className="text-md sm:text-xl sm:text-white">
                           {categoryTotal.title}
@@ -852,7 +852,7 @@ export default function ListPage() {
                     ))}
                 </div>
               )}
-              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 pb-3 sm:pb-0 m-4">
+              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-3 pb-0 m-0 md:m-4">
                 <p className="text-md sm:text-xl text-accent">Totalt</p>
                 <p className="text-md sm:text-xl text-accent">
                   {totalItems} stk
@@ -882,7 +882,7 @@ export default function ListPage() {
             console.log("Rendering item:", listItem);
             return (
               <li key={listItem._key} className="product py-4">
-                <div className="flex items-center gap-x-4">
+                <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
                   <div className="aspect-square h-16 w-16">
                     {listItem.item?.image ? (
                       <Image
@@ -937,39 +937,41 @@ export default function ListPage() {
                         )}
                     </div>
                   </div>
+                  <div className="flex ml-auto"></div>
 
-                  <div className="flex items-center gap-x-2 ml-auto">
-                    <div className="flex items-center gap-x-2 bg-white/5 rounded px-2 py-1">
-                      <button
-                        onClick={() =>
-                          handleQuantityChange(
-                            listItem._key,
-                            (listItem.quantity || 1) - 1,
-                          )
-                        }
-                        disabled={(listItem.quantity || 1) <= 1}
-                        className="p-1 hover:bg-gray-700 rounded disabled:opacity-50"
-                      >
-                        –
-                      </button>
-                      <span className="text-sm min-w-[2rem] text-center">
-                        {pendingQuantities[listItem._key] !== undefined
-                          ? pendingQuantities[listItem._key]
-                          : listItem.quantity || 1}
-                      </span>
-                      <button
-                        onClick={() =>
-                          handleQuantityChange(
-                            listItem._key,
-                            (listItem.quantity || 1) + 1,
-                          )
-                        }
-                        className="p-1 hover:bg-gray-700 rounded"
-                      >
-                        +
-                      </button>
+                  <div className="flex items-center w-full md:w-auto gap-x-2 ml-auto">
+                    <div className="flex w-full">
+                      <div className="flex items-center gap-x-2 bg-white/5 rounded px-2 py-1">
+                        <button
+                          onClick={() =>
+                            handleQuantityChange(
+                              listItem._key,
+                              (listItem.quantity || 1) - 1,
+                            )
+                          }
+                          disabled={(listItem.quantity || 1) <= 1}
+                          className="p-1 hover:bg-gray-700 rounded disabled:opacity-50"
+                        >
+                          –
+                        </button>
+                        <span className="text-sm min-w-[2rem] text-center">
+                          {pendingQuantities[listItem._key] !== undefined
+                            ? pendingQuantities[listItem._key]
+                            : listItem.quantity || 1}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleQuantityChange(
+                              listItem._key,
+                              (listItem.quantity || 1) + 1,
+                            )
+                          }
+                          className="p-1 hover:bg-gray-700 rounded"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-
                     <button
                       onClick={() =>
                         listItem.item && handleRemoveFromList(listItem.item)
