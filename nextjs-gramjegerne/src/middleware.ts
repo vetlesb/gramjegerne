@@ -8,13 +8,21 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ req, token }) => {
+        // Allow access to share routes without authentication
+        if (req.nextUrl.pathname.startsWith("/share")) {
+          return true;
+        }
+        // Require authentication for all other routes
+        return !!token;
+      },
     },
   },
 );
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth).*)",
+    // Update matcher to exclude share routes along with other public paths
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth|share).*)",
   ],
 };

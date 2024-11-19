@@ -7,6 +7,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
+import { Toaster } from "sonner";
 
 const apfel = localFont({
   src: [
@@ -41,6 +42,7 @@ export default function RootLayout({
           {!isAuthPage && <Navbar />}
           {children}
         </Providers>
+        <Toaster />
       </body>
     </html>
   );

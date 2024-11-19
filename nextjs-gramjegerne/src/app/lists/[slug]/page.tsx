@@ -4,6 +4,7 @@ import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client } from "@/sanity/client";
+import { ShareButton } from "@/components/ShareButton";
 import Icon from "@/components/Icon";
 import { usePathname } from "next/navigation";
 import {
@@ -781,6 +782,7 @@ export default function ListPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <ShareButton slug={listSlug} />
         </div>
 
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
