@@ -869,7 +869,7 @@ export default function ListPage() {
             return (
               <li key={listItem._key} className="product py-4">
                 <div className="flex items-center gap-x-4">
-                  <div className="h-16 w-16">
+                  <div className="aspect-square h-16 w-16">
                     {listItem.item?.image ? (
                       <Image
                         className="rounded-md h-full w-full object-cover"
@@ -879,8 +879,9 @@ export default function ListPage() {
                         height={64}
                       />
                     ) : (
-                      <div className="h-16 w-16 flex items-center placeholder_image">
+                      <div className="h-16 w-16 flex items-center justify-center placeholder_image">
                         <svg
+                          className="w-12 h-12"
                           width="16"
                           height="16"
                           viewBox="0 0 29 24"

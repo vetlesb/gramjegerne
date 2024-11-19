@@ -513,7 +513,7 @@ export default function IndexPage() {
                   ) : (
                     <div className="h-16 w-16 flex items-center justify-center placeholder_image">
                       <svg
-                        className="w-12 h-12 text-gray-400"
+                        className="w-12 h-12"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
