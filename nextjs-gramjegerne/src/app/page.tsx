@@ -472,14 +472,16 @@ export default function IndexPage() {
 
         {/* Categories Menu */}
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto">
-          <button
-            onClick={() => handleCategorySelect(null)}
-            className={`menu-category text-md ${
-              selectedCategory === null ? "menu-active" : ""
-            }`}
-          >
-            Alle
-          </button>
+          {items.length > 0 && (
+            <button
+              onClick={() => handleCategorySelect(null)}
+              className={`menu-category text-md ${
+                selectedCategory === null ? "menu-active" : ""
+              }`}
+            >
+              Alle
+            </button>
+          )}
           {categories.map((category: Category) => (
             <button
               key={category._id}
@@ -493,134 +495,141 @@ export default function IndexPage() {
           ))}
         </div>
 
-        {/* Items Grid */}
-        <ul className="flex flex-col">
-          {filteredItems.map((item: Item) => (
-            <li
-              key={item._id}
-              className="product flex items-center gap-4 py-2 rounded-md"
-            >
-              <div className="flex flex-grow items-center gap-x-4">
-                <div className="aspect-square h-16 w-16">
-                  {item.image?.asset ? (
-                    <Image
-                      src={urlFor(item.image.asset)}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="rounded-md h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-16 w-16 flex items-center justify-center placeholder_image">
-                      <svg
-                        className="w-12 h-12"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
+        {/* Add this condition before the items list */}
+        {filteredItems.length === 0 ? (
+          <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
+            {selectedCategory
+              ? "Ingen utstyr i denne kategorien enda. Legg til noe nytt!"
+              : "Du har ikke lagt til noe utstyr enda. Fordelen er at det veier 0 gram!"}
+          </div>
+        ) : (
+          <ul className="flex flex-col">
+            {filteredItems.map((item: Item) => (
+              <li
+                key={item._id}
+                className="product flex items-center gap-4 py-2 rounded-md"
+              >
+                <div className="flex flex-grow items-center gap-x-4">
+                  <div className="aspect-square h-16 w-16">
+                    {item.image?.asset ? (
+                      <Image
+                        src={urlFor(item.image.asset)}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="rounded-md h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 flex items-center justify-center placeholder_image">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 29 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
+                            fill="#EAFFE2"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex flex-col flex-grow">
-                  <h2 className="text-lg md:text-xl text-accent mb-1">
-                    {item.name}
-                  </h2>
-                  <div className="flex flex-wrap gap-x-1">
-                    {item.size && (
-                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                        <Icon name="size" width={16} height={16} />
-                        {item.size}
-                      </p>
-                    )}
-                    {item.weight && item.weight.weight > 0 && (
-                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                        <Icon name="weight" width={16} height={16} />
-                        {item.weight.weight} {item.weight.unit}
-                      </p>
-                    )}
-                    {typeof item.calories !== "undefined" &&
-                      item.calories > 0 && (
+                  <div className="flex flex-col flex-grow">
+                    <h2 className="text-lg md:text-xl text-accent mb-1">
+                      {item.name}
+                    </h2>
+                    <div className="flex flex-wrap gap-x-1">
+                      {item.size && (
                         <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                          <Icon name="calories" width={16} height={16} />
-                          {item.calories} kcal
+                          <Icon name="size" width={16} height={16} />
+                          {item.size}
                         </p>
                       )}
+                      {item.weight && item.weight.weight > 0 && (
+                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                          <Icon name="weight" width={16} height={16} />
+                          {item.weight.weight} {item.weight.unit}
+                        </p>
+                      )}
+                      {typeof item.calories !== "undefined" &&
+                        item.calories > 0 && (
+                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                            <Icon name="calories" width={16} height={16} />
+                            {item.calories} kcal
+                          </p>
+                        )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-x-2 ml-auto">
+                    <button
+                      className="button-ghost flex gap-x-2 h-fit align-middle"
+                      onClick={() => setIsEditDialogOpen(item)}
+                    >
+                      <Icon name="edit" width={24} height={24} fill="#EAFFE2" />
+                    </button>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button
+                          className="button-ghost flex gap-x-2 h-fit ml-auto align-middle"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setItemToDelete(item._id);
+                          }}
+                        >
+                          <Icon
+                            name="delete"
+                            width={24}
+                            height={24}
+                            fill="#EAFFE2"
+                          />
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="dialog gap-y-8">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-normal text-accent">
+                            Er du sikker på at du vil slette &quot;{item.name}
+                            &quot;?
+                          </DialogTitle>
+                        </DialogHeader>
+
+                        {errorMessage && (
+                          <div className="text-red-500">{errorMessage}</div>
+                        )}
+
+                        <DialogFooter className="gap-y-4 gap-x-1">
+                          <button
+                            className="button-primary-accent"
+                            onClick={confirmDeleteItem}
+                            disabled={isLoadingDelete}
+                          >
+                            {isLoadingDelete ? "Sletter..." : "Slett"}
+                          </button>
+                          <DialogClose asChild>
+                            <button
+                              type="button"
+                              className="button-secondary"
+                              onClick={() => {
+                                setItemToDelete(null);
+                                setErrorMessage("");
+                              }}
+                            >
+                              Avbryt
+                            </button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
-
-                <div className="flex gap-x-2 ml-auto">
-                  <button
-                    className="button-ghost flex gap-x-2 h-fit align-middle"
-                    onClick={() => setIsEditDialogOpen(item)}
-                  >
-                    <Icon name="edit" width={24} height={24} fill="#EAFFE2" />
-                  </button>
-
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button
-                        className="button-ghost flex gap-x-2 h-fit ml-auto align-middle"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setItemToDelete(item._id);
-                        }}
-                      >
-                        <Icon
-                          name="delete"
-                          width={24}
-                          height={24}
-                          fill="#EAFFE2"
-                        />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="dialog gap-y-8">
-                      <DialogHeader>
-                        <DialogTitle className="text-xl font-normal text-accent">
-                          Er du sikker på at du vil slette &quot;{item.name}
-                          &quot;?
-                        </DialogTitle>
-                      </DialogHeader>
-
-                      {errorMessage && (
-                        <div className="text-red-500">{errorMessage}</div>
-                      )}
-
-                      <DialogFooter className="gap-y-4 gap-x-1">
-                        <button
-                          className="button-primary-accent"
-                          onClick={confirmDeleteItem}
-                          disabled={isLoadingDelete}
-                        >
-                          {isLoadingDelete ? "Sletter..." : "Slett"}
-                        </button>
-                        <DialogClose asChild>
-                          <button
-                            type="button"
-                            className="button-secondary"
-                            onClick={() => {
-                              setItemToDelete(null);
-                              setErrorMessage("");
-                            }}
-                          >
-                            Avbryt
-                          </button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Import Dialog */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>

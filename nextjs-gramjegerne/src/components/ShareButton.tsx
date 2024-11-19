@@ -1,5 +1,6 @@
 "use client";
 import { toast } from "sonner";
+import Icon from "@/components/Icon";
 
 export function ShareButton({ slug }: { slug: string }) {
   const shareUrl = `${window.location.origin}/share/${slug}`;
@@ -26,6 +27,7 @@ export function ShareButton({ slug }: { slug: string }) {
       onClick={handleShare}
       className="button-create flex items-center gap-2 px-4 py-2"
     >
+      <Icon name="link" width={24} height={24} />
       Del liste
     </button>
   );
