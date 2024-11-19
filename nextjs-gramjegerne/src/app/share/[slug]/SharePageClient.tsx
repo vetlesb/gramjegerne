@@ -152,6 +152,9 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                 <div className="flex flex-col gap-y-2">
                   <h2 className="text-xl text-accent">{listItem.item?.name}</h2>
                   <div className="flex flex-wrap gap-x-1">
+                    <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                      {listItem.quantity || 1} stk
+                    </p>
                     {listItem.item?.size && (
                       <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <Icon name="size" width={16} height={16} />
@@ -176,9 +179,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
 
                 {/* Quantity display */}
                 <div className="ml-auto">
-                  <span className="text-sm text-gray-400">
-                    {listItem.quantity || 1}x
-                  </span>
+                  <span className="text-sm text-gray-400"></span>
                 </div>
               </div>
             </li>
