@@ -96,6 +96,7 @@ export default function IndexPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<Item | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -565,65 +566,127 @@ export default function IndexPage() {
                   </div>
 
                   <div className="flex gap-x-2 ml-auto">
-                    <button
-                      className="button-ghost flex gap-x-2 h-fit align-middle"
-                      onClick={() => setIsEditDialogOpen(item)}
-                    >
-                      <Icon name="edit" width={24} height={24} fill="#EAFFE2" />
-                    </button>
-
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button
-                          className="button-ghost flex gap-x-2 h-fit ml-auto align-middle"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setItemToDelete(item._id);
-                          }}
-                        >
-                          <Icon
-                            name="delete"
-                            width={24}
-                            height={24}
-                            fill="#EAFFE2"
-                          />
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="dialog gap-y-8">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-normal text-accent">
-                            Er du sikker på at du vil slette &quot;{item.name}
-                            &quot;?
-                          </DialogTitle>
-                        </DialogHeader>
-
-                        {errorMessage && (
-                          <div className="text-red-500">{errorMessage}</div>
-                        )}
-
-                        <DialogFooter className="gap-y-4 gap-x-1">
+                    {/* Desktop buttons */}
+                    <div className="hidden md:flex gap-x-2">
+                      <button
+                        className="button-ghost flex gap-x-2 h-fit align-middle"
+                        onClick={() => setIsEditDialogOpen(item)}
+                      >
+                        <Icon
+                          name="edit"
+                          width={24}
+                          height={24}
+                          fill="#EAFFE2"
+                        />
+                      </button>
+                      <Dialog>
+                        <DialogTrigger asChild>
                           <button
-                            className="button-primary-accent"
-                            onClick={confirmDeleteItem}
-                            disabled={isLoadingDelete}
+                            className="button-ghost flex gap-x-2 h-fit align-middle"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setItemToDelete(item._id);
+                            }}
                           >
-                            {isLoadingDelete ? "Sletter..." : "Slett"}
+                            <Icon
+                              name="delete"
+                              width={24}
+                              height={24}
+                              fill="#EAFFE2"
+                            />
                           </button>
-                          <DialogClose asChild>
+                        </DialogTrigger>
+                        <DialogContent className="dialog gap-y-8">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-normal text-accent">
+                              Er du sikker på at du vil slette &quot;{item.name}
+                              &quot;?
+                            </DialogTitle>
+                          </DialogHeader>
+
+                          {errorMessage && (
+                            <div className="text-red-500">{errorMessage}</div>
+                          )}
+
+                          <DialogFooter className="gap-y-4 gap-x-1">
                             <button
-                              type="button"
-                              className="button-secondary"
-                              onClick={() => {
-                                setItemToDelete(null);
-                                setErrorMessage("");
-                              }}
+                              className="button-primary-accent"
+                              onClick={confirmDeleteItem}
+                              disabled={isLoadingDelete}
                             >
-                              Avbryt
+                              {isLoadingDelete ? "Sletter..." : "Slett"}
                             </button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                            <DialogClose asChild>
+                              <button
+                                type="button"
+                                className="button-secondary"
+                                onClick={() => {
+                                  setItemToDelete(null);
+                                  setErrorMessage("");
+                                }}
+                              >
+                                Avbryt
+                              </button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+
+                    {/* Mobile menu button */}
+                    <div className="md:hidden relative">
+                      <button
+                        className="button-ghost flex gap-x-2 h-fit align-middle"
+                        onClick={() =>
+                          setActiveMenuId(
+                            activeMenuId === item._id ? null : item._id,
+                          )
+                        }
+                      >
+                        <Icon
+                          name="ellipsis"
+                          width={24}
+                          height={24}
+                          fill="#EAFFE2"
+                        />
+                      </button>
+
+                      {activeMenuId === item._id && (
+                        <div className="absolute right-0 top-full mt-1 bg-primary rounded-md shadow-lg z-50">
+                          <button
+                            className="flex items-center gap-x-2 w-full px-4 py-2 hover:bg-white/5"
+                            onClick={() => {
+                              setIsEditDialogOpen(item);
+                              setActiveMenuId(null);
+                            }}
+                          >
+                            <Icon
+                              name="edit"
+                              width={20}
+                              height={20}
+                              fill="#EAFFE2"
+                            />
+                            <span>Rediger</span>
+                          </button>
+                          <button
+                            className="flex items-center gap-x-2 w-full px-4 py-2 hover:bg-white/5 text-red-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setItemToDelete(item._id);
+                              setActiveMenuId(null);
+                            }}
+                          >
+                            <Icon
+                              name="delete"
+                              width={20}
+                              height={20}
+                              fill="currentColor"
+                            />
+                            <span>Slett</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </li>
@@ -714,6 +777,46 @@ export default function IndexPage() {
               />
             )}
             <DialogFooter />
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete confirmation dialog - moved outside the mobile menu */}
+        <Dialog
+          open={!!itemToDelete}
+          onOpenChange={() => setItemToDelete(null)}
+        >
+          <DialogContent className="dialog gap-y-8">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-normal text-accent">
+                Er du sikker på at du vil slette &quot;
+                {items.find((item) => item._id === itemToDelete)?.name}
+                &quot;?
+              </DialogTitle>
+            </DialogHeader>
+
+            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+
+            <DialogFooter className="gap-y-4 gap-x-1">
+              <button
+                className="button-primary-accent"
+                onClick={confirmDeleteItem}
+                disabled={isLoadingDelete}
+              >
+                {isLoadingDelete ? "Sletter..." : "Slett"}
+              </button>
+              <DialogClose asChild>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={() => {
+                    setItemToDelete(null);
+                    setErrorMessage("");
+                  }}
+                >
+                  Avbryt
+                </button>
+              </DialogClose>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </main>

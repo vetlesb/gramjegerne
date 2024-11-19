@@ -44,6 +44,12 @@ body {
 .bg-accent {
   background-color: var(--bg-accent);
 }
+.bg-dimmed {
+  background-color: var(--bg-dimmed);
+}
+.bg-primary {
+  background-color: var(--bg-primary);
+}
 .nav-mobile {
   background-color: var(--bg-primary);
   padding: 1rem;

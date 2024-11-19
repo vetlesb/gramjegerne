@@ -13,6 +13,7 @@ import { CategoryIcon } from "./icons/CategoryIcon";
 import { DocumentIcon } from "./icons/DocumentIcon";
 import { LinkIcon } from "./icons/LinkIcon";
 import { MenuIcon } from "./icons/MenuIcon";
+import { EllipsisIcon } from "./icons/EllipsisIcon";
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -31,7 +32,7 @@ const iconMap = {
   document: DocumentIcon,
   link: LinkIcon,
   menu: MenuIcon,
-  // ... add other icons here
+  ellipsis: EllipsisIcon,
 };
 
 type IconName = keyof typeof iconMap;
