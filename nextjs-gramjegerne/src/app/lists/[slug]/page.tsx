@@ -831,7 +831,7 @@ export default function ListPage() {
                     .map((categoryTotal) => (
                       <div
                         key={categoryTotal.title}
-                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-3 border-b border-white/5 pb-4"
+                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-3 border-b border-white/5 pb-4"
                       >
                         <p className="text-md sm:text-xl sm:text-white">
                           {categoryTotal.title}

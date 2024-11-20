@@ -697,7 +697,7 @@ export default function IndexPage() {
         {/* Import Dialog */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent
-            className="dialog p-4 md:p-10 rounded-2xl"
+            className="dialog p-4 md:p-8 rounded-2xl"
             onInteractOutside={(e) => e.preventDefault()}
           >
             <DialogHeader>
@@ -705,13 +705,13 @@ export default function IndexPage() {
                 Importer fra Excel
               </DialogTitle>
             </DialogHeader>
-            <DialogDescription className="pb-4 text-lg">
+            <DialogDescription className="flex flex-col text-lg">
               Last opp en Excel-fil for å importere utstyr.
               <Link
-                className="underline"
+                className="underline pt-4 pb-4"
                 href="https://www.dropbox.com/scl/fi/ashfqy2f6c8s8wf4iwqpc/items_import_01.xlsx?rlkey=qwhflwgumnwxe094ki0jq4i3i&st=ogjoqt8n&dl=0"
               >
-                Se eksempelfil
+                Se eksempel her
               </Link>
             </DialogDescription>
             <ImportForm onSuccess={handleImportSuccess} />

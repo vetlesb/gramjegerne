@@ -303,7 +303,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
 
         {/* Submit Button */}
         <button
-          className="button-primary-accent py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+          className="button-primary-accent py-2 px-4 rounded-md transition-colors"
           type="submit"
           disabled={isLoading}
         >
