@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -51,6 +51,7 @@ interface ListItem {
   _type: string;
   quantity?: number;
   item: Item | null;
+  categoryOverride?: Category;
 }
 
 interface List {
@@ -94,6 +95,10 @@ const LIST_QUERY = (
     _key,
     _type,
     quantity,
+    categoryOverride->{
+      _id,
+      title
+    },
     "item": item->{
       _id,
       name,
@@ -109,11 +114,41 @@ const LIST_QUERY = (
   }
 }`;
 
+const CATEGORIES_QUERY = `*[_type == "category" && user._ref == $userId] {
+  _id,
+  title
+} | order(title asc)`;
+
 // First, let's create a more specific type for our filtered items
 interface ValidListItem extends ListItem {
   item: Item; // This removes the null possibility
   quantity: number; // This makes quantity required
 }
+
+// Add this interface for category totals
+interface CategoryTotal {
+  id: string;
+  count: number;
+  weight: number;
+  calories: number;
+  title: string;
+}
+
+// Update the formatWeight function
+const formatWeight = (weightInGrams: number): string => {
+  const weightInKg = weightInGrams / 1000;
+  // Always use 3 decimals for precision
+  return `${weightInKg.toFixed(3)} kg`;
+};
+
+// Add this sorting function at component level
+const sortListItems = (items: ListItem[]): ListItem[] => {
+  return [...items].sort((a, b) => {
+    const nameA = a.item?.name || "";
+    const nameB = b.item?.name || "";
+    return nameA.localeCompare(nameB, "nb");
+  });
+};
 
 export default function ListPage() {
   const { data: session } = useSession();
@@ -125,6 +160,17 @@ export default function ListPage() {
       ? session.user.id
       : `google_${session.user.id}`;
   }, [session?.user?.id]);
+
+  const formatNumber = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  };
+  // Move getEffectiveCategory inside the component
+  const getEffectiveCategory = useCallback(
+    (listItem: ListItem): Category | undefined => {
+      return listItem.categoryOverride || listItem.item?.category;
+    },
+    [],
+  );
 
   // State variables and Hooks
   const [items, setItems] = useState<Item[]>([]);
@@ -144,22 +190,30 @@ export default function ListPage() {
     [key: string]: number;
   }>({});
 
+  // Add these new state variables
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [editingItemKey, setEditingItemKey] = useState<string | null>(null);
+
   // Keep this as our single source of truth for categories
-  const categories = useMemo(() => {
+  const categories = useMemo((): Category[] => {
     if (!selectedItems?.length) return [];
 
-    // Get unique categories from selected items
-    const uniqueCategories = new Map<string, Category>();
+    // Get categories that actually have items
+    const activeCategories = new Map<string, Category>();
 
     selectedItems.forEach((listItem) => {
-      if (listItem.item?.category) {
-        const cat = listItem.item.category;
-        uniqueCategories.set(cat._id, cat);
+      if (!listItem.item) return;
+
+      // Get the effective category (override or original)
+      const effectiveCategory =
+        listItem.categoryOverride || listItem.item?.category;
+      if (effectiveCategory) {
+        activeCategories.set(effectiveCategory._id, effectiveCategory);
       }
     });
 
-    return Array.from(uniqueCategories.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, "nb"),
+    return Array.from(activeCategories.values()).sort(
+      (a: Category, b: Category) => a.title.localeCompare(b.title, "nb"),
     );
   }, [selectedItems]);
 
@@ -170,98 +224,75 @@ export default function ListPage() {
       if (!listSlug || !userId) return;
 
       try {
-        const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
-          userId,
-        });
+        const [fetchedList, fetchedCategories] = await Promise.all([
+          client.fetch(LIST_QUERY(listSlug), { userId }),
+          client.fetch(CATEGORIES_QUERY, { userId }),
+        ]);
+
         if (fetchedList) {
           setList(fetchedList);
           setSelectedItems(fetchedList.items);
         }
+        setAllCategories(fetchedCategories);
       } catch (error) {
-        console.error("Error fetching list:", error);
-        setError("Failed to load list");
+        console.error("Error fetching data:", error);
+        setError("Failed to load data");
       }
     };
 
     fetchData();
-  }, [listSlug, session?.user?.id, getUserId]);
+  }, [listSlug, getUserId]);
 
   // Handle category selection
   const handleCategorySelect = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
   };
 
-  // Handle item selection in the dialog
-  const handleTempItemToggle = (item: Item) => {
-    setTempSelectedItems((prevItems) => {
-      const itemExists = prevItems.some(
-        (selectedItem) => selectedItem._id === item._id,
-      );
-      if (itemExists) {
-        // Remove item
-        return prevItems.filter((i) => i._id !== item._id);
+  // Update handleTempItemToggle to track existing overrides
+  const handleTempItemToggle = useCallback((item: Item) => {
+    setTempSelectedItems((prev) => {
+      const isSelected = prev.some((selected) => selected._id === item._id);
+      if (isSelected) {
+        return prev.filter((selected) => selected._id !== item._id);
       } else {
-        // Add item
-        return [...prevItems, item];
+        return [...prev, item];
       }
     });
-  };
+  }, []);
 
   const handleRemoveFromList = async (itemToRemove: Item) => {
-    try {
-      if (!list || !session?.user?.id) return;
-      const userId = getUserId();
-      if (!userId) return;
+    if (!list) return;
 
-      // Optimistically update the UI first
-      const updatedItems = currentItems.filter(
-        (item) => item.item?._id !== itemToRemove._id,
+    try {
+      const updatedItems = selectedItems.filter(
+        (listItem) => listItem.item?._id !== itemToRemove._id,
       );
 
-      // Update local state immediately
-      setPendingQuantities((prev) => {
-        const newPending = { ...prev };
-        // Remove any pending quantities for the removed item
-        const itemKey = currentItems.find(
-          (item) => item.item?._id === itemToRemove._id,
-        )?._key;
-        if (itemKey) {
-          delete newPending[itemKey];
-        }
-        return newPending;
-      });
-
-      // Prepare the items for Sanity update
-      const itemsForUpdate = updatedItems.map((item) => ({
+      // Prepare the data for the API
+      const sanityItems = updatedItems.map((item) => ({
         _key: item._key,
-        _type: "listItem",
-        item: {
-          _type: "reference",
-          _ref: item.item?._id,
-        },
-        quantity: item.quantity || 1,
+        _type: item._type,
+        quantity: item.quantity,
+        item: item.item ? { _ref: item.item._id, _type: "reference" } : null,
+        ...(item.categoryOverride
+          ? {
+              categoryOverride: {
+                _ref: item.categoryOverride._id,
+                _type: "reference",
+              },
+            }
+          : {}),
       }));
 
-      // First verify the list belongs to the user
-      const userList = await client.fetch(
-        `*[_type == "list" && _id == $listId && user._ref == $userId][0]._id`,
-        {
-          listId: list._id,
-          userId,
-        },
-      );
-
-      if (!userList) {
-        throw new Error("Unauthorized to modify this list");
-      }
-
-      // Update in Sanity
+      // Update through API route
       const response = await fetch("/api/updateList", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           listId: list._id,
-          items: itemsForUpdate,
+          items: sanityItems,
         }),
       });
 
@@ -269,21 +300,10 @@ export default function ListPage() {
         throw new Error("Failed to update list");
       }
 
-      // Only after successful server update, update the actual state
       setSelectedItems(updatedItems);
     } catch (error) {
-      console.error("Error removing item:", error);
-      // Revert optimistic update on error by refetching
-      const userId = getUserId();
-      if (!userId) return;
-
-      const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
-        userId,
-      });
-      if (fetchedList) {
-        setList(fetchedList);
-        setSelectedItems(fetchedList.items);
-      }
+      console.error("Failed to remove item:", error);
+      alert("Failed to remove item. Please try again.");
     }
   };
 
@@ -298,34 +318,25 @@ export default function ListPage() {
     }));
   }, [selectedItems, pendingQuantities]);
 
-  // Single definition of filteredItemsForList
+  // Update the filteredItemsForList useMemo
   const filteredItemsForList = useMemo(() => {
-    if (!currentItems) return [];
+    let items = selectedItems;
 
-    // Create a Map to deduplicate items by _id
-    const uniqueItems = new Map();
-
-    currentItems.forEach((item) => {
-      if (item?.item?._id) {
-        uniqueItems.set(item.item._id, item);
-      }
-    });
-
-    return Array.from(uniqueItems.values())
-      .filter((item) => {
-        const isValidItem =
-          item?.item?._id && item?.item?.name && item?.item?.category?._id;
-        const matchesCategory =
-          selectedCategory === null ||
-          item?.item?.category?._id === selectedCategory;
-        return isValidItem && matchesCategory;
-      })
-      .sort((a, b) => {
-        const nameA = a.item?.name || "";
-        const nameB = b.item?.name || "";
-        return nameA.localeCompare(nameB, "nb");
+    if (selectedCategory) {
+      items = items.filter((item) => {
+        const effectiveCategory = getEffectiveCategory(item);
+        return effectiveCategory?._id === selectedCategory;
       });
-  }, [currentItems, selectedCategory]);
+    }
+
+    if (searchQuery) {
+      items = items.filter((item) =>
+        item.item?.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    return sortListItems(items);
+  }, [selectedItems, selectedCategory, searchQuery, getEffectiveCategory]);
 
   // Filter items based on the search query in the dialog
   const filteredItemsForDialog = useMemo(() => {
@@ -355,101 +366,99 @@ export default function ListPage() {
     }
   };
 
-  // Calculate total weight and calories when 'All Categories' is selected
-  const calculateTotalWeight = () => {
-    const itemsToCalculate =
-      selectedCategory === null
-        ? currentItems
-        : currentItems.filter(
-            (item) => item.item?.category?._id === selectedCategory,
-          );
-
-    return itemsToCalculate.reduce((total, listItem) => {
-      if (!listItem.item?.weight) return total;
-      const quantity = listItem.quantity || 1;
-      const weight = listItem.item.weight.weight;
-      const weightMultiplier = listItem.item.weight.unit === "kg" ? 1 : 0.001;
-      return total + weight * quantity * weightMultiplier;
-    }, 0);
-  };
-
-  // Calculate total calories based on filtered items
-  const totalCalories = useMemo(() => {
-    const itemsToCalculate =
-      selectedCategory === null
-        ? currentItems
-        : currentItems.filter(
-            (item) => item.item?.category?._id === selectedCategory,
-          );
-
-    return itemsToCalculate.reduce(
-      (total, listItem) =>
-        total + (listItem.item?.calories || 0) * (listItem.quantity || 1),
-      0,
-    );
-  }, [currentItems, selectedCategory]);
-
-  // Calculate total items based on filtered items
-  const totalItems = useMemo(() => {
-    const itemsToCalculate =
-      selectedCategory === null
-        ? currentItems
-        : currentItems.filter(
-            (item) => item.item?.category?._id === selectedCategory,
-          );
-
-    return itemsToCalculate.reduce(
-      (total, item) => total + (item.quantity || 1),
-      0,
-    );
-  }, [currentItems, selectedCategory]);
-
-  // Update calculateCategoryTotals to use currentItems
-  const calculateCategoryTotals = (items: Item[]) => {
-    const categoryTotals: {
-      [key: string]: {
-        title: string;
-        weight: number;
-        items: number;
-        calories: number;
+  // Update the categoryTotals calculation
+  const { categoryTotals, grandTotal } = useMemo(() => {
+    if (!selectedItems?.length) {
+      const emptyTotal = {
+        id: "total",
+        count: 0,
+        weight: 0,
+        calories: 0,
+        title: "Totalt",
       };
-    } = {};
 
-    items.forEach((item) => {
-      if (!item?.category) return;
+      return {
+        categoryTotals: selectedCategory
+          ? [
+              {
+                id: selectedCategory,
+                count: 0,
+                weight: 0,
+                calories: 0,
+                title:
+                  allCategories.find((cat) => cat._id === selectedCategory)
+                    ?.title || "Unknown",
+              },
+            ]
+          : [],
+        grandTotal: emptyTotal,
+      };
+    }
 
-      const categoryTitle = item.category.title;
-      const categoryId = item.category._id;
+    // Create a map to store category totals
+    const categoryMap = new Map<string, CategoryTotal>();
 
-      if (selectedCategory === null || categoryId === selectedCategory) {
-        if (!categoryTotals[categoryTitle]) {
-          categoryTotals[categoryTitle] = {
-            title: categoryTitle,
-            weight: 0,
-            items: 0,
-            calories: 0,
-          };
-        }
+    // Calculate totals for each category
+    selectedItems.forEach((item) => {
+      if (!item.item) return;
+      const quantity = item.quantity || 1;
+      const effectiveCategory = getEffectiveCategory(item);
+      if (!effectiveCategory) return;
 
-        // Find the current quantity using currentItems instead of selectedItems
-        const listItem = currentItems.find((si) => si.item?._id === item._id);
-        const quantity = listItem?.quantity || 1;
+      const existing = categoryMap.get(effectiveCategory._id) || {
+        id: effectiveCategory._id,
+        count: 0,
+        weight: 0,
+        calories: 0,
+        title: effectiveCategory.title,
+      };
 
-        const itemWeight = item.weight?.weight || 0;
-        const weightMultiplier = item.weight?.unit === "kg" ? 1 : 0.001;
-        const weightInKg = itemWeight * weightMultiplier;
-
-        categoryTotals[categoryTitle].weight += weightInKg * quantity;
-        categoryTotals[categoryTitle].items += quantity;
-
-        if (item.calories && item.calories > 0) {
-          categoryTotals[categoryTitle].calories += item.calories * quantity;
-        }
+      existing.count += quantity;
+      if (item.item.weight) {
+        existing.weight += item.item.weight.weight * quantity;
       }
+      if (item.item.calories) {
+        existing.calories += item.item.calories * quantity;
+      }
+
+      categoryMap.set(effectiveCategory._id, existing);
     });
 
-    return Object.values(categoryTotals);
-  };
+    const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, "nb"),
+    );
+
+    // For category-specific view, return only that category's total
+    if (selectedCategory) {
+      const categoryTotal = categoryMap.get(selectedCategory) || {
+        id: selectedCategory,
+        count: 0,
+        weight: 0,
+        calories: 0,
+        title:
+          allCategories.find((cat) => cat._id === selectedCategory)?.title ||
+          "Unknown",
+      };
+      return {
+        categoryTotals: [categoryTotal],
+        grandTotal: categoryTotal,
+      };
+    }
+
+    // Calculate overall total
+    const grandTotal = categoryTotals.reduce(
+      (acc, cat) => ({
+        id: "total",
+        title: "Totalt",
+        count: acc.count + cat.count,
+        weight: acc.weight + cat.weight,
+        calories: acc.calories + cat.calories,
+      }),
+      { id: "total", title: "Totalt", count: 0, weight: 0, calories: 0 },
+    );
+
+    return { categoryTotals, grandTotal };
+  }, [selectedItems, selectedCategory, getEffectiveCategory, allCategories]);
 
   // Update the handleSaveChanges function
   const handleSaveChanges = async () => {
@@ -461,7 +470,7 @@ export default function ListPage() {
         throw new Error("Missing required data");
       }
 
-      // Keep existing items with their current quantities
+      // Keep existing items with their current quantities AND category overrides
       const existingItems = selectedItems.map((item) => ({
         _key: item._key,
         _type: "listItem",
@@ -470,6 +479,13 @@ export default function ListPage() {
           _ref: item.item?._id,
         },
         quantity: item.quantity || 1,
+        // Preserve category override if it exists
+        categoryOverride: item.categoryOverride
+          ? {
+              _type: "reference",
+              _ref: item.categoryOverride._id,
+            }
+          : undefined,
       }));
 
       // Add only truly new items
@@ -490,6 +506,8 @@ export default function ListPage() {
           quantity: 1,
         }));
 
+      console.log("Saving items with overrides:", existingItems);
+
       // Update in Sanity
       const response = await fetch("/api/updateList", {
         method: "PUT",
@@ -504,7 +522,36 @@ export default function ListPage() {
         throw new Error("Failed to update list");
       }
 
-      // Fetch fresh data instead of updating state directly
+      // Update the LIST_QUERY to include category overrides
+      const LIST_QUERY = (
+        slug: string,
+      ) => `*[_type == "list" && slug.current == "${slug}" && user._ref == $userId][0] {
+        _id,
+        name,
+        items[]{
+          _key,
+          _type,
+          quantity,
+          item->{
+            _id,
+            name,
+            category->{
+              _id,
+              title
+            },
+            image,
+            size,
+            weight,
+            calories
+          },
+          categoryOverride->{
+            _id,
+            title
+          }
+        }
+      }`;
+
+      // Fetch fresh data
       const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
         userId,
       });
@@ -619,6 +666,80 @@ export default function ListPage() {
 
     fetchItems();
   }, [isDialogOpen, session?.user?.id]); // Add session?.user?.id to dependencies
+
+  // Add the category update handler
+  const handleCategoryUpdate = async (categoryId: string | null) => {
+    if (!editingItemKey || !list) return;
+
+    try {
+      // Create the updated items array with proper typing
+      const updatedItems = selectedItems.map((item: ListItem) => {
+        if (item._key !== editingItemKey) return item;
+
+        // If categoryId is null, remove the override
+        if (categoryId === null) {
+          return {
+            _key: item._key,
+            _type: item._type,
+            quantity: item.quantity,
+            item: item.item,
+          } as ListItem;
+        }
+
+        // Find the new category
+        const newCategory = allCategories.find((cat) => cat._id === categoryId);
+        if (!newCategory) return item;
+
+        // Return updated item with new category override
+        return {
+          _key: item._key,
+          _type: item._type,
+          quantity: item.quantity,
+          item: item.item,
+          categoryOverride: newCategory,
+        } as ListItem;
+      });
+
+      // Prepare the data for the API
+      const sanityItems = updatedItems.map((item) => ({
+        _key: item._key,
+        _type: item._type,
+        quantity: item.quantity,
+        item: item.item ? { _ref: item.item._id, _type: "reference" } : null,
+        ...(item.categoryOverride
+          ? {
+              categoryOverride: {
+                _ref: item.categoryOverride._id,
+                _type: "reference",
+              },
+            }
+          : {}),
+      }));
+
+      // Update through API route
+      const response = await fetch("/api/updateList", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listId: list._id,
+          items: sanityItems,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update list");
+      }
+
+      // Update local state
+      setSelectedItems(updatedItems);
+      setEditingItemKey(null);
+    } catch (error) {
+      console.error("Failed to update category:", error);
+      alert("Failed to update category. Please try again.");
+    }
+  };
 
   // First, let's add a loading and error state check at the start of the component render
   if (error) {
@@ -818,55 +939,71 @@ export default function ListPage() {
         {/* Totalt for weight and calories */}
 
         {selectedItems.length > 0 ? (
-          <ul className="product flex flex-wrap items-center gap-4 mt-8">
+          <ul className="product flex flex-col w-full mt-8">
             <li>
-              {selectedCategory === null && (
-                <div className="flex flex-col gap-y-4 sm:gap-y-4 mb-4 md:m-4">
-                  {calculateCategoryTotals(
-                    selectedItems
-                      .map((item) => item.item)
-                      .filter((item): item is Item => item !== null),
-                  )
-                    .sort((a, b) => a.title.localeCompare(b.title, "nb"))
-                    .map((categoryTotal) => (
+              {selectedCategory === null ? (
+                // "Alle" view - show both category totals and grand total
+                <div className="flex flex-col">
+                  {/* Category totals */}
+                  <div className="flex flex-col m-0 md:m-4">
+                    {categoryTotals.map((total) => (
                       <div
-                        key={categoryTotal.title}
-                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-3 border-b border-white/5 pb-4"
+                        key={total.id}
+                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-x-3 "
                       >
-                        <p className="text-md sm:text-xl sm:text-white">
-                          {categoryTotal.title}
+                        <p className="text-md sm:text-xl">{total.title}</p>
+                        <p className="text-md sm:text-xl">{total.count} stk</p>
+                        <p className="text-md sm:text-xl">
+                          {formatWeight(total.weight)}
                         </p>
                         <p className="text-md sm:text-xl">
-                          {categoryTotal.items} stk
+                          {total.calories > 0
+                            ? `${formatNumber(total.calories)} kcal`
+                            : ""}
                         </p>
-                        <p className="text-md sm:text-xl ">
-                          {categoryTotal.weight.toFixed(3)} kg
-                        </p>
-
-                        {categoryTotal.calories > 0 && (
-                          <p className="text-md sm:text-xl ">
-                            {categoryTotal.calories} kcal
-                          </p>
-                        )}
                       </div>
                     ))}
+                  </div>
+
+                  {/* Grand total */}
+                  <div className="m-0 md:m-4">
+                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8">
+                      <p className="text-md sm:text-xl text-accent">Totalt</p>
+                      <p className="text-md sm:text-xl text-accent">
+                        {grandTotal.count} stk
+                      </p>
+                      <p className="text-md sm:text-xl text-accent">
+                        {formatWeight(grandTotal.weight)}
+                      </p>
+                      <p className="text-md sm:text-xl text-accent">
+                        {grandTotal.calories > 0
+                          ? `${formatNumber(grandTotal.calories)} kcal`
+                          : "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Category-specific view - show only that category's total
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-x-3 pb-0 m-0 md:m-4">
+                  {categoryTotals.length > 0 && (
+                    <React.Fragment>
+                      <p className="text-md sm:text-xl text-accent">Totalt</p>
+                      <p className="text-md sm:text-xl text-accent">
+                        {categoryTotals[0].count} stk
+                      </p>
+                      <p className="text-md sm:text-xl text-accent">
+                        {formatWeight(categoryTotals[0].weight)}
+                      </p>
+                      {categoryTotals[0].calories > 0 && (
+                        <p className="text-md sm:text-xl text-accent">
+                          {categoryTotals[0].calories} kcal
+                        </p>
+                      )}
+                    </React.Fragment>
+                  )}
                 </div>
               )}
-              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-x-3 pb-0 m-0 md:m-4">
-                <p className="text-md sm:text-xl text-accent">Totalt</p>
-                <p className="text-md sm:text-xl text-accent">
-                  {totalItems} stk
-                </p>
-                <p className="text-md sm:text-xl text-accent">
-                  {calculateTotalWeight().toFixed(3)} kg
-                </p>
-
-                {totalCalories > 0 && (
-                  <p className="text-md sm:text-xl text-accent">
-                    {totalCalories} kcal
-                  </p>
-                )}
-              </div>
             </li>
           </ul>
         ) : (
@@ -972,6 +1109,22 @@ export default function ListPage() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Add category edit button */}
+                    <button
+                      onClick={() => setEditingItemKey(listItem._key)}
+                      className="button-ghost flex gap-x-2 h-fit align-middle"
+                      aria-label="Edit category"
+                    >
+                      <Icon
+                        name="category"
+                        width={24}
+                        height={24}
+                        fill="#EAFFE2"
+                      />
+                    </button>
+
+                    {/* Existing delete button */}
                     <button
                       onClick={() =>
                         listItem.item && handleRemoveFromList(listItem.item)
@@ -991,6 +1144,63 @@ export default function ListPage() {
             );
           })}
         </ul>
+
+        {/* Category Edit Dialog */}
+        <Dialog
+          open={!!editingItemKey}
+          onOpenChange={() => setEditingItemKey(null)}
+        >
+          <DialogContent className="dialog">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-normal text-accent">
+                Endre kategori
+              </DialogTitle>
+              <DialogDescription className="text-sm text-white/70">
+                Velg en ny kategori for varen
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-y-4">
+              <select
+                className="bg-white/5 text-accent p-2 rounded-lg border border-white/10 focus:outline-none focus:border-white/20"
+                value={
+                  selectedItems.find((item) => item._key === editingItemKey)
+                    ?.categoryOverride?._id || ""
+                }
+                onChange={(e) =>
+                  handleCategoryUpdate(
+                    e.target.value === "original" ? null : e.target.value,
+                  )
+                }
+              >
+                {/* Original category option */}
+                <option value="original">
+                  {selectedItems.find((item) => item._key === editingItemKey)
+                    ?.item?.category.title || "Unknown"}{" "}
+                  (original)
+                </option>
+
+                {/* Available categories */}
+                {allCategories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <button
+                  className="button-secondary"
+                  onClick={() => setEditingItemKey(null)}
+                >
+                  Avbryt
+                </button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </ProtectedRoute>
   );

@@ -15,4 +15,16 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+
+  document: {
+    actions: (prev, context) => {
+      if (context.schemaType === 'list') {
+        return prev.filter(
+          (action) =>
+            action.action && !['unpublish', 'delete', 'duplicate'].includes(action.action),
+        )
+      }
+      return prev
+    },
+  },
 })

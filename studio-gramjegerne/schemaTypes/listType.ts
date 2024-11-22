@@ -94,6 +94,12 @@ export const listType = defineType({
               initialValue: 1,
               validation: (Rule) => Rule.required().min(1),
             }),
+            defineField({
+              name: 'categoryOverride',
+              type: 'reference',
+              to: [{type: 'category'}],
+              title: 'Category Override',
+            }),
           ],
           preview: {
             select: {
