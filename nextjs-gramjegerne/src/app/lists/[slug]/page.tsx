@@ -187,7 +187,7 @@ export default function ListPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<ListItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]);
   const pathname = usePathname();
   const listSlug = pathname?.split("/")[2];
@@ -202,6 +202,9 @@ export default function ListPage() {
   // Add these new state variables
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [editingItemKey, setEditingItemKey] = useState<string | null>(null);
+
+  // Add a new state for dialog search
+  const [dialogSearchQuery, setDialogSearchQuery] = useState("");
 
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
@@ -347,12 +350,15 @@ export default function ListPage() {
     return sortListItems(items);
   }, [selectedItems, selectedCategory, searchQuery, getEffectiveCategory]);
 
-  // Filter items based on the search query in the dialog
+  // Update the filteredItemsForDialog to use dialogSearchQuery instead
   const filteredItemsForDialog = useMemo(() => {
     return items
       .filter((item) => {
-        const matchesSearch = searchQuery
-          ? item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesSearch = dialogSearchQuery
+          ? item.name.toLowerCase().includes(dialogSearchQuery.toLowerCase()) ||
+            item.category.title
+              .toLowerCase()
+              .includes(dialogSearchQuery.toLowerCase())
           : true;
         const notAlreadyInList = !selectedItems.some(
           (selectedItem) => selectedItem.item?._id === item._id,
@@ -360,9 +366,9 @@ export default function ListPage() {
         return matchesSearch && notAlreadyInList;
       })
       .sort((a, b) => a.name.localeCompare(b.name, "nb"));
-  }, [items, searchQuery, selectedItems]);
+  }, [items, dialogSearchQuery, selectedItems]);
 
-  // When the dialog opens, initialize tempSelectedItems with current selectedItems
+  // Update the dialog open handler to clear the dialog search
   const handleDialogOpenChange = (isOpen: boolean) => {
     setIsDialogOpen(isOpen);
     if (isOpen) {
@@ -371,7 +377,7 @@ export default function ListPage() {
           .map((item) => item.item)
           .filter((item): item is Item => item !== null),
       );
-      setSearchQuery(""); // Clear search query when dialog opens
+      setDialogSearchQuery(""); // Clear dialog search query when dialog opens
     }
   };
 
@@ -835,8 +841,8 @@ export default function ListPage() {
                 Søk
                 <input
                   type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={dialogSearchQuery}
+                  onChange={(e) => setDialogSearchQuery(e.target.value)}
                   className="w-full max-w-full p-4 mb-2"
                   placeholder="Søk etter utstyr"
                 />
