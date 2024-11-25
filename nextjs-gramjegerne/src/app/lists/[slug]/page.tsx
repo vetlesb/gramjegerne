@@ -134,6 +134,15 @@ interface CategoryTotal {
   title: string;
 }
 
+// Add this interface for override totals
+interface OverrideTotal {
+  categoryId: string;
+  categoryTitle: string;
+  count: number;
+  weight: number;
+  calories: number;
+}
+
 // Update the formatWeight function
 const formatWeight = (weightInGrams: number): string => {
   const weightInKg = weightInGrams / 1000;
@@ -367,98 +376,119 @@ export default function ListPage() {
   };
 
   // Update the categoryTotals calculation
-  const { categoryTotals, grandTotal } = useMemo(() => {
-    if (!selectedItems?.length) {
-      const emptyTotal = {
-        id: "total",
-        count: 0,
-        weight: 0,
-        calories: 0,
-        title: "Totalt",
-      };
-
-      return {
-        categoryTotals: selectedCategory
-          ? [
-              {
-                id: selectedCategory,
-                count: 0,
-                weight: 0,
-                calories: 0,
-                title:
-                  allCategories.find((cat) => cat._id === selectedCategory)
-                    ?.title || "Unknown",
-              },
-            ]
-          : [],
-        grandTotal: emptyTotal,
-      };
-    }
-
-    // Create a map to store category totals
-    const categoryMap = new Map<string, CategoryTotal>();
-
-    // Calculate totals for each category
-    selectedItems.forEach((item) => {
-      if (!item.item) return;
-      const quantity = item.quantity || 1;
-      const effectiveCategory = getEffectiveCategory(item);
-      if (!effectiveCategory) return;
-
-      const existing = categoryMap.get(effectiveCategory._id) || {
-        id: effectiveCategory._id,
-        count: 0,
-        weight: 0,
-        calories: 0,
-        title: effectiveCategory.title,
-      };
-
-      existing.count += quantity;
-      if (item.item.weight) {
-        existing.weight += item.item.weight.weight * quantity;
-      }
-      if (item.item.calories) {
-        existing.calories += item.item.calories * quantity;
+  const { categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides } =
+    useMemo(() => {
+      if (!selectedItems?.length) {
+        const emptyTotal = {
+          id: "total",
+          count: 0,
+          weight: 0,
+          calories: 0,
+          title: "Totalt",
+        };
+        return {
+          categoryTotals: [],
+          grandTotal: emptyTotal,
+          overrideTotals: [],
+          totalWithoutOverrides: emptyTotal,
+        };
       }
 
-      categoryMap.set(effectiveCategory._id, existing);
-    });
+      // Create maps for both regular and override totals
+      const categoryMap = new Map<string, CategoryTotal>();
+      const overrideMap = new Map<string, OverrideTotal>();
 
-    const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, "nb"),
-    );
+      // Calculate totals
+      selectedItems.forEach((item) => {
+        if (!item.item) return;
+        const quantity = item.quantity || 1;
+        const effectiveCategory = getEffectiveCategory(item);
+        if (!effectiveCategory) return;
 
-    // For category-specific view, return only that category's total
-    if (selectedCategory) {
-      const categoryTotal = categoryMap.get(selectedCategory) || {
-        id: selectedCategory,
-        count: 0,
-        weight: 0,
-        calories: 0,
-        title:
-          allCategories.find((cat) => cat._id === selectedCategory)?.title ||
-          "Unknown",
+        // If this item has a category override, add it to overrides
+        if (item.categoryOverride) {
+          const existing = overrideMap.get(item.categoryOverride._id) || {
+            categoryId: item.categoryOverride._id,
+            categoryTitle: item.categoryOverride.title,
+            count: 0,
+            weight: 0,
+            calories: 0,
+          };
+
+          existing.count += quantity;
+          if (item.item.weight) {
+            existing.weight += item.item.weight.weight * quantity;
+          }
+          if (item.item.calories) {
+            existing.calories += item.item.calories * quantity;
+          }
+
+          overrideMap.set(item.categoryOverride._id, existing);
+        }
+
+        // Regular category totals calculation (unchanged)
+        const existing = categoryMap.get(effectiveCategory._id) || {
+          id: effectiveCategory._id,
+          count: 0,
+          weight: 0,
+          calories: 0,
+          title: effectiveCategory.title,
+        };
+
+        existing.count += quantity;
+        if (item.item.weight) {
+          existing.weight += item.item.weight.weight * quantity;
+        }
+        if (item.item.calories) {
+          existing.calories += item.item.calories * quantity;
+        }
+
+        categoryMap.set(effectiveCategory._id, existing);
+      });
+
+      const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
+        a.title.localeCompare(b.title, "nb"),
+      );
+
+      const overrideTotals = Array.from(overrideMap.values()).sort((a, b) =>
+        a.categoryTitle.localeCompare(b.categoryTitle, "nb"),
+      );
+
+      // Calculate grand total
+      const grandTotal = categoryTotals.reduce(
+        (acc, cat) => ({
+          id: "total",
+          title: "Totalt",
+          count: acc.count + cat.count,
+          weight: acc.weight + cat.weight,
+          calories: acc.calories + cat.calories,
+        }),
+        { id: "total", title: "Totalt", count: 0, weight: 0, calories: 0 },
+      );
+
+      // Calculate total without overrides
+      const totalWithoutOverrides = {
+        id: "total-no-override",
+        title: "Totalt uten overkjøringer",
+        count: grandTotal.count,
+        weight: grandTotal.weight,
+        calories: grandTotal.calories,
       };
+
+      // Subtract override totals
+      overrideTotals.forEach((override) => {
+        totalWithoutOverrides.count -= override.count;
+        totalWithoutOverrides.weight -= override.weight;
+        totalWithoutOverrides.calories -= override.calories;
+      });
+
       return {
-        categoryTotals: [categoryTotal],
-        grandTotal: categoryTotal,
+        categoryTotals,
+        grandTotal,
+        overrideTotals,
+        totalWithoutOverrides,
       };
-    }
-
-    // Calculate overall total
-    const grandTotal = categoryTotals.reduce(
-      (acc, cat) => ({
-        id: "total",
-        title: "Totalt",
-        count: acc.count + cat.count,
-        weight: acc.weight + cat.weight,
-        calories: acc.calories + cat.calories,
-      }),
-      { id: "total", title: "Totalt", count: 0, weight: 0, calories: 0 },
-    );
-
-    return { categoryTotals, grandTotal };
-  }, [selectedItems, selectedCategory, getEffectiveCategory, allCategories]);
+    }, [selectedItems, getEffectiveCategory]);
 
   // Update the handleSaveChanges function
   const handleSaveChanges = async () => {
@@ -939,20 +969,53 @@ export default function ListPage() {
         {/* Totalt for weight and calories */}
 
         {selectedItems.length > 0 ? (
-          <ul className="product flex flex-col w-full mt-8">
+          <ul className="totals flex flex-col w-full mt-8 gap-y-4">
             <li>
               {selectedCategory === null ? (
-                // "Alle" view - show both category totals and grand total
-                <div className="flex flex-col">
-                  {/* Category totals */}
-                  <div className="flex flex-col m-0 md:m-4">
+                // "Alle" view with overrides and category totals
+                <div className="flex flex-col gap-y-8">
+                  {/* Override totals section */}
+                  {overrideTotals.length > 0 && (
+                    <div className="flex flex-col gap-y-8 pt-4">
+                      {overrideTotals.map((override) => (
+                        <div
+                          key={override.categoryId}
+                          className="grid grid-cols-1 gap-x-3 gap-y-2"
+                        >
+                          <p className="text-md sm:text-xl">
+                            {override.categoryTitle}
+                          </p>
+                          <p className="text-4xl sm:text-8xl text-accent font-bold">
+                            {formatWeight(override.weight)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Total without overrides section */}
+                  {overrideTotals.length > 0 && (
+                    <div className="flex flex-col gap-y-2 pb-8">
+                      <div className="grid grid-cols-1 gap-x-3 gap-y-2">
+                        <p className="text-md sm:text-xl">Sekk</p>
+                        <p className="text-4xl sm:text-8xl text-accent font-bold">
+                          {formatWeight(totalWithoutOverrides.weight)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category totals section */}
+                  <div className="flex flex-col gap-y-2 pt-4">
                     {categoryTotals.map((total) => (
                       <div
                         key={total.id}
-                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-x-3 "
+                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
                       >
                         <p className="text-md sm:text-xl">{total.title}</p>
-                        <p className="text-md sm:text-xl">{total.count} stk</p>
+                        <p className="text-md sm:text-xl">
+                          {formatNumber(total.count)} stk
+                        </p>
                         <p className="text-md sm:text-xl">
                           {formatWeight(total.weight)}
                         </p>
@@ -965,43 +1028,46 @@ export default function ListPage() {
                     ))}
                   </div>
 
-                  {/* Grand total */}
-                  <div className="m-0 md:m-4">
-                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8">
-                      <p className="text-md sm:text-xl text-accent">Totalt</p>
-                      <p className="text-md sm:text-xl text-accent">
-                        {grandTotal.count} stk
+                  {/* Grand total section */}
+                  <div>
+                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 font-medium">
+                      <p className="text-lg sm:text-2xl text-accent">Totalt</p>
+                      <p className="text-lg sm:text-2xl">
+                        {formatNumber(grandTotal.count)} stk
                       </p>
-                      <p className="text-md sm:text-xl text-accent">
+                      <p className="text-lg sm:text-2xl">
                         {formatWeight(grandTotal.weight)}
                       </p>
-                      <p className="text-md sm:text-xl text-accent">
+                      <p className="text-lg sm:text-2xl">
                         {grandTotal.calories > 0
                           ? `${formatNumber(grandTotal.calories)} kcal`
-                          : "-"}
+                          : ""}
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                // Category-specific view - show only that category's total
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-x-3 pb-0 m-0 md:m-4">
-                  {categoryTotals.length > 0 && (
-                    <React.Fragment>
-                      <p className="text-md sm:text-xl text-accent">Totalt</p>
-                      <p className="text-md sm:text-xl text-accent">
-                        {categoryTotals[0].count} stk
-                      </p>
-                      <p className="text-md sm:text-xl text-accent">
-                        {formatWeight(categoryTotals[0].weight)}
-                      </p>
-                      {categoryTotals[0].calories > 0 && (
-                        <p className="text-md sm:text-xl text-accent">
-                          {categoryTotals[0].calories} kcal
-                        </p>
-                      )}
-                    </React.Fragment>
-                  )}
+                // Category-specific view
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+                  <p className="text-md sm:text-xl">
+                    {formatNumber(
+                      categoryTotals.find((cat) => cat.id === selectedCategory)
+                        ?.count || 0,
+                    )}{" "}
+                    stk
+                  </p>
+                  <p className="ttext-md sm:text-xl">
+                    {formatWeight(
+                      categoryTotals.find((cat) => cat.id === selectedCategory)
+                        ?.weight || 0,
+                    )}
+                  </p>
+                  <p className="text-md sm:text-xl">
+                    {(categoryTotals.find((cat) => cat.id === selectedCategory)
+                      ?.calories || 0) > 0
+                      ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
+                      : ""}
+                  </p>
                 </div>
               )}
             </li>
@@ -1152,17 +1218,17 @@ export default function ListPage() {
         >
           <DialogContent className="dialog">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal text-accent">
+              <DialogTitle className="text-2xl font-normal text-accent">
                 Endre kategori
               </DialogTitle>
-              <DialogDescription className="text-sm text-white/70">
+              <DialogDescription className="text-lg text-white/70">
                 Velg en ny kategori for varen
               </DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-col gap-y-4">
               <select
-                className="bg-white/5 text-accent p-2 rounded-lg border border-white/10 focus:outline-none focus:border-white/20"
+                className="w-full max-w-full p-4"
                 value={
                   selectedItems.find((item) => item._key === editingItemKey)
                     ?.categoryOverride?._id || ""

@@ -118,6 +118,14 @@ li.product-search.active {
   outline: 1px solid var(--fg-accent);
   outline-offset: -1px;
 }
+ul.totals {
+  display: grid;
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 8px;
+}
 li.stats {
   display: grid;
   gap: 4px;
