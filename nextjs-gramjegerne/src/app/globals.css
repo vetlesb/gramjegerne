@@ -190,6 +190,7 @@ ul.category-list {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
   max-height: 40px;
+  white-space: nowrap;
   color: #eaffe2;
   border: 1px solid var(--fg-dimmed);
 }
@@ -213,6 +214,7 @@ ul.category-list {
   background-color: var(--bg-accent);
   color: #1f261c;
   border: 1px solid var(--fg-accent);
+  white-space: nowrap;
 }
 .menu-active:hover {
   background-color: var(--bg-accent);
