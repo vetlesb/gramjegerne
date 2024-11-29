@@ -119,12 +119,6 @@ const CATEGORIES_QUERY = `*[_type == "category" && user._ref == $userId] {
   title
 } | order(title asc)`;
 
-// First, let's create a more specific type for our filtered items
-interface ValidListItem extends ListItem {
-  item: Item; // This removes the null possibility
-  quantity: number; // This makes quantity required
-}
-
 // Add this interface for category totals
 interface CategoryTotal {
   id: string;
@@ -318,17 +312,6 @@ export default function ListPage() {
       alert("Failed to remove item. Please try again.");
     }
   };
-
-  // Create a single source of truth for current items
-  const currentItems = useMemo(() => {
-    return selectedItems.map((item) => ({
-      ...item,
-      quantity:
-        pendingQuantities[item._key] !== undefined
-          ? pendingQuantities[item._key]
-          : item.quantity || 1,
-    }));
-  }, [selectedItems, pendingQuantities]);
 
   // Update the filteredItemsForList useMemo
   const filteredItemsForList = useMemo(() => {
@@ -558,35 +541,6 @@ export default function ListPage() {
         throw new Error("Failed to update list");
       }
 
-      // Update the LIST_QUERY to include category overrides
-      const LIST_QUERY = (
-        slug: string,
-      ) => `*[_type == "list" && slug.current == "${slug}" && user._ref == $userId][0] {
-        _id,
-        name,
-        items[]{
-          _key,
-          _type,
-          quantity,
-          item->{
-            _id,
-            name,
-            category->{
-              _id,
-              title
-            },
-            image,
-            size,
-            weight,
-            calories
-          },
-          categoryOverride->{
-            _id,
-            title
-          }
-        }
-      }`;
-
       // Fetch fresh data
       const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
         userId,
@@ -597,16 +551,15 @@ export default function ListPage() {
         setSelectedItems(fetchedList.items);
       }
 
-      setTempSelectedItems([]);
-      setIsDialogOpen(false);
-      setIsLoading(false);
+      // Close the dialog after saving
+      setIsDialogOpen(false); // Close the dialog here
     } catch (err) {
       console.error("Error saving changes:", err);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Update quantity change handler
   const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
     if (!list || !session?.user?.id || newQuantity < 1) return;
 
@@ -616,34 +569,41 @@ export default function ListPage() {
       [itemKey]: newQuantity,
     }));
 
-    // Also update selectedItems for persistence
-    setSelectedItems((prev) =>
-      prev.map((item) =>
-        item._key === itemKey ? { ...item, quantity: newQuantity } : item,
-      ),
-    );
+    // Update selectedItems to reflect the new quantity while preserving category overrides
+    setSelectedItems((prev) => {
+      const updatedItems = prev.map((item) =>
+        item._key === itemKey
+          ? {
+              ...item,
+              quantity: newQuantity, // Update quantity
+              categoryOverride: item.categoryOverride, // Ensure categoryOverride is preserved
+            }
+          : item,
+      );
+
+      console.log("Updated selectedItems:", updatedItems); // Log updated items
+      return updatedItems;
+    });
 
     try {
       // Prepare items for server update
-      const itemsForUpdate = currentItems
-        .filter((item): item is ValidListItem => {
-          return (
-            item.item !== null &&
-            typeof item.item._id === "string" &&
-            typeof item.quantity === "number"
-          );
-        })
-        .map((item) => ({
-          _key: item._key,
-          _type: "listItem",
-          item: {
-            _type: "reference",
-            _ref: item.item._id,
-          },
-          quantity: item._key === itemKey ? newQuantity : item.quantity,
-        }));
+      const itemsForUpdate = selectedItems.map((item) => ({
+        _key: item._key,
+        _type: "listItem",
+        item: {
+          _type: "reference",
+          _ref: item.item?._id,
+        },
+        quantity: item._key === itemKey ? newQuantity : item.quantity,
+        categoryOverride: item.categoryOverride // Preserve category override
+          ? {
+              _type: "reference",
+              _ref: item.categoryOverride._id,
+            }
+          : undefined,
+      }));
 
-      if (itemsForUpdate.length === 0) return;
+      console.log("Items for update:", itemsForUpdate); // Log items being sent to the API
 
       const response = await fetch("/api/updateList", {
         method: "PUT",
@@ -708,18 +668,15 @@ export default function ListPage() {
     if (!editingItemKey || !list) return;
 
     try {
-      // Create the updated items array with proper typing
       const updatedItems = selectedItems.map((item: ListItem) => {
         if (item._key !== editingItemKey) return item;
 
         // If categoryId is null, remove the override
         if (categoryId === null) {
           return {
-            _key: item._key,
-            _type: item._type,
-            quantity: item.quantity,
-            item: item.item,
-          } as ListItem;
+            ...item,
+            categoryOverride: undefined, // Remove override
+          };
         }
 
         // Find the new category
@@ -728,19 +685,16 @@ export default function ListPage() {
 
         // Return updated item with new category override
         return {
-          _key: item._key,
-          _type: item._type,
-          quantity: item.quantity,
-          item: item.item,
+          ...item,
           categoryOverride: newCategory,
-        } as ListItem;
+        };
       });
 
       // Prepare the data for the API
       const sanityItems = updatedItems.map((item) => ({
         _key: item._key,
-        _type: item._type,
-        quantity: item.quantity,
+        _type: "listItem",
+        quantity: item.quantity || 1,
         item: item.item ? { _ref: item.item._id, _type: "reference" } : null,
         ...(item.categoryOverride
           ? {
@@ -770,7 +724,6 @@ export default function ListPage() {
 
       // Update local state
       setSelectedItems(updatedItems);
-      setEditingItemKey(null);
     } catch (error) {
       console.error("Failed to update category:", error);
       alert("Failed to update category. Please try again.");

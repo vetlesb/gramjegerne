@@ -5,13 +5,16 @@ import { getUserSession } from "@/lib/auth-helpers";
 export async function PUT(request: Request) {
   try {
     const session = await getUserSession();
+    console.log("User session:", session);
 
     if (!session || !session.user) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
       });
     }
+
     const { listId, items } = await request.json();
+    console.log("Incoming request data:", { listId, items });
 
     if (!listId) {
       return NextResponse.json(
@@ -26,6 +29,8 @@ export async function PUT(request: Request) {
       { listId, userId: session.user.id },
     );
 
+    console.log("Fetched list:", list);
+
     if (!list) {
       return NextResponse.json(
         { error: "List not found or unauthorized" },
@@ -37,14 +42,18 @@ export async function PUT(request: Request) {
     console.log("With items:", items);
 
     // Validate input
-    if (!listId || !Array.isArray(items)) {
+    if (!Array.isArray(items)) {
       return NextResponse.json(
         { success: false, error: "Invalid input" },
         { status: 400 },
       );
     }
 
-    const result = await client.patch(listId).set({ items: items }).commit();
+    // Update items in the list
+    const result = await client
+      .patch(listId)
+      .set({ items }) // This will replace the items array
+      .commit();
 
     console.log("Sanity update result:", result);
 

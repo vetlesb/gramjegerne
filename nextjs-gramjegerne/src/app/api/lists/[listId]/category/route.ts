@@ -30,12 +30,19 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    const existingItem = await client.fetch(
+      `*[_type == "list" && _id == $listId && user._ref == $userId][0].items[_key == $itemKey]`,
+      { listId, userId },
+    );
+
+    const currentCategoryOverride = existingItem?.categoryOverride;
+
     const result = await client
       .patch(listId)
       .set({
         [`items[_key == "${itemKey}"].categoryOverride`]: categoryId
           ? { _type: "reference", _ref: categoryId }
-          : undefined,
+          : currentCategoryOverride,
       })
       .commit();
 
