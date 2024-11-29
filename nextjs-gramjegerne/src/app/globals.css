@@ -404,6 +404,14 @@ select {
   .menu-collapse {
     background-color: var(--bg-primary);
   }
+  ul.totals {
+    display: grid;
+    gap: 4px;
+    background-color: var(--bg-dimmed);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 8px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -440,6 +448,9 @@ select {
   }
   .logo {
     font-size: 2rem;
+  }
+  ul.totals {
+    padding: 32px;
   }
 }
 

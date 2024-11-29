@@ -944,7 +944,7 @@ export default function ListPage() {
                           <p className="text-md sm:text-xl">
                             {override.categoryTitle}
                           </p>
-                          <p className="text-4xl sm:text-8xl text-accent font-bold">
+                          <p className="text-6xl sm:text-8xl text-accent font-bold">
                             {formatWeight(override.weight)}
                           </p>
                         </div>
@@ -957,7 +957,7 @@ export default function ListPage() {
                     <div className="flex flex-col gap-y-2 pb-8">
                       <div className="grid grid-cols-1 gap-x-3 gap-y-2">
                         <p className="text-md sm:text-xl">Sekk</p>
-                        <p className="text-4xl sm:text-8xl text-accent font-bold">
+                        <p className="text-6xl sm:text-8xl text-accent font-bold">
                           {formatWeight(totalWithoutOverrides.weight)}
                         </p>
                       </div>
@@ -969,12 +969,12 @@ export default function ListPage() {
                     {categoryTotals.map((total) => (
                       <div
                         key={total.id}
-                        className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
+                        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
                       >
                         <p className="text-md sm:text-xl">{total.title}</p>
-                        <p className="text-md sm:text-xl">
+                        {/*  <p className="text-md sm:text-xl">
                           {formatNumber(total.count)} stk
-                        </p>
+                        </p>*/}
                         <p className="text-md sm:text-xl">
                           {formatWeight(total.weight)}
                         </p>
@@ -989,15 +989,15 @@ export default function ListPage() {
 
                   {/* Grand total section */}
                   <div>
-                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 font-medium">
-                      <p className="text-lg sm:text-2xl text-accent">Totalt</p>
-                      <p className="text-lg sm:text-2xl">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
+                      <p className="text-md sm:text-xl text-accent">Totalt</p>
+                      {/* <p className="text-md sm:text-xl">
                         {formatNumber(grandTotal.count)} stk
-                      </p>
-                      <p className="text-lg sm:text-2xl">
+                      </p> */}
+                      <p className="text-md sm:text-xl  text-accent">
                         {formatWeight(grandTotal.weight)}
                       </p>
-                      <p className="text-lg sm:text-2xl">
+                      <p className="text-md sm:text-xl text-accent">
                         {grandTotal.calories > 0
                           ? `${formatNumber(grandTotal.calories)} kcal`
                           : ""}
@@ -1007,21 +1007,21 @@ export default function ListPage() {
                 </div>
               ) : (
                 // Category-specific view
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <p className="text-md sm:text-xl">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+                  {/* <p className="text-md sm:text-xl">
                     {formatNumber(
                       categoryTotals.find((cat) => cat.id === selectedCategory)
                         ?.count || 0,
                     )}{" "}
                     stk
-                  </p>
-                  <p className="ttext-md sm:text-xl">
+                  </p> */}
+                  <p className="text-md sm:text-xl text-accent">
                     {formatWeight(
                       categoryTotals.find((cat) => cat.id === selectedCategory)
                         ?.weight || 0,
                     )}
                   </p>
-                  <p className="text-md sm:text-xl">
+                  <p className="text-md sm:text-xl text-accent">
                     {(categoryTotals.find((cat) => cat.id === selectedCategory)
                       ?.calories || 0) > 0
                       ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
@@ -1176,16 +1176,18 @@ export default function ListPage() {
           onOpenChange={() => setEditingItemKey(null)}
         >
           <DialogContent className="dialog">
-            <DialogHeader>
+            <DialogHeader className="gap-y-4">
               <DialogTitle className="text-2xl font-normal text-accent">
-                Endre kategori
+                Overstyr kategori
               </DialogTitle>
-              <DialogDescription className="text-lg text-white/70">
-                Velg en ny kategori for varen
+              <DialogDescription className="text-lg">
+                Velg en ny kategori for dette utstyret kun for denne pakklisten.
+                Et tips er å lage en kategori for På kropp så du kan skille
+                mellom det du har på og det som er i sekken.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-4 pt-4 pb-4">
               <select
                 className="w-full max-w-full p-4"
                 value={
