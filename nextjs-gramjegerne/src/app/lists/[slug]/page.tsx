@@ -971,14 +971,16 @@ export default function ListPage() {
                         key={total.id}
                         className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
                       >
-                        <p className="text-md sm:text-xl">{total.title}</p>
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                          {total.title}
+                        </p>
                         {/*  <p className="text-md sm:text-xl">
                           {formatNumber(total.count)} stk
                         </p>*/}
-                        <p className="text-md sm:text-xl">
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                           {formatWeight(total.weight)}
                         </p>
-                        <p className="text-md sm:text-xl">
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                           {total.calories > 0
                             ? `${formatNumber(total.calories)} kcal`
                             : ""}
@@ -990,14 +992,16 @@ export default function ListPage() {
                   {/* Grand total section */}
                   <div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
-                      <p className="text-md sm:text-xl text-accent">Totalt</p>
+                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                        Totalt
+                      </p>
                       {/* <p className="text-md sm:text-xl">
                         {formatNumber(grandTotal.count)} stk
                       </p> */}
-                      <p className="text-md sm:text-xl  text-accent">
+                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                         {formatWeight(grandTotal.weight)}
                       </p>
-                      <p className="text-md sm:text-xl text-accent">
+                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                         {grandTotal.calories > 0
                           ? `${formatNumber(grandTotal.calories)} kcal`
                           : ""}
@@ -1008,20 +1012,20 @@ export default function ListPage() {
               ) : (
                 // Category-specific view
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  {/* <p className="text-md sm:text-xl">
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatNumber(
                       categoryTotals.find((cat) => cat.id === selectedCategory)
                         ?.count || 0,
                     )}{" "}
                     stk
-                  </p> */}
-                  <p className="text-md sm:text-xl text-accent">
+                  </p>
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatWeight(
                       categoryTotals.find((cat) => cat.id === selectedCategory)
                         ?.weight || 0,
                     )}
                   </p>
-                  <p className="text-md sm:text-xl text-accent">
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {(categoryTotals.find((cat) => cat.id === selectedCategory)
                       ?.calories || 0) > 0
                       ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`

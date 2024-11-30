@@ -3,7 +3,7 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
-import Link from "next/link";
+
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import EditItemForm from "../components/EditItemForm";
@@ -310,11 +310,6 @@ export default function IndexPage() {
     await refreshData();
   };
 
-  const handleDialogClose = async () => {
-    await refreshData(); // Use refreshData instead of just refreshItems
-    setIsImportDialogOpen(false);
-  };
-
   const handleOpenImportDialog = () => {
     setIsImportDialogOpen(true);
   };
@@ -467,7 +462,7 @@ export default function IndexPage() {
             onClick={handleOpenImportDialog}
           >
             <Icon name="document" width={24} height={24} />
-            Importer
+            Excel
           </button>
         </div>
 
@@ -701,31 +696,15 @@ export default function IndexPage() {
             onInteractOutside={(e) => e.preventDefault()}
           >
             <DialogHeader>
-              <DialogTitle className="text-xl text-accent font-normal">
-                Importer fra Excel
+              <DialogTitle className="text-2xl text-accent font-normal">
+                Excel
               </DialogTitle>
             </DialogHeader>
-            <DialogDescription className="flex flex-col text-lg">
-              Last opp en Excel-fil for å importere utstyr.
-              <Link
-                className="underline pt-4 pb-4"
-                href="https://www.dropbox.com/scl/fi/ashfqy2f6c8s8wf4iwqpc/items_import_01.xlsx?rlkey=qwhflwgumnwxe094ki0jq4i3i&st=ogjoqt8n&dl=0"
-              >
-                Se eksempel her
-              </Link>
+            <DialogDescription className="flex flex-col description text-md">
+              Importer eller eksporter utstyr som .xlsx
             </DialogDescription>
             <ImportForm onSuccess={handleImportSuccess} />
-            <DialogFooter className="pt-4">
-              <DialogClose asChild>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  onClick={handleDialogClose}
-                >
-                  Lukk
-                </button>
-              </DialogClose>
-            </DialogFooter>
+            <DialogFooter className="pt-4"></DialogFooter>
           </DialogContent>
         </Dialog>
 
