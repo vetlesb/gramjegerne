@@ -171,6 +171,13 @@ ul.category-list {
   background-color: var(--bg-primary);
   font-size: 16px;
 }
+.tag-list {
+  padding: 4px 8px 4px 8px;
+  border-radius: 4px;
+  color: #eaffe2;
+  background-color: var(--bg-dimmed);
+  font-size: 16px;
+}
 .tag-search {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;

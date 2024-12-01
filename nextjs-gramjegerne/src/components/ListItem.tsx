@@ -8,10 +8,25 @@ import DeleteListButton from "./deleteListButton";
 import { client } from "@/sanity/client";
 import { ListDocument } from "@/types"; // Import the interface
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import { useMemo } from "react";
 
 interface ListItemProps {
   list: ListDocument;
   onDelete?: () => Promise<void>;
+}
+
+interface ListItem {
+  _key: string;
+  quantity?: number;
+  item: {
+    _id: string;
+    name: string;
+    weight?: {
+      weight: number;
+      unit: string;
+    };
+    calories?: number;
+  } | null;
 }
 
 const builder = imageUrlBuilder(client);
@@ -25,6 +40,37 @@ export default function ListItem({ list, onDelete }: ListItemProps) {
   const handleClick = () => {
     router.push(`/lists/${list.slug?.current}`);
   };
+
+  // Format functions
+  const formatWeight = (weightInGrams: number): string => {
+    const weightInKg = weightInGrams / 1000;
+    return `${weightInKg.toFixed(3)} kg`;
+  };
+
+  const formatNumber = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  };
+
+  // Calculate totals
+  const { totalWeight, totalCalories } = useMemo(() => {
+    let weight = 0;
+    let calories = 0;
+
+    list.items?.forEach((item: ListItem) => {
+      if (!item.item) return;
+      const quantity = item.quantity || 1;
+
+      if (item.item.weight?.weight) {
+        weight += item.item.weight.weight * quantity;
+      }
+
+      if (item.item.calories) {
+        calories += item.item.calories * quantity;
+      }
+    });
+
+    return { totalWeight: weight, totalCalories: calories };
+  }, [list.items]);
 
   return (
     <li className="product flex flex-col basis-full">
@@ -57,41 +103,25 @@ export default function ListItem({ list, onDelete }: ListItemProps) {
         </div>
         <div className="flex flex-col gap-y-2 gap-x-4">
           <h2 className="text-3xl text-accent">{list.name}</h2>
-          <div className="flex flex-wrap gap-x-1 gap-y-1">
-            {list.days && (
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                <svg
-                  className="tag-icon"
-                  viewBox="0 0 16 15"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M2.29688 14.4453C0.773438 14.4453 -0.0078125 13.6719 -0.0078125 12.1641V2.58594C-0.0078125 1.07031 0.773438 0.296875 2.29688 0.296875H13.1641C14.6875 0.296875 15.4688 1.07812 15.4688 2.58594V12.1641C15.4688 13.6641 14.6875 14.4453 13.1641 14.4453H2.29688ZM2.22656 13.4766H13.2266C14.0312 13.4766 14.5 13.0469 14.5 12.2031V5.05469C14.5 4.21094 14.0312 3.77344 13.2266 3.77344H2.22656C1.40625 3.77344 0.960938 4.21094 0.960938 5.05469V12.2031C0.960938 13.0469 1.40625 13.4766 2.22656 13.4766ZM6.17969 6.55469C5.92969 6.55469 5.86719 6.49219 5.86719 6.25V5.78906C5.86719 5.54688 5.92969 5.48438 6.17969 5.48438H6.64062C6.88281 5.48438 6.95312 5.54688 6.95312 5.78906V6.25C6.95312 6.49219 6.88281 6.55469 6.64062 6.55469H6.17969ZM8.82812 6.55469C8.58594 6.55469 8.51562 6.49219 8.51562 6.25V5.78906C8.51562 5.54688 8.58594 5.48438 8.82812 5.48438H9.28906C9.53125 5.48438 9.60156 5.54688 9.60156 5.78906V6.25C9.60156 6.49219 9.53125 6.55469 9.28906 6.55469H8.82812ZM11.4766 6.55469C11.2344 6.55469 11.1641 6.49219 11.1641 6.25V5.78906C11.1641 5.54688 11.2344 5.48438 11.4766 5.48438H11.9375C12.1797 5.48438 12.25 5.54688 12.25 5.78906V6.25C12.25 6.49219 12.1797 6.55469 11.9375 6.55469H11.4766ZM3.53125 9.15625C3.28125 9.15625 3.21875 9.10156 3.21875 8.85938V8.39844C3.21875 8.15625 3.28125 8.09375 3.53125 8.09375H3.99219C4.23438 8.09375 4.30469 8.15625 4.30469 8.39844V8.85938C4.30469 9.10156 4.23438 9.15625 3.99219 9.15625H3.53125ZM6.17969 9.15625C5.92969 9.15625 5.86719 9.10156 5.86719 8.85938V8.39844C5.86719 8.15625 5.92969 8.09375 6.17969 8.09375H6.64062C6.88281 8.09375 6.95312 8.15625 6.95312 8.39844V8.85938C6.95312 9.10156 6.88281 9.15625 6.64062 9.15625H6.17969ZM8.82812 9.15625C8.58594 9.15625 8.51562 9.10156 8.51562 8.85938V8.39844C8.51562 8.15625 8.58594 8.09375 8.82812 8.09375H9.28906C9.53125 8.09375 9.60156 8.15625 9.60156 8.39844V8.85938C9.60156 9.10156 9.53125 9.15625 9.28906 9.15625H8.82812ZM11.4766 9.15625C11.2344 9.15625 11.1641 9.10156 11.1641 8.85938V8.39844C11.1641 8.15625 11.2344 8.09375 11.4766 8.09375H11.9375C12.1797 8.09375 12.25 8.15625 12.25 8.39844V8.85938C12.25 9.10156 12.1797 9.15625 11.9375 9.15625H11.4766ZM3.53125 11.7656C3.28125 11.7656 3.21875 11.7109 3.21875 11.4688V11.0078C3.21875 10.7656 3.28125 10.7031 3.53125 10.7031H3.99219C4.23438 10.7031 4.30469 10.7656 4.30469 11.0078V11.4688C4.30469 11.7109 4.23438 11.7656 3.99219 11.7656H3.53125ZM6.17969 11.7656C5.92969 11.7656 5.86719 11.7109 5.86719 11.4688V11.0078C5.86719 10.7656 5.92969 10.7031 6.17969 10.7031H6.64062C6.88281 10.7031 6.95312 10.7656 6.95312 11.0078V11.4688C6.95312 11.7109 6.88281 11.7656 6.64062 11.7656H6.17969ZM8.82812 11.7656C8.58594 11.7656 8.51562 11.7109 8.51562 11.4688V11.0078C8.51562 10.7656 8.58594 10.7031 8.82812 10.7031H9.28906C9.53125 10.7031 9.60156 10.7656 9.60156 11.0078V11.4688C9.60156 11.7109 9.53125 11.7656 9.28906 11.7656H8.82812Z"
-                    fill="#EAFFE2"
-                  />
-                </svg>
-                {list.days} dager
-              </p>
-            )}
-            {list.participants && (
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                <svg
-                  className="tag-icon"
-                  viewBox="0 0 14 15"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7.00781 7.32812C5.1875 7.32812 3.72656 5.73438 3.72656 3.74219C3.72656 1.80469 5.20312 0.234375 7.00781 0.234375C8.82031 0.234375 10.2891 1.78906 10.2891 3.73438C10.2891 5.73438 8.82812 7.32812 7.00781 7.32812ZM7.00781 6.41406C8.28906 6.41406 9.32031 5.24219 9.32031 3.73438C9.32031 2.28125 8.28125 1.14844 7.00781 1.14844C5.73438 1.14844 4.69531 2.29688 4.69531 3.74219C4.69531 5.25 5.73438 6.41406 7.00781 6.41406ZM1.95312 14.4922C0.8125 14.4922 0.265625 14.125 0.265625 13.3359C0.265625 11.3047 2.82812 8.39844 7 8.39844C11.1641 8.39844 13.7266 11.3047 13.7266 13.3359C13.7266 14.125 13.1875 14.4922 12.0391 14.4922H1.95312ZM1.71094 13.5781H12.2891C12.6406 13.5781 12.7656 13.4844 12.7656 13.2422C12.7656 11.7578 10.6719 9.3125 7 9.3125C3.32031 9.3125 1.23438 11.7578 1.23438 13.2422C1.23438 13.4844 1.35156 13.5781 1.71094 13.5781Z"
-                    fill="#EAFFE2"
-                  />
-                </svg>
 
-                {list.participants}
-              </p>
-            )}
-          </div>
+          <ul className="flex flex-col gap-y-1 pt-2">
+            <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
+              <p>Deltagere</p>
+              {list.participants && <p>{list.participants}</p>}
+            </li>
+            <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
+              <p>Varighet</p>
+              {list.days && <p>{list.days} dager</p>}
+            </li>
+            <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
+              <p>Vekt</p>
+              {totalWeight > 0 && <p>{formatWeight(totalWeight)}</p>}
+            </li>
+            <li className="grid grid-cols-2 gap-x-3 text-lg">
+              <p>Kalorier</p>
+              {totalCalories > 0 && <p>{formatNumber(totalCalories)} kcal</p>}
+            </li>
+          </ul>
         </div>
         <div className="flex flex-col pt-4 gap-x-4 gap-y-4">
           <button

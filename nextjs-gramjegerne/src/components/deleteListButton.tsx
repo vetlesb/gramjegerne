@@ -81,14 +81,15 @@ export default function DeleteListButton({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="dialog gap-y-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-normal">
-              Confirm Deletion
+            <DialogTitle className="text-2xl text-accent font-normal">
+              Er du sikker på at du vil slette listen?
             </DialogTitle>
           </DialogHeader>
-          <div className="mb-4">
+          <div className="mb-4 text-lg">
             <p>
-              Er du sikker på at du vil slette listen &quot;
-              <strong>{listName}</strong>&quot;?
+              Hvis du sletter listen &quot;
+              <strong className="font-normal text-accent">{listName}</strong>
+              &quot; vil du miste alle data knyttet til den.
             </p>
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -98,11 +99,11 @@ export default function DeleteListButton({
               className="button-primary-accent"
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Sletter..." : "Slett"}
             </button>
             <DialogClose asChild>
               <button type="button" className="button-secondary">
-                Cancel
+                Avbryt
               </button>
             </DialogClose>
           </DialogFooter>

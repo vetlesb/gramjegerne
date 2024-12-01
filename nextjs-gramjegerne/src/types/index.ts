@@ -24,3 +24,25 @@ export interface Item {
   calories?: number;
   categories?: Category[]; // Populated categories
 }
+export interface ListDocument {
+  _id: string;
+  slug: { current: string };
+  name: string;
+
+  days: number;
+  weight: number;
+  participants: number;
+  items: Array<{
+    _key: string;
+    quantity?: number;
+    item: {
+      _id: string;
+      name: string;
+      weight?: {
+        weight: number;
+        unit: string;
+      };
+      calories?: number;
+    } | null;
+  }>;
+}

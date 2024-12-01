@@ -23,7 +23,17 @@ export default function Page() {
       image, 
       days, 
       weight, 
-      participants
+      participants,
+      "items": items[] {
+        _key,
+        quantity,
+        "item": item->{
+          _id,
+          name,
+          weight,
+          calories
+        }
+      }
     }`;
 
     const data = await client.fetch(query, { userId: session.user.id });
