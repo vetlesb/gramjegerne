@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import { client } from "@/lib/sanity";
+import { useSession } from "next-auth/react";
 
 interface ImportResult {
   success: boolean;
@@ -21,9 +21,11 @@ interface ExcelRow {
 }
 
 export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
+  const { data: session, status } = useSession();
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
   const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
   const [isImport, setIsImport] = useState(true);
   const [isClear, setIsClear] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -36,11 +38,32 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   const handleImport = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!file) return;
+    if (status === "loading") {
+      return;
+    }
+
+    if (!session?.user) {
+      setResults([
+        {
+          success: false,
+          name: "Auth Error",
+          error: "Please log in to import items",
+        },
+      ]);
+      return;
+    }
+
+    if (!file) {
+      setResults([
+        { success: false, name: "File Error", error: "No file selected" },
+      ]);
+      return;
+    }
 
     setImporting(true);
     setResults([]);
     setProgress(0);
+    setProgressMessage("Processing file...");
 
     try {
       // Parse Excel file
@@ -49,16 +72,14 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
 
-      // First, collect and create all missing categories
+      // Process categories first
+      setProgressMessage("Checking categories...");
       const uniqueCategories = new Set(
         jsonData
           .map((item) => item.category)
           .filter((category): category is string => !!category),
       );
 
-      console.log("Categories to check:", Array.from(uniqueCategories));
-
-      // Create missing categories first
       const categoryResponse = await fetch("/api/validateCategories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,65 +93,92 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       }
 
       const { categoryMap } = await categoryResponse.json();
-      console.log("Category mapping:", categoryMap);
+      setProgressMessage("Processing items...");
 
-      // Now process items with the correct category IDs
+      // Process each item
+      const itemsToProcess = jsonData.map((item) => ({
+        name: item.name,
+        size: item.size,
+        weight: item.weight ? Number(item.weight) : undefined,
+        weight_unit: item.unit || "g",
+        calories: item.calories ? Number(item.calories) : undefined,
+        categoryId: item.category ? categoryMap[item.category] : null,
+        imageAssetId: null,
+        image_url: item.image_url,
+      }));
+
+      // Process items
       let processedResults: ImportResult[] = [];
-      const CHUNK_SIZE = 20; // For item creation
-      const IMAGE_BATCH_SIZE = 5; // For image uploads
+      const CHUNK_SIZE = 5;
 
-      // Upload images in batches
-      const imageUploadPromises = [];
-      for (let i = 0; i < jsonData.length; i += IMAGE_BATCH_SIZE) {
-        const imageBatch = jsonData.slice(i, i + IMAGE_BATCH_SIZE);
-        const uploadPromises = imageBatch.map(async (item) => {
-          const imageAssetId = item.image_url
-            ? await uploadImageToSanity(item.image_url)
-            : null;
-          return {
-            ...item,
-            imageAssetId, // Add the uploaded image asset ID
-            categoryId: item.category ? categoryMap[item.category] : undefined,
-          };
+      for (let i = 0; i < itemsToProcess.length; i += CHUNK_SIZE) {
+        const chunk = itemsToProcess.slice(i, i + CHUNK_SIZE);
+
+        const chunkPromises = chunk.map(async (itemData) => {
+          try {
+            let imageAssetId = null;
+            if (itemData.image_url) {
+              setProgressMessage(`Uploading image for ${itemData.name}...`);
+              imageAssetId = await uploadImageToSanity(itemData.image_url);
+            }
+
+            const response = await fetch("/api/importItems", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify([
+                {
+                  name: itemData.name,
+                  size: itemData.size,
+                  weight: itemData.weight,
+                  weight_unit: itemData.weight_unit,
+                  calories: itemData.calories,
+                  categoryId: itemData.categoryId,
+                  imageAssetId,
+                },
+              ]),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Import failed for ${itemData.name}`);
+            }
+
+            const { results } = await response.json();
+            return results[0];
+          } catch (error) {
+            return {
+              success: false,
+              name: itemData.name,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Unknown error occurred",
+            };
+          }
         });
-        const batchResults = await Promise.all(uploadPromises);
-        imageUploadPromises.push(...batchResults);
-      }
 
-      // Now create items in chunks
-      for (let i = 0; i < imageUploadPromises.length; i += CHUNK_SIZE) {
-        const chunk = imageUploadPromises.slice(i, i + CHUNK_SIZE);
-
-        const response = await fetch("/api/importItems", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(chunk),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Import failed at item ${i + 1}`);
-        }
-
-        const { results } = await response.json();
-        processedResults = [...processedResults, ...results];
+        const chunkResults = await Promise.all(chunkPromises);
+        processedResults = [...processedResults, ...chunkResults];
 
         setProgress(
-          Math.round(((i + chunk.length) / imageUploadPromises.length) * 100),
+          Math.round(((i + chunk.length) / itemsToProcess.length) * 100),
         );
       }
 
       setResults(processedResults);
       if (processedResults.every((r) => r.success)) {
+        setProgressMessage("Import completed successfully!");
         onSuccess();
+      } else {
+        setProgressMessage("Import completed with some errors");
       }
     } catch (error) {
-      const typedError = error as Error; // Assert that error is of type Error
-      console.error("Import error:", typedError);
+      console.error("Import error:", error);
       setResults([
         {
           success: false,
           name: "Import",
-          error: typedError.message,
+          error:
+            error instanceof Error ? error.message : "Unknown error occurred",
         },
       ]);
     } finally {
@@ -155,39 +203,65 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const uploadImageToSanity = async (imageUrl: string) => {
-    if (!imageUrl) return null; // Return null if no image URL is provided
-    const maxRetries = 5; // Maximum number of retries
+    if (!imageUrl) return null;
+    const maxRetries = 5;
     let attempt = 0;
 
-    while (attempt < maxRetries) {
-      try {
-        const response = await fetch(imageUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image from URL: ${imageUrl}`);
-        }
-        const blob = await response.blob();
-        const asset = await client.assets.upload("image", blob, {
-          filename: imageUrl.split("/").pop(), // Use the image filename
-        });
-        console.log(`Uploaded image: ${imageUrl}, Asset ID: ${asset._id}`); // Log the uploaded asset ID
-        return asset._id; // Return the asset ID
-      } catch (error) {
-        const typedError = error as Error; // Assert that error is of type Error
-        console.error("Error uploading image:", typedError);
+    try {
+      const categoryResponse = await fetch("/api/getCategories");
+      if (!categoryResponse.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const categories = await categoryResponse.json();
+      if (!categories?.length) {
+        throw new Error("No categories available");
+      }
 
-        // Check if the error is a rate limit error
-        if (typedError.message.includes("rate limit exceeded")) {
+      while (attempt < maxRetries) {
+        try {
+          console.log(`Attempting to fetch image from URL: ${imageUrl}`);
+          const response = await fetch(imageUrl);
+
+          if (!response.ok) {
+            console.error(`Failed to fetch image. Status: ${response.status}`);
+            throw new Error(`Failed to fetch image from URL: ${imageUrl}`);
+          }
+
+          const blob = await response.blob();
+          console.log("Successfully created blob from image");
+
+          const formData = new FormData();
+          formData.append("image", blob);
+
+          const uploadResponse = await fetch("/api/uploadAsset", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload image");
+          }
+
+          const result = await uploadResponse.json();
+          return result.assetId;
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error occurred";
+          console.error(`Attempt ${attempt + 1} failed:`, errorMessage);
+
+          if (attempt === maxRetries - 1) {
+            return null;
+          }
           attempt++;
-          const waitTime = Math.pow(2, attempt) * 100; // Exponential backoff
-          console.log(`Rate limit exceeded. Retrying in ${waitTime}ms...`);
-          await new Promise((resolve) => setTimeout(resolve, waitTime)); // Wait before retrying
-        } else {
-          return null; // Handle other errors appropriately
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
       }
+    } catch (error: unknown) {
+      console.error("Failed to upload image:", error);
+      return null;
     }
 
-    return null; // Return null if all retries fail
+    return null;
   };
 
   const handleExport = async () => {
@@ -248,8 +322,9 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           />
 
           {importing && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mt-4">
               <div className="flex justify-between items-center">
+                <p>{progressMessage}</p>
                 <p>Importing... {progress}%</p>
               </div>
               <div className="w-full bg-white/5 rounded-full h-2.5">
@@ -262,13 +337,13 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           )}
 
           {results.length > 0 && (
-            <div className="mt-4">
+            <div className="pt-4">
               <h3>Import Results:</h3>
               <div className="text-sm text-white mb-2">
                 Successfully imported: {results.filter((r) => r.success).length}{" "}
                 / {results.length} items
               </div>
-              <ul className="mt-2 max-h-60 overflow-y-auto">
+              <ul className="mt-2 max-h-60 overflow-y-auto pt-4">
                 {results.map((result, index) => (
                   <li
                     key={index}

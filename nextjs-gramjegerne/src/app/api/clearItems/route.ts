@@ -11,19 +11,36 @@ interface Item {
 export async function DELETE() {
   try {
     const items: Item[] = await client.fetch(`*[_type == "item"]`);
+    console.log("Items to delete:", items); // Log the items to be deleted
+
+    if (items.length === 0) {
+      return NextResponse.json({ message: "No items to clear." });
+    }
 
     const BATCH_SIZE = 10; // Define a batch size
 
     for (let i = 0; i < items.length; i += BATCH_SIZE) {
       const batch = items.slice(i, i + BATCH_SIZE);
-      const deletePromises = batch.map((item: Item) => client.delete(item._id));
+      const deletePromises = batch.map(async (item: Item) => {
+        console.log(`Attempting to delete item with ID: ${item._id}`); // Log the ID being deleted
+        const response = await client.delete(item._id);
+        console.log(`Delete response for item ${item._id}:`, response); // Log the response
+        return response;
+      });
 
       try {
         await Promise.all(deletePromises);
+        console.log(
+          `Deleted batch: ${batch.map((item) => item._id).join(", ")}`,
+        ); // Log successful deletions
       } catch (error) {
         const typedError = error as Error;
         console.error("Error deleting batch:", typedError);
-        // Handle rate limit error or other errors here
+        console.error(
+          "Failed to delete items:",
+          batch.map((item) => item._id),
+        ); // Log IDs of items that failed
+        // Optionally, return an error response here if desired
       }
     }
 

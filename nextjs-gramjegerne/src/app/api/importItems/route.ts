@@ -15,20 +15,18 @@ interface ImportItem {
   weight?: string;
   weight_unit?: string;
   calories?: string | number;
-  category?: string;
-  image_url?: string;
-}
-
-interface SanityCategory {
-  _id: string;
-  title: string;
+  categoryId?: string;
+  imageAssetId?: string;
 }
 
 export async function POST(request: Request) {
   try {
     const session = await getUserSession();
+    console.log("Session:", session);
 
+    // Check if session and user are valid
     if (!session || !session.user) {
+      console.error("Unauthorized access: No session or user found.");
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -49,43 +47,11 @@ export async function POST(request: Request) {
           );
 
           let categoryRef = null;
-          let imageAsset;
 
-          if (item.category) {
-            const categoryName = item.category.trim();
-
-            // Check if the category exists
-            let category = await client.fetch<SanityCategory>(
-              `*[_type == "category" && title == $name && user._ref == $userId][0]`,
-              {
-                name: categoryName,
-                userId: session.user.id.startsWith("google_")
-                  ? session.user.id
-                  : `google_${session.user.id}`,
-              },
-            );
-
-            // Create the category if it doesn't exist
-            if (!category) {
-              category = await client.create({
-                _type: "category",
-                title: categoryName,
-                slug: {
-                  _type: "slug",
-                  current: categoryName.toLowerCase().replace(/\s+/g, "-"),
-                },
-                user: {
-                  _type: "reference",
-                  _ref: session.user.id,
-                },
-              });
-              console.log(`Created missing category: ${categoryName}`);
-            }
-
-            // Set the category reference to the newly created or existing category
+          if (item.categoryId) {
             categoryRef = {
               _type: "reference",
-              _ref: category._id,
+              _ref: item.categoryId,
             };
           }
 
@@ -110,52 +76,17 @@ export async function POST(request: Request) {
               },
             };
 
-            // Handle image upload if URL exists
-            if (item.image_url) {
-              try {
-                console.log("Fetching image from:", item.image_url);
-
-                // Fetch the image
-                const imageResponse = await fetch(item.image_url);
-                if (!imageResponse.ok) throw new Error("Failed to fetch image");
-
-                const imageBuffer = await imageResponse.arrayBuffer();
-
-                // Upload to Sanity
-                imageAsset = await client.assets.upload(
-                  "image",
-                  Buffer.from(imageBuffer),
-                  {
-                    filename: `${item.name.toLowerCase().replace(/\s+/g, "-")}.jpg`,
-                  },
-                );
-
-                console.log("Uploaded image:", imageAsset);
-              } catch (error) {
-                console.error("Error uploading image:", error);
-                results.push({
-                  success: false,
-                  name: item.name,
-                  error:
-                    error instanceof Error
-                      ? error.message
-                      : "Unknown error occurred during image upload",
-                });
-                continue; // Skip to the next item
-              }
-            }
-
             // Update the existing item in the database
             await client
               .patch(existingItem._id)
               .set({
                 ...updatedItem,
-                ...(imageAsset && {
+                ...(item.imageAssetId && {
                   image: {
                     _type: "image",
                     asset: {
                       _type: "reference",
-                      _ref: imageAsset._id,
+                      _ref: item.imageAssetId,
                     },
                   },
                 }),
@@ -194,17 +125,18 @@ export async function POST(request: Request) {
               _type: "reference",
               _ref: session.user.id,
             },
-            ...(imageAsset && {
+            ...(item.imageAssetId && {
               image: {
                 _type: "image",
                 asset: {
                   _type: "reference",
-                  _ref: imageAsset._id,
+                  _ref: item.imageAssetId,
                 },
               },
             }),
           };
 
+          console.log("Creating new item:", newItem); // Log the new item being created
           const createdItem = await client.create(newItem);
           results.push({
             success: true,
