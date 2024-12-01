@@ -372,8 +372,8 @@ export default function IndexPage() {
             </DialogTrigger>
             <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
               <DialogHeader>
-                <DialogTitle className="text-xl font-normal text-accent">
-                  Nytt utstyr
+                <DialogTitle className="text-2xl font-normal text-accent pb-8">
+                  Opprett utstyr
                 </DialogTitle>
               </DialogHeader>
               <NewItemForm
@@ -407,7 +407,7 @@ export default function IndexPage() {
             </DialogTrigger>
             <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
               <DialogHeader>
-                <DialogTitle className="text-xl text-accent font-normal">
+                <DialogTitle className="text-2xl text-accent font-normal pb-8">
                   Legg til kategori
                 </DialogTitle>
               </DialogHeader>
@@ -423,7 +423,7 @@ export default function IndexPage() {
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="p-4 border rounded"
+                  className="p-4 rounded"
                   required
                   placeholder="Kategori navn"
                 />
@@ -445,7 +445,7 @@ export default function IndexPage() {
                   >
                     <span>{category.title}</span>
                     <button
-                      className="button-link text-red-500 hover:text-red-700"
+                      className="button-link"
                       onClick={() => setCategoryToDelete(category._id)}
                     >
                       Slett
@@ -700,7 +700,7 @@ export default function IndexPage() {
                 Excel
               </DialogTitle>
             </DialogHeader>
-            <DialogDescription className="flex flex-col description text-md">
+            <DialogDescription className="flex flex-col description text-md pb-8">
               Importer eller eksporter utstyr som .xlsx
             </DialogDescription>
             <ImportForm onSuccess={handleImportSuccess} />

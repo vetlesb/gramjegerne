@@ -107,7 +107,7 @@ li.product-search {
   gap: 4px;
   background-color: var(--bg-primary);
   border-radius: 8px;
-  padding: 16px;
+  padding: 0.5rem;
   margin-bottom: 8px;
 }
 li.product-search:hover {
@@ -170,6 +170,13 @@ ul.category-list {
   color: #eaffe2;
   background-color: var(--bg-primary);
   font-size: 16px;
+}
+.tag-search {
+  padding: 4px 8px 4px 8px;
+  border-radius: 4px;
+  color: #eaffe2;
+  background-color: var(--bg-primary);
+  font-size: 12px;
 }
 .tag-invert {
   padding: 4px 8px 4px 8px;
@@ -334,8 +341,8 @@ button:hover {
 .button-create {
   color: var(--fg-primary);
   background-color: var(--bg-dimmed);
-  padding: 0.5rem 1rem;
-  border-radius: 9rem;
+  padding: 1rem;
+  border-radius: 4px;
 }
 .button-create:hover {
   background-color: var(--bg-dimmed-hover);

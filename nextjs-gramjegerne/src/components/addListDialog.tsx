@@ -110,7 +110,7 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
       >
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
-            <DialogTitle className="text-xl text-accent font-normal">
+            <DialogTitle className="text-2xl text-accent font-normal pb-4">
               Ny pakkliste
             </DialogTitle>
           </DialogHeader>
@@ -123,9 +123,9 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
 
           {/* Form Fields */}
           <div className="gap-y-4">
-            <div className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-8">
               <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2">
+                <label className="flex flex-col gap-y-2 text-lg">
                   Navn
                   <input
                     className="w-full max-w-full p-4"
@@ -137,7 +137,7 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
                 </label>
               </div>
               <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2">
+                <label className="flex flex-col gap-y-2 text-lg">
                   Bilde
                   <input
                     type="file"
@@ -150,7 +150,7 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
                 </label>
               </div>
               <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2">
+                <label className="flex flex-col gap-y-2 text-lg">
                   Antall dager
                   <input
                     type="number"
@@ -166,7 +166,7 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
               </div>
 
               <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2">
+                <label className="flex flex-col gap-y-2 text-lg">
                   Deltakere
                   <input
                     type="number"
@@ -182,7 +182,7 @@ export default function AddListDialog({ onSuccess }: AddListDialogProps) {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <button
               onClick={handleCreateList}
               className="button-primary-accent"

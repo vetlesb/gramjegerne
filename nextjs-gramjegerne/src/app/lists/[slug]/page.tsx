@@ -770,7 +770,7 @@ export default function ListPage() {
         <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
           i {list.name}
         </h1>
-        <div className="flex gap-y-4 gap-x-4 pb-8">
+        <div className="flex gap-y-4 gap-x-2 pb-8">
           {/* Button to open the Add Item Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
@@ -780,9 +780,9 @@ export default function ListPage() {
               </button>
             </DialogTrigger>
             {/* Updated DialogContent */}
-            <DialogContent className="dialog p-4 md:p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
+            <DialogContent className="dialog p-4 max-w-lg md:p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
               <DialogHeader>
-                <DialogTitle className="text-xl text-accent font-normal">
+                <DialogTitle className="text-2xl text-accent font-normal">
                   Legg til utstyr
                 </DialogTitle>
                 <DialogDescription className="text-lg pt-4">
@@ -790,7 +790,7 @@ export default function ListPage() {
                 </DialogDescription>
               </DialogHeader>
               {/* Search Bar */}
-              <label className="flex flex-col pt-4 gap-y-2">
+              <label className="flex flex-col pt-4 gap-y-2 text-lg">
                 Søk
                 <input
                   type="text"
@@ -848,23 +848,23 @@ export default function ListPage() {
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-col gap-y-2">
-                            <h2 className="text-xl">{item?.name}</h2>
+                          <div className="flex flex-col gap-y-1">
+                            <h2 className="text-lg">{item?.name}</h2>
                             <div className="flex flex-wrap gap-x-1">
                               {item?.size && (
-                                <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
                                   <Icon name="size" width={16} height={16} />
                                   {item.size}
                                 </p>
                               )}
                               {item?.weight && (
-                                <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
                                   <Icon name="weight" width={16} height={16} />
                                   {item.weight.weight} {item.weight.unit}
                                 </p>
                               )}
                               {item?.calories && item.calories > 0 && (
-                                <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
                                   <Icon
                                     name="calories"
                                     width={16}
