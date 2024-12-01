@@ -26,6 +26,10 @@ export default function SharePage() {
             _key,
             _type,
             quantity,
+            "categoryOverride": categoryOverride->{
+              _id,
+              title
+            },
             "item": item->{
               _id,
               name,

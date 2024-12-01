@@ -31,6 +31,7 @@ export interface ListItem {
   _type: string;
   quantity?: number;
   item: Item | null;
+  categoryOverride?: Category;
 }
 
 export interface List {

@@ -17,18 +17,32 @@ interface SharePageClientProps {
   list: List;
 }
 
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+};
+
+const formatWeight = (weightInGrams: number): string => {
+  const weightInKg = weightInGrams / 1000;
+  return `${weightInKg.toFixed(3)} kg`;
+};
+
 export default function SharePageClient({ list }: SharePageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Get unique categories from items
+  // Get effective category helper
+  const getEffectiveCategory = (listItem: ListItem): Category | undefined => {
+    return listItem.categoryOverride || listItem.item?.category;
+  };
+
+  // Update categories memo to include overrides
   const categories = useMemo(() => {
     if (!list?.items) return [];
 
     const uniqueCategories = new Map<string, Category>();
-    list.items.forEach((listItem: ListItem) => {
-      if (listItem.item?.category) {
-        const cat = listItem.item.category;
-        uniqueCategories.set(cat._id, cat);
+    list.items.forEach((listItem) => {
+      const effectiveCategory = getEffectiveCategory(listItem);
+      if (effectiveCategory) {
+        uniqueCategories.set(effectiveCategory._id, effectiveCategory);
       }
     });
 
@@ -37,15 +51,116 @@ export default function SharePageClient({ list }: SharePageClientProps) {
     );
   }, [list?.items]);
 
-  // Filter items by selected category
+  // Update filtered items to use effective category
   const filteredItems = useMemo(() => {
     if (!list?.items) return [];
 
-    return list.items.filter(
-      (listItem: ListItem) =>
-        !selectedCategory || listItem.item?.category?._id === selectedCategory,
-    );
+    return list.items.filter((listItem) => {
+      if (!selectedCategory) return true;
+      const effectiveCategory = getEffectiveCategory(listItem);
+      return effectiveCategory?._id === selectedCategory;
+    });
   }, [list?.items, selectedCategory]);
+
+  // Calculate totals including overrides
+  const { categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides } =
+    useMemo(() => {
+      if (!filteredItems?.length) {
+        const emptyTotal = { count: 0, weight: 0, calories: 0 };
+        return {
+          categoryTotals: [],
+          grandTotal: emptyTotal,
+          overrideTotals: [],
+          totalWithoutOverrides: emptyTotal,
+        };
+      }
+
+      const categoryMap = new Map();
+      const overrideMap = new Map();
+
+      filteredItems.forEach((item) => {
+        if (!item.item) return;
+        const quantity = item.quantity || 1;
+        const effectiveCategory = getEffectiveCategory(item);
+        if (!effectiveCategory) return;
+
+        // Handle overrides
+        if (item.categoryOverride) {
+          const existing = overrideMap.get(item.categoryOverride._id) || {
+            categoryId: item.categoryOverride._id,
+            categoryTitle: item.categoryOverride.title,
+            count: 0,
+            weight: 0,
+            calories: 0,
+          };
+
+          if (item.item.weight) {
+            const multiplier = item.item.weight.unit === "kg" ? 1000 : 1;
+            existing.weight += item.item.weight.weight * multiplier * quantity;
+          }
+          if (item.item.calories) {
+            existing.calories += item.item.calories * quantity;
+          }
+          existing.count += quantity;
+
+          overrideMap.set(item.categoryOverride._id, existing);
+        }
+
+        // Regular category totals
+        const existing = categoryMap.get(effectiveCategory._id) || {
+          id: effectiveCategory._id,
+          title: effectiveCategory.title,
+          count: 0,
+          weight: 0,
+          calories: 0,
+        };
+
+        existing.count += quantity;
+        if (item.item.weight) {
+          const multiplier = item.item.weight.unit === "kg" ? 1000 : 1;
+          existing.weight += item.item.weight.weight * multiplier * quantity;
+        }
+        if (item.item.calories) {
+          existing.calories += item.item.calories * quantity;
+        }
+
+        categoryMap.set(effectiveCategory._id, existing);
+      });
+
+      const categoryTotals = Array.from(categoryMap.values());
+      const overrideTotals = Array.from(overrideMap.values());
+
+      // Calculate grand total
+      const grandTotal = categoryTotals.reduce(
+        (acc, cat) => ({
+          count: acc.count + cat.count,
+          weight: acc.weight + cat.weight,
+          calories: acc.calories + cat.calories,
+        }),
+        { count: 0, weight: 0, calories: 0 },
+      );
+
+      // Calculate total without overrides
+      const totalWithoutOverrides = {
+        count: grandTotal.count,
+        weight: grandTotal.weight,
+        calories: grandTotal.calories,
+      };
+
+      // Subtract override totals
+      overrideTotals.forEach((override) => {
+        totalWithoutOverrides.count -= override.count;
+        totalWithoutOverrides.weight -= override.weight;
+        totalWithoutOverrides.calories -= override.calories;
+      });
+
+      return {
+        categoryTotals,
+        grandTotal,
+        overrideTotals,
+        totalWithoutOverrides,
+      };
+    }, [filteredItems]);
 
   return (
     <>
@@ -79,44 +194,113 @@ export default function SharePageClient({ list }: SharePageClientProps) {
           ))}
         </div>
 
-        {/* Totals */}
-        <ul className="product flex flex-wrap items-center gap-4 mt-8">
-          <li>
-            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-x-4 pb-3 sm:pb-0 m-4">
-              <p className="text-md sm:text-xl text-accent">Totalt</p>
-              <p className="text-md sm:text-xl text-accent">
-                {filteredItems.reduce(
-                  (total, item) => total + (item.quantity || 1),
-                  0,
-                )}{" "}
-                stk
-              </p>
-              <p className="text-md sm:text-xl text-accent">
-                {filteredItems
-                  .reduce((total, item) => {
-                    if (!item.item?.weight) return total;
-                    const weight = item.item.weight.weight;
-                    const multiplier =
-                      item.item.weight.unit === "kg" ? 1 : 0.001;
-                    return total + weight * multiplier * (item.quantity || 1);
-                  }, 0)
-                  .toFixed(3)}{" "}
-                kg
-              </p>
-              {filteredItems.some(
-                (item) => item.item?.calories && item.item.calories > 0,
-              ) && (
-                <p className="text-md sm:text-xl text-accent">
-                  {filteredItems.reduce((total, item) => {
-                    if (!item.item?.calories) return total;
-                    return total + item.item.calories * (item.quantity || 1);
-                  }, 0)}{" "}
-                  kcal
-                </p>
+        {/* Updated Totals section */}
+        {filteredItems.length > 0 ? (
+          <ul className="totals flex flex-col w-full mt-8 gap-y-4">
+            <li>
+              {selectedCategory === null ? (
+                <div className="flex flex-col gap-y-8">
+                  {/* Override totals section */}
+                  {overrideTotals.length > 0 && (
+                    <div className="flex flex-col gap-y-8 pt-4">
+                      {overrideTotals.map((override) => (
+                        <div
+                          key={override.categoryId}
+                          className="grid grid-cols-1 gap-x-3 gap-y-2"
+                        >
+                          <p className="text-md sm:text-xl">
+                            {override.categoryTitle}
+                          </p>
+                          <p className="text-6xl sm:text-8xl text-accent font-bold">
+                            {formatWeight(override.weight)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Total without overrides section */}
+                  {overrideTotals.length > 0 && (
+                    <div className="flex flex-col gap-y-2 pb-8">
+                      <div className="grid grid-cols-1 gap-x-3 gap-y-2">
+                        <p className="text-md sm:text-xl">Sekk</p>
+                        <p className="text-6xl sm:text-8xl text-accent font-bold">
+                          {formatWeight(totalWithoutOverrides.weight)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category totals section */}
+                  <div className="flex flex-col gap-y-2 pt-4">
+                    {categoryTotals.map((total) => (
+                      <div
+                        key={total.id}
+                        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
+                      >
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                          {total.title}
+                        </p>
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                          {formatWeight(total.weight)}
+                        </p>
+                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                          {total.calories > 0
+                            ? `${formatNumber(total.calories)} kcal`
+                            : ""}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Grand total */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
+                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                      Totalt
+                    </p>
+                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                      {formatWeight(grandTotal.weight)}
+                    </p>
+                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                      {grandTotal.calories > 0
+                        ? `${formatNumber(grandTotal.calories)} kcal`
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                // Category-specific view
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                    {formatNumber(
+                      categoryTotals.find((cat) => cat.id === selectedCategory)
+                        ?.count || 0,
+                    )}{" "}
+                    stk
+                  </p>
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                    {formatWeight(
+                      categoryTotals.find((cat) => cat.id === selectedCategory)
+                        ?.weight || 0,
+                    )}
+                  </p>
+                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                    {(categoryTotals.find((cat) => cat.id === selectedCategory)
+                      ?.calories || 0) > 0
+                      ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
+                      : ""}
+                  </p>
+                </div>
               )}
-            </div>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        ) : (
+          <div className="text-center text-accent text-2xl min-h-[50vh] flex items-center justify-center">
+            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du
+            har 0 kalorier å gå på
+          </div>
+        )}
+
         {/* Items list */}
         <ul className="flex flex-col divide-y divide-white/5">
           {filteredItems.map((listItem) => (
