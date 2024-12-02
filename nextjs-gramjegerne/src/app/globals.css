@@ -47,6 +47,9 @@ body {
 .bg-dimmed {
   background-color: var(--bg-dimmed);
 }
+.bg-dimmed-hover {
+  background-color: var(--bg-dimmed-hover);
+}
 .bg-primary {
   background-color: var(--bg-primary);
 }
@@ -132,6 +135,9 @@ li.stats {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 16px;
+}
+.icon-fill {
+  fill: var(--fg-primary);
 }
 
 li.product.active {
@@ -521,7 +527,8 @@ select {
 }
 
 @layer base {
-  :root {
+  /* Default theme (dark green) */
+  :root[data-theme="green"] {
     --bg-primary: #1f261c;
     --bg-primary-hover: #1c2219;
     --bg-secondary: #eaffe2;
@@ -534,15 +541,32 @@ select {
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
     --radius: 8px;
-    input::placeholder {
-      color: var(--fg-primary);
-      opacity: 0.5;
-    }
+  }
 
-    select::placeholder {
-      color: var(--fg-primary);
-      opacity: 0.5;
-    }
+  /* Blue theme */
+  :root[data-theme="blue"] {
+    --bg-primary: #1a1f26;
+    --bg-primary-hover: #161b22;
+    --bg-secondary: #e2f1ff;
+    --bg-dimmed: #232b36;
+    --bg-dimmed-hover: #1f2730;
+    --bg-accent: #9fc7ed;
+    --bg-accent-hover: #7ba7db;
+    --fg-primary: #e2f1ff;
+    --fg-secondary: #1a1f26;
+    --fg-dimmed: #232b36;
+    --fg-accent: #9fc7ed;
+    --radius: 8px;
+  }
+
+  input::placeholder {
+    color: var(--fg-primary);
+    opacity: 0.5;
+  }
+
+  select::placeholder {
+    color: var(--fg-primary);
+    opacity: 0.5;
   }
 }
 @layer utilities {

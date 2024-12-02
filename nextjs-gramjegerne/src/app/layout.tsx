@@ -8,6 +8,7 @@ import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const apfel = localFont({
   src: [
@@ -38,10 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${apfel.variable} antialiased`}>
-        <Providers>
-          {!isAuthPage && <Navbar />}
-          {children}
-        </Providers>
+        <ThemeProvider>
+          <Providers>
+            {!isAuthPage && <Navbar />}
+            {children}
+          </Providers>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

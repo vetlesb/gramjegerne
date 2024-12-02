@@ -1112,6 +1112,9 @@ export default function ListPage() {
                       {listItem.item?.name || "Unnamed Item"}
                     </h2>
                     <div className="flex flex-wrap gap-x-1">
+                      <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                        {listItem.quantity || 1} stk
+                      </p>
                       {listItem.item?.size && (
                         <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                           <Icon name="size" width={16} height={16} />
@@ -1138,7 +1141,7 @@ export default function ListPage() {
 
                   <div className="flex items-center w-full md:w-auto gap-x-2 ml-auto">
                     <div className="flex w-full">
-                      <div className="flex items-center gap-x-2 bg-white/5 rounded px-2 py-1">
+                      <div className="flex items-center gap-x-2 bg-dimmed-hover rounded px-2 py-1">
                         <button
                           onClick={() =>
                             handleQuantityChange(
@@ -1147,7 +1150,7 @@ export default function ListPage() {
                             )
                           }
                           disabled={(listItem.quantity || 1) <= 1}
-                          className="p-1 hover:bg-gray-700 rounded disabled:opacity-50"
+                          className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
                         >
                           –
                         </button>
@@ -1163,7 +1166,7 @@ export default function ListPage() {
                               (listItem.quantity || 1) + 1,
                             )
                           }
-                          className="p-1 hover:bg-gray-700 rounded"
+                          className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
                         >
                           +
                         </button>
