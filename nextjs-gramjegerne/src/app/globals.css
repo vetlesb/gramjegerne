@@ -173,28 +173,28 @@ ul.category-list {
 .tag {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
-  color: #eaffe2;
+  color: var(--fg-primary);
   background-color: var(--bg-primary);
   font-size: 16px;
 }
 .tag-list {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
-  color: #eaffe2;
+  color: var(--fg-primary);
   background-color: var(--bg-dimmed);
   font-size: 16px;
 }
 .tag-search {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
-  color: #eaffe2;
+  color: var(--fg-primary);
   background-color: var(--bg-primary);
   font-size: 12px;
 }
 .tag-invert {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
-  color: #eaffe2;
+  color: var(--fg-primary);
   background-color: var(--bg-dimmed);
   font-size: 16px;
 }
@@ -211,7 +211,7 @@ ul.category-list {
   border-radius: 48px;
   max-height: 40px;
   white-space: nowrap;
-  color: #eaffe2;
+  color: var(--fg-primary);
   border: 1px solid var(--fg-dimmed);
 }
 .menu-category:hover {
@@ -221,7 +221,7 @@ ul.category-list {
 .menu-item {
   padding: 8px 16px 8px 16px;
   border-radius: 48px;
-  color: #eaffe2;
+  color: var(--fg-primary);
   border: 1px solid var(--fg-dimmed);
 }
 .menu-item:hover {
@@ -274,7 +274,11 @@ input::file-selector-button {
   border: thin solid var(--fg-accent);
   border-radius: 4px;
 }
-/* Update your existing placeholder styles or add this new one */
+.form-select {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==");
+  background-size: 0.7rem;
+  background-position: right 0.7rem center;
+}
 
 .button-link {
   color: var(--fg-primary);
@@ -556,6 +560,21 @@ select {
     --fg-secondary: #1a1f26;
     --fg-dimmed: #232b36;
     --fg-accent: #9fc7ed;
+    --radius: 8px;
+  }
+  /* Yellow theme */
+  :root[data-theme="yellow"] {
+    --bg-primary: #262419;
+    --bg-primary-hover: #221f16;
+    --bg-secondary: #fffae2;
+    --bg-dimmed: #363223;
+    --bg-dimmed-hover: #302b1f;
+    --bg-accent: #eddf9f;
+    --bg-accent-hover: #dbcc7b;
+    --fg-primary: #fffae2;
+    --fg-secondary: #262419;
+    --fg-dimmed: #363223;
+    --fg-accent: #eddf9f;
     --radius: 8px;
   }
 
