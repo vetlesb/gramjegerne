@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { client } from "@/lib/sanity";
+import { getUserSession } from "@/lib/auth-helpers";
 
 // Define an interface for the item structure
 interface Item {
@@ -10,7 +11,19 @@ interface Item {
 
 export async function DELETE() {
   try {
-    const items: Item[] = await client.fetch(`*[_type == "item"]`);
+    const session = await getUserSession();
+
+    if (!session || !session.user) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    // Fetch items belonging to the current user
+    const items: Item[] = await client.fetch(
+      `*[_type == "item" && user._ref == $userId]`,
+      { userId: session.user.id },
+    );
     console.log("Items to delete:", items); // Log the items to be deleted
 
     if (items.length === 0) {
@@ -44,7 +57,7 @@ export async function DELETE() {
       }
     }
 
-    return NextResponse.json({ message: "All items cleared." });
+    return NextResponse.json({ message: "All items cleared for the user." });
   } catch (error) {
     const typedError = error as Error;
     console.error("Error clearing items:", typedError);
