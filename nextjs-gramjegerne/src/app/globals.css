@@ -53,6 +53,18 @@ body {
 .bg-primary {
   background-color: var(--bg-primary);
 }
+.fg-dimmed {
+  color: var(--fg-dimmed);
+}
+.fg-primary {
+  color: var(--fg-primary);
+}
+.fg-secondary {
+  color: var(--fg-secondary);
+}
+.fg-accent {
+  color: var(--fg-accent);
+}
 .nav-mobile {
   background-color: var(--bg-primary);
   padding: 1rem;
@@ -215,6 +227,16 @@ ul.category-list {
   border: 1px solid var(--fg-dimmed);
 }
 .menu-category:hover {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+}
+.menu-theme {
+  padding: 8px 16px 8px 16px;
+  border-radius: 48px;
+  color: var(--fg-primary);
+  border: 1px solid var(--fg-dimmed);
+}
+.menu-theme:hover {
   background-color: var(--bg-dimmed);
   color: var(--fg-primary);
 }

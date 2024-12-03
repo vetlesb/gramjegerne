@@ -9,7 +9,6 @@ import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeSelector } from "@/components/ThemeSelector";
 
 const apfel = localFont({
   src: [
@@ -45,8 +44,6 @@ export default function RootLayout({
             {!isAuthPage && <Navbar />}
             {children}
           </Providers>
-
-          <ThemeSelector />
         </ThemeProvider>
         <Toaster />
       </body>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -47,6 +48,7 @@ export default function Navbar() {
         `}
         >
           {/* Menu items and auth buttons together */}
+
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto menu-collapse">
             {session && !isSharePage && (
               <ul className="text-xl flex flex-col md:flex-row gap-4 md:gap-x-2 w-full md:w-auto pt-8 md:pt-0 min-h-screen md:min-h-0">
@@ -80,6 +82,7 @@ export default function Navbar() {
                     Pakklister
                   </Link>
                 </li>
+                <ThemeSelector />
                 {/* Auth buttons now part of the collapsible menu */}
                 {isLoading ? (
                   <div className="h-8 w-8 animate-pulse rounded-full bg-muted mt-4" />
