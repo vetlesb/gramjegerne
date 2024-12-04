@@ -86,7 +86,7 @@ const ITEMS_QUERY = `*[_type == "item" && user._ref == $userId] {
 
 const LIST_QUERY = (
   slug: string,
-) => `*[_type == "list" && slug.current == "${slug}" && user._ref == $userId][0] {
+) => `*[_type == "list" && slug.current == "${decodeURIComponent(slug)}" && user._ref == $userId][0] {
   _id,
   name,
   days,
@@ -229,6 +229,13 @@ export default function ListPage() {
   useEffect(() => {
     const fetchData = async () => {
       const userId = getUserId();
+      const decodedSlug = decodeURIComponent(listSlug || "");
+      console.log("Fetching list with:", {
+        encodedSlug: listSlug,
+        decodedSlug,
+        userId,
+      });
+
       if (!listSlug || !userId) return;
 
       try {
@@ -237,9 +244,13 @@ export default function ListPage() {
           client.fetch(CATEGORIES_QUERY, { userId }),
         ]);
 
+        console.log("Fetched list:", fetchedList); // Add this debug log
+
         if (fetchedList) {
           setList(fetchedList);
           setSelectedItems(fetchedList.items);
+        } else {
+          console.log("No list found with slug:", decodedSlug); // Add this debug log
         }
         setAllCategories(fetchedCategories);
       } catch (error) {
@@ -793,9 +804,6 @@ export default function ListPage() {
                 <DialogTitle className="text-2xl text-accent font-normal">
                   Legg til utstyr
                 </DialogTitle>
-                <DialogDescription className="text-lg pt-4">
-                  Marker utstyret du vil legge til i listen.
-                </DialogDescription>
               </DialogHeader>
               {/* Search Bar */}
               <label className="flex flex-col pt-4 gap-y-2 text-lg">

@@ -20,7 +20,7 @@ export function ThemeSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="menu-theme text-lg focus:outine-none focus:border-1 focus:stroke-0 focus:outline-0 border-fg-dimmed border-1 rounded-md flex items-center justify-center gap-x-2">
+      <DropdownMenuTrigger className="menu-theme text-lg border-0 outline-none focus:outline-none rounded-md flex items-center justify-center gap-x-2">
         <Icon
           width={24}
           height={24}
@@ -29,7 +29,7 @@ export function ThemeSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="flex flex-col bg-dimmed border-0"
+        className="flex flex-col bg-primary gap-y-4 mt-3 p-4 bg-dimmed border-0"
       >
         {themes.map((t) => (
           <DropdownMenuItem

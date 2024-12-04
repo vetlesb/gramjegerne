@@ -129,7 +129,7 @@ li.product-search:hover {
   background-color: var(--bg-primary-hover);
 }
 li.product-search.active {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-dimmed-hover);
   outline: 1px solid var(--fg-accent);
   outline-offset: -1px;
 }
@@ -213,6 +213,12 @@ ul.category-list {
 .tag-icon {
   width: 16px;
   height: 16px;
+}
+.tag-total {
+  padding: 4px 12px 4px 12px;
+  border-radius: 99px;
+  color: var(--fg-secondary);
+  background-color: var(--bg-accent);
 }
 .btn-icon {
   width: 16px;
