@@ -98,13 +98,22 @@ li {
   display: block;
 }
 
-li.product,
 li.list {
   display: grid;
   gap: 4px;
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 16px;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
+li.product {
+  display: grid;
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem;
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;

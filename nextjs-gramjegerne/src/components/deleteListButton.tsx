@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Icon from "@/components/Icon";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -68,13 +69,14 @@ export default function DeleteListButton({
   return (
     <>
       <button
-        className="button-secondary w-full items-center gap-x-2 "
+        className="button-secondary text-lg flex flex-row items-center justify-center gap-x-1 w-full"
         onClick={(event) => {
           event.stopPropagation(); // Prevents the parent onClick from firing
           event.preventDefault(); // Prevents any default behavior
           setIsDialogOpen(true);
         }}
       >
+        <Icon name="delete" width={24} height={24} />
         Slett
       </button>
 
