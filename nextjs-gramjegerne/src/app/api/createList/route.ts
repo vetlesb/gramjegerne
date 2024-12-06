@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { client } from "@/lib/sanity";
 import { getUserSession } from "@/lib/auth-helpers";
 import { nanoid } from "nanoid";
+import { slugify } from "@/utils/slugify";
 
 export async function POST(request: Request) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Prepare slug with user ID
-    const baseSlug = name.toLowerCase().replace(/\s+/g, "-");
+    const baseSlug = slugify(name);
     const uniqueSlug = `${baseSlug}-${shortUserId}`;
 
     // Prepare image asset if provided

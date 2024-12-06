@@ -13,6 +13,7 @@ import { ListDocument } from "@/types";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import Image from "next/image";
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -201,9 +202,11 @@ export default function AddListDialog({
                   {existingImage && (
                     <div className="mb-2">
                       <p className="text-sm mb-2">Eksisterende bilde:</p>
-                      <img
+                      <Image
                         src={urlFor(existingImage).url()}
                         alt="Eksisterende bilde"
+                        width={128}
+                        height={128}
                         className="w-32 h-32 object-cover rounded-md"
                       />
                     </div>
