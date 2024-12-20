@@ -13,11 +13,8 @@ var i = p, u = Symbol.for("react.element"), a = Symbol.for("react.fragment"), m 
 function l(o, r, _) {
   var e, t = {}, n = null, s = null;
   _ !== void 0 && (n = "" + _), r.key !== void 0 && (n = "" + r.key), r.ref !== void 0 && (s = r.ref);
-  for (e in r)
-    m.call(r, e) && !v.hasOwnProperty(e) && (t[e] = r[e]);
-  if (o && o.defaultProps)
-    for (e in r = o.defaultProps, r)
-      t[e] === void 0 && (t[e] = r[e]);
+  for (e in r) m.call(r, e) && !v.hasOwnProperty(e) && (t[e] = r[e]);
+  if (o && o.defaultProps) for (e in r = o.defaultProps, r) t[e] === void 0 && (t[e] = r[e]);
   return { $$typeof: u, type: o, key: n, ref: s, props: t, _owner: y.current };
 }
 var O = f.Fragment = a, c = f.jsx = l, x = f.jsxs = l;
