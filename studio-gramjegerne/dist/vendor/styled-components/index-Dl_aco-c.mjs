@@ -109,12 +109,14 @@ function ke(e, t) {
 }
 function Le(e) {
   switch (e) {
+    // \0 \t \n \r \s whitespace token
     case 0:
     case 9:
     case 10:
     case 13:
     case 32:
       return 5;
+    // ! + , / > @ ~ isolate token
     case 33:
     case 43:
     case 44:
@@ -122,17 +124,21 @@ function Le(e) {
     case 62:
     case 64:
     case 126:
+    // ; { } breakpoint token
     case 59:
     case 123:
     case 125:
       return 4;
+    // : accompanied token
     case 58:
       return 3;
+    // " ' ( [ opening delimit token
     case 34:
     case 39:
     case 40:
     case 91:
       return 2;
+    // ) ] closing delimit token
     case 41:
     case 93:
       return 1;
@@ -161,15 +167,19 @@ function hr(e, t) {
 function We(e) {
   for (; N(); )
     switch (E) {
+      // ] ) " '
       case e:
         return $;
+      // " '
       case 34:
       case 39:
         e !== 34 && e !== 39 && We(E);
         break;
+      // (
       case 40:
         e === 41 && We(e);
         break;
+      // \
       case 92:
         N();
         break;
@@ -193,25 +203,30 @@ function gr(e) {
 function be(e, t, r, n, s, a, i, c, o) {
   for (var h = 0, u = 0, p = i, l = 0, g = 0, y = 0, w = 1, R = 1, P = 1, C = 0, b = "", I = s, _ = a, S = n, d = b; R; )
     switch (y = C, C = N()) {
+      // (
       case 40:
         if (y != 108 && A(d, p - 1) == 58) {
           ve(d += f(je(C), "&", "&\f"), "&\f", Ct(h ? c[h - 1] : 0)) != -1 && (P = -1);
           break;
         }
+      // " ' [
       case 34:
       case 39:
       case 91:
         d += je(C);
         break;
+      // \t \n \r \s
       case 9:
       case 10:
       case 13:
       case 32:
         d += pr(y);
         break;
+      // \
       case 92:
         d += hr(we() - 1, 7);
         continue;
+      // /
       case 47:
         switch (B()) {
           case 42:
@@ -222,26 +237,33 @@ function be(e, t, r, n, s, a, i, c, o) {
             d += "/";
         }
         break;
+      // {
       case 123 * w:
         c[h++] = T(d) * P;
+      // } ; \0
       case 125 * w:
       case 59:
       case 0:
         switch (C) {
+          // \0 }
           case 0:
           case 125:
             R = 0;
+          // ;
           case 59 + u:
             P == -1 && (d = f(d, /\f/g, "")), g > 0 && T(d) - p && ie(g > 32 ? ct(d + ";", n, r, p - 1, o) : ct(f(d, " ", "") + ";", n, r, p - 2, o), o);
             break;
+          // @ ;
           case 59:
             d += ";";
+          // { rule/at-rule
           default:
             if (ie(S = ot(d, t, r, h, u, s, c, b, I = [], _ = [], p, a), a), C === 123)
               if (u === 0)
                 be(d, t, S, S, I, a, p, c, _);
               else
                 switch (l === 99 && A(d, 3) === 110 ? 100 : l) {
+                  // d l m s
                   case 100:
                   case 108:
                   case 109:
@@ -254,6 +276,7 @@ function be(e, t, r, n, s, a, i, c, o) {
         }
         h = u = g = 0, w = P = 1, b = d = "", p = i;
         break;
+      // :
       case 58:
         p = 1 + T(d), g = y;
       default:
@@ -264,15 +287,19 @@ function be(e, t, r, n, s, a, i, c, o) {
             continue;
         }
         switch (d += Ve(C), C * w) {
+          // &
           case 38:
             P = u > 0 ? 1 : (d += "\f", -1);
             break;
+          // ,
           case 44:
             c[h++] = (T(d) - 1) * P, P = 1;
             break;
+          // @
           case 64:
             B() === 45 && (d += je(N())), l = B(), u = p = T(b = d += dr(we())), C++;
             break;
+          // -
           case 45:
             y === 45 && T(d) == 2 && (w = 0);
         }
@@ -293,8 +320,10 @@ function ct(e, t, r, n, s) {
 }
 function xt(e, t, r) {
   switch (ar(e, t)) {
+    // color-adjust
     case 5103:
       return m + "print-" + e + e;
+    // animation, animation-(delay|direction|duration|fill-mode|iteration-count|name|play-state|timing-function)
     case 5737:
     case 4201:
     case 3177:
@@ -302,18 +331,21 @@ function xt(e, t, r) {
     case 1641:
     case 4457:
     case 2921:
+    // text-decoration, filter, clip-path, backface-visibility, column, box-decoration-break
     case 5572:
     case 6356:
     case 5844:
     case 3191:
     case 6645:
     case 3005:
+    // mask, mask-image, mask-(mode|clip|size), mask-(repeat|origin), mask-position, mask-composite,
     case 6391:
     case 5879:
     case 5623:
     case 6135:
     case 4599:
     case 4855:
+    // background-clip, columns, column-(count|fill|gap|rule|rule-color|rule-style|rule-width|span|width)
     case 4215:
     case 6389:
     case 5109:
@@ -321,71 +353,95 @@ function xt(e, t, r) {
     case 5621:
     case 3829:
       return m + e + e;
+    // tab-size
     case 4789:
       return oe + e + e;
+    // appearance, user-select, transform, hyphens, text-size-adjust
     case 5349:
     case 4246:
     case 4810:
     case 6968:
     case 2756:
       return m + e + oe + e + v + e + e;
+    // writing-mode
     case 5936:
       switch (A(e, t + 11)) {
+        // vertical-l(r)
         case 114:
           return m + e + v + f(e, /[svh]\w+-[tblr]{2}/, "tb") + e;
+        // vertical-r(l)
         case 108:
           return m + e + v + f(e, /[svh]\w+-[tblr]{2}/, "tb-rl") + e;
+        // horizontal(-)tb
         case 45:
           return m + e + v + f(e, /[svh]\w+-[tblr]{2}/, "lr") + e;
       }
+    // flex, flex-direction, scroll-snap-type, writing-mode
     case 6828:
     case 4268:
     case 2903:
       return m + e + v + e + e;
+    // order
     case 6165:
       return m + e + v + "flex-" + e + e;
+    // align-items
     case 5187:
       return m + e + f(e, /(\w+).+(:[^]+)/, m + "box-$1$2" + v + "flex-$1$2") + e;
+    // align-self
     case 5443:
       return m + e + v + "flex-item-" + f(e, /flex-|-self/g, "") + (j(e, /flex-|baseline/) ? "" : v + "grid-row-" + f(e, /flex-|-self/g, "")) + e;
+    // align-content
     case 4675:
       return m + e + v + "flex-line-pack" + f(e, /align-content|flex-|-self/g, "") + e;
+    // flex-shrink
     case 5548:
       return m + e + v + f(e, "shrink", "negative") + e;
+    // flex-basis
     case 5292:
       return m + e + v + f(e, "basis", "preferred-size") + e;
+    // flex-grow
     case 6060:
       return m + "box-" + f(e, "-grow", "") + m + e + v + f(e, "grow", "positive") + e;
+    // transition
     case 4554:
       return m + f(e, /([^-])(transform)/g, "$1" + m + "$2") + e;
+    // cursor
     case 6187:
       return f(f(f(e, /(zoom-|grab)/, m + "$1"), /(image-set)/, m + "$1"), e, "") + e;
+    // background, background-image
     case 5495:
     case 3959:
       return f(e, /(image-set\([^]*)/, m + "$1$`$1");
+    // justify-content
     case 4968:
       return f(f(e, /(.+:)(flex-)?(.*)/, m + "box-pack:$3" + v + "flex-pack:$3"), /s.+-b[^;]+/, "justify") + m + e + e;
+    // justify-self
     case 4200:
       if (!j(e, /flex-|baseline/)) return v + "grid-column-align" + J(e, t) + e;
       break;
+    // grid-template-(columns|rows)
     case 2592:
     case 3360:
       return v + f(e, "template-", "") + e;
+    // grid-(row|column)-start
     case 4384:
     case 3616:
       return r && r.some(function(n, s) {
         return t = s, j(n.props, /grid-\w+-end/);
       }) ? ~ve(e + (r = r[t].value), "span", 0) ? e : v + f(e, "-start", "") + e + v + "grid-row-span:" + (~ve(r, "span", 0) ? j(r, /\d+/) : +j(r, /\d+/) - +j(e, /\d+/)) + ";" : v + f(e, "-start", "") + e;
+    // grid-(row|column)-end
     case 4896:
     case 4128:
       return r && r.some(function(n) {
         return j(n.props, /grid-\w+-start/);
       }) ? e : v + f(f(e, "-end", "-span"), "span ", "") + e;
+    // (margin|padding)-inline-(start|end)
     case 4095:
     case 3583:
     case 4068:
     case 2532:
       return f(e, /(.+)-inline(.+)/, m + "$1$2") + e;
+    // (min|max)?(width|height|inline-size|block-size)
     case 8116:
     case 7059:
     case 5753:
@@ -400,32 +456,41 @@ function xt(e, t, r) {
     case 4765:
       if (T(e) - 1 - t > 6)
         switch (A(e, t + 1)) {
+          // (m)ax-content, (m)in-content
           case 109:
             if (A(e, t + 4) !== 45)
               break;
+          // (f)ill-available, (f)it-content
           case 102:
             return f(e, /(.+:)(.+)-([^]+)/, "$1" + m + "$2-$3$1" + oe + (A(e, t + 3) == 108 ? "$3" : "$2-$3")) + e;
+          // (s)tretch
           case 115:
             return ~ve(e, "stretch", 0) ? xt(f(e, "stretch", "fill-available"), t, r) + e : e;
         }
       break;
+    // grid-(column|row)
     case 5152:
     case 5920:
       return f(e, /(.+?):(\d+)(\s*\/\s*(span)?\s*(\d+))?(.*)/, function(n, s, a, i, c, o, h) {
         return v + s + ":" + a + h + (i ? v + s + "-span:" + (c ? o : +o - +a) + h : "") + e;
       });
+    // position: sticky
     case 4949:
       if (A(e, t + 6) === 121)
         return f(e, ":", ":" + m) + e;
       break;
+    // display: (flex|inline-flex|grid|inline-grid)
     case 6444:
       switch (A(e, A(e, 14) === 45 ? 18 : 11)) {
+        // (inline-)?fle(x)
         case 120:
           return f(e, /(.+:)([^;\s!]+)(;|(\s+)?!.+)?/, "$1" + m + (A(e, 14) === 45 ? "inline-" : "") + "box$3$1" + m + "$2$3$1" + v + "$2box$3") + e;
+        // (inline-)?gri(d)
         case 100:
           return f(e, ":", ":" + v) + e;
       }
       break;
+    // scroll-margin, scroll-margin-(top|right|bottom|left)
     case 5719:
     case 2647:
     case 2135:
@@ -481,10 +546,12 @@ function wr(e, t, r, n) {
         if (e.length)
           return ir(r = e.props, function(s) {
             switch (j(s, n = /(::plac\w+|:read-\w+)/)) {
+              // :read-(only|write)
               case ":read-only":
               case ":read-write":
                 U(M(e, { props: [f(s, /:(read-\w+)/, ":" + oe + "$1")] })), U(M(e, { props: [s] })), Ge(e, { props: it(r, n) });
                 break;
+              // :placeholder
               case "::placeholder":
                 U(M(e, { props: [f(s, /:(plac\w+)/, ":" + m + "input-$1")] })), U(M(e, { props: [f(s, /:(plac\w+)/, ":" + oe + "$1")] })), U(M(e, { props: [f(s, /:(plac\w+)/, v + "input-$1")] })), U(M(e, { props: [s] })), Ge(e, { props: it(r, n) });
                 break;

@@ -10,29 +10,31 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy",
-    "fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts"
+    "fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
+    "vetle-update//": "echo oppdaterer til siste versjoner gitt formlene i package.json og oppdaterer filen",
+    "vetle-update": "npm update --save"
   },
   "keywords": [
     "sanity"
   ],
   "dependencies": {
     "@sanity/types": "^3.64.2",
-    "@sanity/vision": "^3.64.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "sanity": "^3.64.2",
-    "styled-components": "^6.1.8",
-    "uuid": "^11.0.3"
+    "@sanity/vision": "^3.74.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.74.0",
+    "styled-components": "^6.1.14",
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",
-    "@types/node": "^22.9.0",
-    "@types/react": "^18.0.25",
+    "@types/node": "^22.13.1",
+    "@types/react": "^18.3.18",
     "@types/uuid": "^10.0.0",
-    "eslint": "^8.6.0",
-    "prettier": "^3.3.3",
+    "eslint": "^8.57.1",
+    "prettier": "^3.4.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.3"
   },
   "prettier": {
     "semi": false,

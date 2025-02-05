@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "delete-items": "ts-node scripts/deleteAllItems.ts",
-    "cleanup-users": "ts-node -P ./scripts/tsconfig.json scripts/cleanupUsers.ts"
+    "cleanup-users": "ts-node -P ./scripts/tsconfig.json scripts/cleanupUsers.ts",
+    "vetle-update//": "echo oppdaterer til siste versjoner gitt formlene i package.json og oppdaterer filen",
+    "vetle-update": "npm update --save"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
