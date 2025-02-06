@@ -194,83 +194,97 @@ export default function SharePageClient({ list }: SharePageClientProps) {
           ))}
         </div>
 
-        {/* Updated Totals section */}
+        {/* Totalt for weight and calories */}
+
         {filteredItems.length > 0 ? (
           <ul className="totals flex flex-col w-full mt-8 gap-y-4">
             <li>
               {selectedCategory === null ? (
-                <div className="flex flex-col gap-y-8">
+                // "Alle" view with overrides and category totals
+                <div className="flex flex-col gap-y-2">
                   {/* Override totals section */}
-                  {overrideTotals.length > 0 && (
-                    <div className="flex flex-col gap-y-8 pt-4">
-                      {overrideTotals.map((override) => (
-                        <div
-                          key={override.categoryId}
-                          className="grid grid-cols-1 gap-x-3 gap-y-2"
-                        >
-                          <p className="text-md sm:text-xl">
-                            {override.categoryTitle}
+                  <div className="flex flex-row w-full gap-x-4">
+                    {overrideTotals.length > 0 && (
+                      <div className="product gap-y-16 flex flex-col w-full bg-dimmed">
+                        {overrideTotals.map((override) => (
+                          <div
+                            key={override.categoryId}
+                            className="flex flex-col gap-x-3 gap-y-2"
+                          >
+                            <p className="text-md sm:text-xl">
+                              {override.categoryTitle}
+                            </p>
+                            <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
+                              {formatWeight(override.weight)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Total without overrides section */}
+                    {overrideTotals.length > 0 && (
+                      <div className="product flex w-full flex-col gap-y-2 pb-8">
+                        <div className="flex flex-col gap-x-3 gap-y-2">
+                          <p className="text-md sm:text-xl">Sekk</p>
+                          <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
+                            {formatWeight(totalWithoutOverrides.weight)}
                           </p>
-                          <p className="text-6xl sm:text-8xl text-accent font-bold">
-                            {formatWeight(override.weight)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Category totals section */}
+                  <div className="product">
+                    <div className="flex flex-col gap-y-2 pt-4">
+                      <p className="text-xl pb-8">Kategorier</p>
+                      {categoryTotals.map((total) => (
+                        <div
+                          key={total.id}
+                          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
+                        >
+                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                            {total.title}
+                          </p>
+                          {/*  <p className="text-md sm:text-xl">
+                          {formatNumber(total.count)} stk
+                        </p>*/}
+                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                            {formatWeight(total.weight)}
+                          </p>
+                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                            {total.calories > 0
+                              ? `${formatNumber(total.calories)} kcal`
+                              : ""}
                           </p>
                         </div>
                       ))}
                     </div>
-                  )}
 
-                  {/* Total without overrides section */}
-                  {overrideTotals.length > 0 && (
-                    <div className="flex flex-col gap-y-2 pb-8">
-                      <div className="grid grid-cols-1 gap-x-3 gap-y-2">
-                        <p className="text-md sm:text-xl">Sekk</p>
-                        <p className="text-6xl sm:text-8xl text-accent font-bold">
-                          {formatWeight(totalWithoutOverrides.weight)}
+                    {/* Grand total section */}
+                    <div>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-2">
+                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                          Totalt
                         </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Category totals section */}
-                  <div className="flex flex-col gap-y-2 pt-4">
-                    {categoryTotals.map((total) => (
-                      <div
-                        key={total.id}
-                        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
-                      >
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {total.title}
+                        {/* <p className="text-md sm:text-xl">
+                        {formatNumber(grandTotal.count)} stk
+                      </p> */}
+                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                          {formatWeight(grandTotal.weight)}
                         </p>
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {formatWeight(total.weight)}
-                        </p>
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {total.calories > 0
-                            ? `${formatNumber(total.calories)} kcal`
+                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                          {grandTotal.calories > 0
+                            ? `${formatNumber(grandTotal.calories)} kcal`
                             : ""}
                         </p>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Grand total */}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
-                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                      Totalt
-                    </p>
-                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                      {formatWeight(grandTotal.weight)}
-                    </p>
-                    <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                      {grandTotal.calories > 0
-                        ? `${formatNumber(grandTotal.calories)} kcal`
-                        : ""}
-                    </p>
+                    </div>
                   </div>
                 </div>
               ) : (
                 // Category-specific view
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3">
+                <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatNumber(
                       categoryTotals.find((cat) => cat.id === selectedCategory)
