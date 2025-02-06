@@ -596,12 +596,12 @@ select {
     --bg-secondary: #e2f1ff;
     --bg-dimmed: #232b36;
     --bg-dimmed-hover: #1f2730;
-    --bg-accent: #9fc7ed;
+    --bg-accent: #67b5ff;
     --bg-accent-hover: #7ba7db;
     --fg-primary: #e2f1ff;
     --fg-secondary: #1a1f26;
     --fg-dimmed: #232b36;
-    --fg-accent: #9fc7ed;
+    --fg-accent: #67b5ff;
     --radius: 8px;
   }
   /* Yellow theme */
@@ -611,12 +611,12 @@ select {
     --bg-secondary: #fffae2;
     --bg-dimmed: #363223;
     --bg-dimmed-hover: #302b1f;
-    --bg-accent: #eddf9f;
+    --bg-accent: #ffe883;
     --bg-accent-hover: #dbcc7b;
     --fg-primary: #fffae2;
     --fg-secondary: #262419;
     --fg-dimmed: #363223;
-    --fg-accent: #eddf9f;
+    --fg-accent: #ffe883;
     --radius: 8px;
   }
 
