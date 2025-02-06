@@ -28,7 +28,9 @@ export default function SignIn() {
     <div className="flex justify-center min-h-screen justify-center items-center">
       <div className="w-full space-y-8">
         <h2 className="signin-logo text-accent text-center">Gramjegerne</h2>
-
+        <div className="flex flex-col justify-center items-center ingress">
+          Din digitale ryggsekk for turutstyr
+        </div>
         <div className="flex flex-col justify-center items-center">
           <button
             onClick={() => signIn("google", { callbackUrl: "/" })}
