@@ -28,7 +28,7 @@ export function ShareButton({ slug }: { slug: string }) {
       className="button-create flex items-center gap-2 text-lg px-4 py-2"
     >
       <Icon name="link" width={24} height={24} />
-      Del liste
+      Del
     </button>
   );
 }

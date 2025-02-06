@@ -123,6 +123,16 @@ li.product {
   box-shadow: none;
   border: 0px;
 }
+.product {
+  display: grid;
+
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
 ul.product {
   display: grid;
   gap: 4px;
@@ -150,9 +160,8 @@ li.product-search.active {
 ul.totals {
   display: grid;
   gap: 4px;
-  background-color: var(--bg-dimmed);
+  background-color: var(--bg-primary);
   border-radius: 8px;
-  padding: 32px;
   margin-bottom: 8px;
 }
 li.stats {
@@ -497,9 +506,9 @@ select {
   ul.totals {
     display: grid;
     gap: 4px;
-    background-color: var(--bg-dimmed);
+    background-color: var(--bg-primary);
     border-radius: 8px;
-    padding: 24px;
+
     margin-bottom: 8px;
   }
 }
@@ -540,7 +549,6 @@ select {
     font-size: 2rem;
   }
   ul.totals {
-    padding: 32px;
   }
 }
 

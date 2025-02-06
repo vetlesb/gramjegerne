@@ -23,7 +23,7 @@ export function ThemeSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="menu-theme text-lg border-0 outline-none focus:outline-none rounded-md flex items-center justify-center gap-x-1 md:w-28">
+      <DropdownMenuTrigger className="menu-theme text-lg rounded-md flex items-center justify-center gap-x-1 md:w-28">
         <Icon width={24} height={24} name={currentTheme?.icon ?? "tree"} />
         <span>{currentTheme?.label}</span>
       </DropdownMenuTrigger>
