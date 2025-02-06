@@ -608,7 +608,7 @@ var br = {
   strokeMiterlimit: 1,
   strokeOpacity: 1,
   strokeWidth: 1
-}, L = typeof process < "u" && process.env !== void 0 && (process.env.REACT_APP_SC_ATTR || process.env.SC_ATTR) || "data-styled", _t = "active", Ee = "data-styled-version", X = "6.1.14", Ze = `/*!sc*/
+}, L = typeof process < "u" && process.env !== void 0 && (process.env.REACT_APP_SC_ATTR || process.env.SC_ATTR) || "data-styled", _t = "active", Ee = "data-styled-version", X = "6.1.15", Ze = `/*!sc*/
 `, ce = typeof window < "u" && "HTMLElement" in window, Cr = !!(typeof SC_DISABLE_SPEEDY == "boolean" ? SC_DISABLE_SPEEDY : typeof process < "u" && process.env !== void 0 && process.env.REACT_APP_SC_DISABLE_SPEEDY !== void 0 && process.env.REACT_APP_SC_DISABLE_SPEEDY !== "" ? process.env.REACT_APP_SC_DISABLE_SPEEDY !== "false" && process.env.REACT_APP_SC_DISABLE_SPEEDY : typeof process < "u" && process.env !== void 0 && process.env.SC_DISABLE_SPEEDY !== void 0 && process.env.SC_DISABLE_SPEEDY !== "" && process.env.SC_DISABLE_SPEEDY !== "false" && process.env.SC_DISABLE_SPEEDY), Ir = {}, $e = Object.freeze([]), ee = Object.freeze({});
 function Je(e, t, r) {
   return r === void 0 && (r = ee), e.theme !== r.theme && e.theme || t || r.theme;
