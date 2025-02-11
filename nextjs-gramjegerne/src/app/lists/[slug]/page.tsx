@@ -1,25 +1,25 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import imageUrlBuilder from "@sanity/image-url";
-import Image from "next/image";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { client } from "@/sanity/client";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Icon } from "@/components/Icon";
 import { ShareButton } from "@/components/ShareButton";
-import Icon from "@/components/Icon";
-import { usePathname } from "next/navigation";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogClose,
-  DialogDescription,
-} from "../../../components/ui/dialog";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { client } from "@/sanity/client";
+import imageUrlBuilder from "@sanity/image-url";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/ui/dialog";
 
 // Define Category and Item types
 interface Category {

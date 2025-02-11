@@ -1,15 +1,15 @@
 "use client";
-import { useState } from "react";
-import Icon from "@/components/Icon";
-import { useRouter } from "next/navigation";
+import { Icon } from "@/components/Icon";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
   DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface DeleteListButtonProps {
   listId: string;
@@ -18,7 +18,7 @@ interface DeleteListButtonProps {
   onSuccess?: () => void;
 }
 
-export default function DeleteListButton({
+export function DeleteListButton({
   listId,
   listName,
   redirectTo,

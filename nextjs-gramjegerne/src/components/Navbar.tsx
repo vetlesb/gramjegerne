@@ -1,13 +1,13 @@
 "use client";
 
+import { Icon } from "@/components/Icon";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import Icon from "@/components/Icon";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ThemeSelector } from "@/components/ThemeSelector";
 
-export default function Navbar() {
+export function Navbar() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
   const pathname = usePathname();

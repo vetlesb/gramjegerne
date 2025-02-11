@@ -1,6 +1,6 @@
+import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import { useSession } from "next-auth/react";
 
 interface ImportResult {
   success: boolean;
@@ -20,7 +20,7 @@ interface ExcelRow {
   [key: string]: string | undefined;
 }
 
-export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
+export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   const { data: session, status } = useSession();
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
@@ -30,12 +30,12 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   const [isClear, setIsClear] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0] || null;
     setFile(selectedFile);
-  };
+  }
 
-  const handleImport = async (event: React.FormEvent<HTMLFormElement>) => {
+  async function handleImport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (status === "loading") {
@@ -77,7 +77,7 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       const uniqueCategories = new Set(
         jsonData
           .map((item) => item.category)
-          .filter((category): category is string => !!category),
+          .filter((category): category is string => !!category)
       );
 
       const categoryResponse = await fetch("/api/validateCategories", {
@@ -148,10 +148,9 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             return {
               success: false,
               name: itemData.name,
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Unknown error occurred",
+              error: error instanceof Error
+                ? error.message
+                : "Unknown error occurred",
             };
           }
         });
@@ -160,7 +159,7 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         processedResults = [...processedResults, ...chunkResults];
 
         setProgress(
-          Math.round(((i + chunk.length) / itemsToProcess.length) * 100),
+          Math.round(((i + chunk.length) / itemsToProcess.length) * 100)
         );
       }
 
@@ -177,16 +176,15 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         {
           success: false,
           name: "Import",
-          error:
-            error instanceof Error ? error.message : "Unknown error occurred",
+          error: error instanceof Error ? error.message : "Unknown error occurred",
         },
       ]);
     } finally {
       setImporting(false);
     }
-  };
+  }
 
-  const handleClearItems = async () => {
+  async function handleClearItems() {
     const response = await fetch("/api/clearItems", {
       method: "DELETE",
     });
@@ -200,9 +198,9 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         { success: false, name: "Clear failed", error: error.message },
       ]);
     }
-  };
+  }
 
-  const uploadImageToSanity = async (imageUrl: string) => {
+  async function uploadImageToSanity(imageUrl: string) {
     if (!imageUrl) return null;
     const maxRetries = 5;
     let attempt = 0;
@@ -245,8 +243,7 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           const result = await uploadResponse.json();
           return result.assetId;
         } catch (error: unknown) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
           console.error(`Attempt ${attempt + 1} failed:`, errorMessage);
 
           if (attempt === maxRetries - 1) {
@@ -262,9 +259,9 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     }
 
     return null;
-  };
+  }
 
-  const handleExport = async () => {
+  async function handleExport() {
     const response = await fetch("/api/exportItems");
     if (response.ok) {
       const blob = await response.blob();
@@ -278,7 +275,7 @@ export default function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     } else {
       console.error("Failed to export items");
     }
-  };
+  }
 
   return (
     <div className="flex flex-col gap-y-8 min-h-64">

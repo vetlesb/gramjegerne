@@ -1,15 +1,15 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [hasRedirected, setHasRedirected] = useState(false);

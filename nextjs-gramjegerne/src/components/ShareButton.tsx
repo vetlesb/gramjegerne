@@ -1,5 +1,5 @@
 "use client";
-import Icon from "@/components/Icon";
+import { Icon } from "@/components/Icon";
 import { toast } from "sonner";
 
 export function ShareButton({ slug }: { slug: string }) {

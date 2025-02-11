@@ -2,13 +2,13 @@
 
 "use client";
 
+import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import localFont from "next/font/local";
-import "./globals.css";
-import { Providers } from "./providers";
-import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import "./globals.css";
+import { Providers } from "./providers";
 
 const apfel = localFont({
   src: [

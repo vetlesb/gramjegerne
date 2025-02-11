@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { client } from "@/sanity/client";
-import { groq } from "next-sanity";
-import AddListDialog from "../../components/addListDialog";
-import ListItem from "../../components/ListItem";
 import { ListDocument } from "@/types";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useSession } from "next-auth/react";
+import { groq } from "next-sanity";
+import { useCallback, useEffect, useState } from "react";
+import { AddListDialog } from "../../components/addListDialog";
+import { ListItem } from "../../components/ListItem";
 
 export default function Page() {
   const { data: session } = useSession();

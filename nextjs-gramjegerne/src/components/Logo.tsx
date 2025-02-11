@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useWeight } from "@/contexts/WeightContext";
+import Link from "next/link";
 
 interface LogoProps {
   className?: string;
 }
 
-export default function Logo({ className }: LogoProps = {}) {
+export function Logo({ className }: LogoProps = {}) {
   const { weight } = useWeight();
   console.log("Logo weight:", weight); // Debug log
 

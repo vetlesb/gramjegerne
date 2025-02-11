@@ -47,7 +47,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   name: IconName;
 }
 
-function Icon({ name, ...props }: IconProps) {
+export function Icon({ name, ...props }: IconProps) {
   const IconComponent = iconMap[name];
   if (!IconComponent) {
     return null; // Or render a default icon or placeholder
@@ -55,4 +55,3 @@ function Icon({ name, ...props }: IconProps) {
   return <IconComponent {...props} />;
 }
 
-export default Icon;

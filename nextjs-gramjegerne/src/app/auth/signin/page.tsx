@@ -1,8 +1,8 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function SignIn() {
   const { status } = useSession();

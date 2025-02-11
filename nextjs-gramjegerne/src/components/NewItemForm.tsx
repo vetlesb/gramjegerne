@@ -2,8 +2,8 @@
 
 "use client";
 
-import Icon from "@/components/Icon";
-import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Add this import
+import { Icon } from "@/components/Icon";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Add this import
 import { Command } from "cmdk";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";

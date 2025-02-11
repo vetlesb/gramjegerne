@@ -1,11 +1,11 @@
 "use client";
-import { useState, useMemo } from "react";
-import Image from "next/image";
-import Icon from "@/components/Icon";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import imageUrlBuilder from "@sanity/image-url";
-import type { List, ListItem, Category } from "@/types/list";
+import { Icon } from "@/components/Icon";
 import { client } from "@/sanity/client";
+import type { Category, List, ListItem } from "@/types/list";
+import imageUrlBuilder from "@sanity/image-url";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 
 const builder = imageUrlBuilder(client);
 

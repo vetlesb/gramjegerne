@@ -1,19 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/components/Icon";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
   DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { client } from "@/sanity/client";
 import { ListDocument } from "@/types";
 import imageUrlBuilder from "@sanity/image-url";
-import { client } from "@/sanity/client";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -28,7 +28,7 @@ interface AddListDialogProps {
   editList?: ListDocument;
 }
 
-export default function AddListDialog({
+export function AddListDialog({
   onSuccess,
   open: controlledOpen,
   onOpenChange,

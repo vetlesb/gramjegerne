@@ -1,14 +1,14 @@
 "use client";
 
-import { useTheme } from "./ThemeProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "./ThemeProvider";
 
-import Icon from "@/components/Icon";
+import { Icon } from "@/components/Icon";
 
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();

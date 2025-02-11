@@ -1,7 +1,7 @@
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { client } from "@/sanity/client";
-import { notFound } from "next/navigation";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import { notFound } from "next/navigation";
 
 // Define the types for Item and Category
 interface Item {

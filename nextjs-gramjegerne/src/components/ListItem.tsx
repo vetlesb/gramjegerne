@@ -1,16 +1,16 @@
 // src/components/ListItem.tsx
 
 "use client";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import imageUrlBuilder from "@sanity/image-url";
-import DeleteListButton from "./deleteListButton";
 import { client } from "@/sanity/client";
 import { ListDocument } from "@/types"; // Import the interface
+import imageUrlBuilder from "@sanity/image-url";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import AddListDialog from "./addListDialog"; // Import AddListDialog
-import Icon from "./Icon"; // Import Icon if not already imported
+import { AddListDialog } from "./addListDialog"; // Import AddListDialog
+import { DeleteListButton } from "./deleteListButton";
+import { Icon } from "./Icon"; // Import Icon if not already imported
 
 interface ListItemProps {
   list: ListDocument;
@@ -36,7 +36,7 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-export default function ListItem({ list, onDelete }: ListItemProps) {
+export function ListItem({ list, onDelete }: ListItemProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false); // Add state for edit dialog
 

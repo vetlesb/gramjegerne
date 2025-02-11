@@ -28,7 +28,7 @@ interface EditItemFormProps {
   onSuccess: () => void;
 }
 
-function EditItemForm({ item, onSuccess }: EditItemFormProps) {
+export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
   const [name, setName] = useState<string>(item.name);
   const [slug, setSlug] = useState<string>(item.slug);
   const [image, setImage] = useState<File | null>(null);
@@ -305,4 +305,3 @@ function EditItemForm({ item, onSuccess }: EditItemFormProps) {
   );
 }
 
-export default EditItemForm;
