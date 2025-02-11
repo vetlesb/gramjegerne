@@ -17,6 +17,7 @@
 		"sanity"
 	],
 	"dependencies": {
+		"@sanity/icons": "^3.5.7",
 		"@sanity/types": "^3.74.1",
 		"@sanity/vision": "^3.74.1",
 		"react": "^18.3.1",
