@@ -3,6 +3,8 @@
 	"scripts": {
 		"install-corepack": "brew install corepack && corepack enable && corepack install",
 		"update-pnpm": "corepack install -g pnpm@latest && corepack up && corepack use pnpm",
+
+		"build": "pnpm run -r build",
 		
 		"ci": "pnpm install --frozen-lockfile",
 		"outdated": "pnpm -r outdated",
