@@ -1,7 +1,7 @@
-import {defineConfig} from 'sanity'
-import {structureTool} from 'sanity/structure'
-import {visionTool} from '@sanity/vision'
-import {schemaTypes} from './schemaTypes'
+import {defineConfig} from 'sanity';
+import {structureTool} from 'sanity/structure';
+import {visionTool} from '@sanity/vision';
+import {schemaTypes} from './schemaTypes';
 
 export default defineConfig({
   name: 'default',
@@ -22,9 +22,9 @@ export default defineConfig({
         return prev.filter(
           (action) =>
             action.action && !['unpublish', 'delete', 'duplicate'].includes(action.action),
-        )
+        );
       }
-      return prev
+      return prev;
     },
   },
-})
+});

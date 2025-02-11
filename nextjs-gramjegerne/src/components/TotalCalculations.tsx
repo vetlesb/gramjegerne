@@ -5,12 +5,12 @@ interface Item {
   _id: string;
   name: string;
   size?: string;
-  weight?: { weight: number; unit: string };
+  weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
 }
 
-export function TotalCalculations({ items }: TotalCalculationsProps) {
+export function TotalCalculations({items}: TotalCalculationsProps) {
   const totals = items.reduce(
     (acc, item) => {
       const weight = item.weight?.weight || 0;
@@ -23,7 +23,7 @@ export function TotalCalculations({ items }: TotalCalculationsProps) {
         totalItems: acc.totalItems + quantity,
       };
     },
-    { totalWeight: 0, totalCalories: 0, totalItems: 0 },
+    {totalWeight: 0, totalCalories: 0, totalItems: 0},
   );
 
   return (

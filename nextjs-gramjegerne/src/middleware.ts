@@ -1,5 +1,5 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse, NextRequest } from "next/server";
+import {withAuth} from 'next-auth/middleware';
+import {NextResponse, NextRequest} from 'next/server';
 
 export default withAuth(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -8,9 +8,9 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ req, token }) => {
+      authorized: ({req, token}) => {
         // Allow access to share routes without authentication
-        if (req.nextUrl.pathname.startsWith("/share")) {
+        if (req.nextUrl.pathname.startsWith('/share')) {
           return true;
         }
         // Require authentication for all other routes
@@ -23,6 +23,6 @@ export default withAuth(
 export const config = {
   matcher: [
     // Update matcher to exclude share routes along with other public paths
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth|share).*)",
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth|share).*)',
   ],
 };

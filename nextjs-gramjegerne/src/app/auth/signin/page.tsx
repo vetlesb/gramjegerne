@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
+import {signIn, useSession} from 'next-auth/react';
+import {useRouter} from 'next/navigation';
 
 export default function SignIn() {
-  const { status } = useSession();
+  const {status} = useSession();
   const router = useRouter();
 
   // If already authenticated, redirect to home
-  if (status === "authenticated") {
-    router.push("/");
+  if (status === 'authenticated') {
+    router.push('/');
     return null;
   }
 
   // Show loading state
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="flex items-center">
         <LoadingSpinner className="w-8 h-8 text-accent" />
@@ -33,7 +33,7 @@ export default function SignIn() {
         </div>
         <div className="flex flex-col justify-center items-center">
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn('google', {callbackUrl: '/'})}
             className="button-primary group flex justify-center items-center gap-3 rounded-md bg-dimmed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

@@ -1,5 +1,5 @@
-import { ReferenceRule } from '@sanity/types';
-import { defineField, defineType } from 'sanity';
+import {ReferenceRule} from '@sanity/types';
+import {defineField, defineType} from 'sanity';
 
 export const itemType = defineType({
   name: 'item',
@@ -53,7 +53,7 @@ export const itemType = defineType({
       validation: (rule: ReferenceRule) => rule.required(),
     }),
   ],
-})
+});
 
 export const weightType = defineType({
   name: 'weight',
@@ -71,4 +71,4 @@ export const weightType = defineType({
       },
     }),
   ],
-})
+});

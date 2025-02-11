@@ -1,5 +1,5 @@
-"use client";
-import { Icon } from "@/components/Icon";
+'use client';
+import {Icon} from '@/components/Icon';
 import {
   Dialog,
   DialogClose,
@@ -7,13 +7,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { client } from "@/sanity/client";
-import { ListDocument } from "@/types";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+} from '@/components/ui/dialog';
+import {client} from '@/sanity/client';
+import {ListDocument} from '@/types';
+import imageUrlBuilder from '@sanity/image-url';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import Image from 'next/image';
+import {useEffect, useState} from 'react';
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -35,19 +35,15 @@ export function AddListDialog({
   editList,
 }: AddListDialogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newListName, setNewListName] = useState("");
+  const [newListName, setNewListName] = useState('');
   const [newListImage, setNewListImage] = useState<File | null>(null);
   const [newListDays, setNewListDays] = useState<number | null>(null);
   const [newListWeight, setNewListWeight] = useState<number | null>(null);
-  const [newListParticipants, setNewListParticipants] = useState<number | null>(
-    null,
-  );
+  const [newListParticipants, setNewListParticipants] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [existingImage, setExistingImage] = useState<SanityImageSource | null>(
-    null,
-  );
+  const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
 
   // Handle controlled/uncontrolled open state
   const isOpen = controlledOpen !== undefined ? controlledOpen : isDialogOpen;
@@ -71,7 +67,7 @@ export function AddListDialog({
   }, [isOpen, editList]);
 
   const resetForm = () => {
-    setNewListName("");
+    setNewListName('');
     setNewListImage(null);
     setExistingImage(null);
     setNewListDays(null);
@@ -87,32 +83,32 @@ export function AddListDialog({
 
     try {
       const formData = new FormData();
-      formData.append("name", newListName);
+      formData.append('name', newListName);
 
       // Handle image upload
       if (newListImage) {
-        formData.append("image", newListImage);
-        formData.append("keepExistingImage", "false");
+        formData.append('image', newListImage);
+        formData.append('keepExistingImage', 'false');
       } else if (existingImage) {
-        formData.append("keepExistingImage", "true");
+        formData.append('keepExistingImage', 'true');
       }
 
       if (newListDays !== null) {
-        formData.append("days", newListDays.toString());
+        formData.append('days', newListDays.toString());
       }
       if (newListWeight !== null) {
-        formData.append("weight", newListWeight.toString());
+        formData.append('weight', newListWeight.toString());
       }
       if (newListParticipants !== null) {
-        formData.append("participants", newListParticipants.toString());
+        formData.append('participants', newListParticipants.toString());
       }
 
       // Include user ID
-      const userId = "your-google-user-id"; // Replace with actual user ID retrieval logic
-      formData.append("userId", userId);
+      const userId = 'your-google-user-id'; // Replace with actual user ID retrieval logic
+      formData.append('userId', userId);
 
-      const url = editList ? `/api/list/${editList._id}` : "/api/createList";
-      const method = editList ? "PATCH" : "POST";
+      const url = editList ? `/api/list/${editList._id}` : '/api/createList';
+      const method = editList ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -121,13 +117,11 @@ export function AddListDialog({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server error response:", errorText);
-        throw new Error(
-          `Failed to save list: ${response.status} ${response.statusText}`,
-        );
+        console.error('Server error response:', errorText);
+        throw new Error(`Failed to save list: ${response.status} ${response.statusText}`);
       }
 
-      setSuccessMessage(editList ? "Liste oppdatert!" : "Liste opprettet!");
+      setSuccessMessage(editList ? 'Liste oppdatert!' : 'Liste opprettet!');
 
       if (onSuccess) {
         await onSuccess();
@@ -138,8 +132,8 @@ export function AddListDialog({
         resetForm();
       }, 500);
     } catch (error) {
-      console.error("Error saving list:", error);
-      setError(error instanceof Error ? error.message : "Failed to save list");
+      console.error('Error saving list:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save list');
     } finally {
       setIsSubmitting(false);
     }
@@ -171,15 +165,13 @@ export function AddListDialog({
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal pb-4">
-              {editList ? "Rediger pakkliste" : "Ny pakkliste"}
+              {editList ? 'Rediger pakkliste' : 'Ny pakkliste'}
             </DialogTitle>
           </DialogHeader>
 
           {error && <div className="text-red-500 mb-4">{error}</div>}
 
-          {successMessage && (
-            <div className="text-green-500 mb-4">{successMessage}</div>
-          )}
+          {successMessage && <div className="text-green-500 mb-4">{successMessage}</div>}
 
           {/* Form Fields */}
           <div className="gap-y-4">
@@ -230,11 +222,9 @@ export function AddListDialog({
                   Antall dager
                   <input
                     type="number"
-                    value={newListDays ?? ""}
+                    value={newListDays ?? ''}
                     onChange={(e) =>
-                      setNewListDays(
-                        e.target.value ? parseInt(e.target.value) : null,
-                      )
+                      setNewListDays(e.target.value ? parseInt(e.target.value) : null)
                     }
                     className="w-full max-w-full p-4"
                   />
@@ -246,11 +236,9 @@ export function AddListDialog({
                   Deltakere
                   <input
                     type="number"
-                    value={newListParticipants ?? ""}
+                    value={newListParticipants ?? ''}
                     onChange={(e) =>
-                      setNewListParticipants(
-                        e.target.value ? parseInt(e.target.value) : null,
-                      )
+                      setNewListParticipants(e.target.value ? parseInt(e.target.value) : null)
                     }
                     className="w-full max-w-full p-4"
                   />
@@ -264,14 +252,10 @@ export function AddListDialog({
               className="button-primary-accent"
               disabled={isSubmitting || !newListName.trim()}
             >
-              {isSubmitting ? "Lagrer..." : editList ? "Oppdater" : "Opprett"}
+              {isSubmitting ? 'Lagrer...' : editList ? 'Oppdater' : 'Opprett'}
             </button>
             <DialogClose asChild>
-              <button
-                type="button"
-                className="button-secondary"
-                onClick={resetForm}
-              >
+              <button type="button" className="button-secondary" onClick={resetForm}>
                 Avbryt
               </button>
             </DialogClose>

@@ -1,39 +1,39 @@
 {
-	"name": "gramjegerne",
-	"private": true,
-	"version": "1.0.0",
-	"main": "package.json",
-	"license": "UNLICENSED",
-	"scripts": {
-		"dev": "sanity dev",
-		"start": "sanity start",
-		"build": "sanity build",
-		"deploy": "sanity deploy",
-		"deploy-graphql": "sanity graphql deploy",
-		"fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
-		"rm-node-modules": "rm -rf node_modules/"
-	},
-	"keywords": [
-		"sanity"
-	],
-	"dependencies": {
-		"@sanity/icons": "^3.5.7",
-		"@sanity/types": "^3.74.1",
-		"@sanity/vision": "^3.74.1",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"sanity": "^3.74.1",
-		"styled-components": "^6.1.15",
-		"uuid": "^11.0.5"
-	},
-	"devDependencies": {
-		"@sanity/eslint-config-studio": "^4.0.0",
-		"@types/node": "^22.13.1",
-		"@types/react": "^18.3.18",
-		"@types/uuid": "^10.0.0",
-		"eslint": "^8.57.1",
-		"ts-node": "^10.9.2",
-		"typescript": "^5.7.3"
-	},
-	"type": "module"
+  "name": "gramjegerne",
+  "private": true,
+  "version": "1.0.0",
+  "main": "package.json",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy-graphql": "sanity graphql deploy",
+    "fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
+    "rm-node-modules": "rm -rf node_modules/"
+  },
+  "keywords": [
+    "sanity"
+  ],
+  "dependencies": {
+    "@sanity/icons": "^3.5.7",
+    "@sanity/types": "^3.74.1",
+    "@sanity/vision": "^3.74.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.74.1",
+    "styled-components": "^6.1.15",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@sanity/eslint-config-studio": "^4.0.0",
+    "@types/node": "^22.13.1",
+    "@types/react": "^18.3.18",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^8.57.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "type": "module"
 }

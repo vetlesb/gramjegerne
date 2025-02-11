@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { client } from "@/sanity/client";
-import { getUserSession } from "@/lib/auth-helpers";
+import {NextResponse} from 'next/server';
+import {client} from '@/sanity/client';
+import {getUserSession} from '@/lib/auth-helpers';
 
 // Helper function for slugify
 function slugify(text: string): string {
@@ -8,11 +8,11 @@ function slugify(text: string): string {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[æå]/g, "a")
-    .replace(/[ø]/g, "o")
-    .replace(/[^\w\-]+/g, "")
-    .replace(/\-\-+/g, "-");
+    .replace(/\s+/g, '-')
+    .replace(/[æå]/g, 'a')
+    .replace(/[ø]/g, 'o')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
 }
 
 interface SanityCategory {
@@ -25,14 +25,14 @@ interface SanityCategory {
 
 // Define the document structure without the Sanity metadata
 interface CategoryInput {
-  _type: "category";
+  _type: 'category';
   title: string;
   slug: {
-    _type: "slug";
+    _type: 'slug';
     current: string;
   };
   user: {
-    _type: "reference";
+    _type: 'reference';
     _ref: string;
   };
 }
@@ -41,26 +41,26 @@ export async function POST(request: Request) {
   try {
     const session = await getUserSession();
     if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({message: 'Unauthorized'}, {status: 401});
     }
 
-    const { categories } = await request.json();
-    const userId = session.user.id.startsWith("google_")
+    const {categories} = await request.json();
+    const userId = session.user.id.startsWith('google_')
       ? session.user.id
       : `google_${session.user.id}`;
 
-    console.log("Processing categories for user:", userId);
-    console.log("Categories to process:", categories);
+    console.log('Processing categories for user:', userId);
+    console.log('Categories to process:', categories);
 
     const existingCategories = await client.fetch<SanityCategory[]>(
       `*[_type == "category" && user._ref == $userId]{
         _id,
         title
       }`,
-      { userId },
+      {userId},
     );
 
-    console.log("Existing categories:", existingCategories);
+    console.log('Existing categories:', existingCategories);
 
     const categoryMap: Record<string, string> = {};
 
@@ -72,16 +72,16 @@ export async function POST(request: Request) {
       );
 
       if (!category) {
-        console.log("Creating new category:", categoryTitle);
+        console.log('Creating new category:', categoryTitle);
         const newCategoryData: CategoryInput = {
-          _type: "category",
+          _type: 'category',
           title: categoryTitle,
           slug: {
-            _type: "slug",
+            _type: 'slug',
             current: slugify(categoryTitle),
           },
           user: {
-            _type: "reference",
+            _type: 'reference',
             _ref: userId,
           },
         };
@@ -89,9 +89,9 @@ export async function POST(request: Request) {
         try {
           const newCategory = await client.create(newCategoryData);
           categoryMap[categoryTitle] = newCategory._id;
-          console.log("Created category:", newCategory);
+          console.log('Created category:', newCategory);
         } catch (createError) {
-          console.error("Error creating category:", createError);
+          console.error('Error creating category:', createError);
           throw createError;
         }
       } else {
@@ -99,18 +99,15 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ categoryMap });
+    return NextResponse.json({categoryMap});
   } catch (error) {
-    console.error("Category validation error:", error);
+    console.error('Category validation error:', error);
     return NextResponse.json(
       {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to process categories",
+        message: error instanceof Error ? error.message : 'Failed to process categories',
         error: error,
       },
-      { status: 500 },
+      {status: 500},
     );
   }
 }

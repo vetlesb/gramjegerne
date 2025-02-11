@@ -1,6 +1,6 @@
-import { useSession } from "next-auth/react";
-import React, { useState } from "react";
-import * as XLSX from "xlsx";
+import {useSession} from 'next-auth/react';
+import React, {useState} from 'react';
+import * as XLSX from 'xlsx';
 
 interface ImportResult {
   success: boolean;
@@ -20,12 +20,12 @@ interface ExcelRow {
   [key: string]: string | undefined;
 }
 
-export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
-  const { data: session, status } = useSession();
+export function ImportForm({onSuccess}: {onSuccess: () => void}) {
+  const {data: session, status} = useSession();
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
   const [progress, setProgress] = useState(0);
-  const [progressMessage, setProgressMessage] = useState("");
+  const [progressMessage, setProgressMessage] = useState('');
   const [isImport, setIsImport] = useState(true);
   const [isClear, setIsClear] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -38,7 +38,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   async function handleImport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (status === "loading") {
+    if (status === 'loading') {
       return;
     }
 
@@ -46,24 +46,22 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       setResults([
         {
           success: false,
-          name: "Auth Error",
-          error: "Please log in to import items",
+          name: 'Auth Error',
+          error: 'Please log in to import items',
         },
       ]);
       return;
     }
 
     if (!file) {
-      setResults([
-        { success: false, name: "File Error", error: "No file selected" },
-      ]);
+      setResults([{success: false, name: 'File Error', error: 'No file selected'}]);
       return;
     }
 
     setImporting(true);
     setResults([]);
     setProgress(0);
-    setProgressMessage("Processing file...");
+    setProgressMessage('Processing file...');
 
     try {
       // Parse Excel file
@@ -73,34 +71,32 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
 
       // Process categories first
-      setProgressMessage("Checking categories...");
+      setProgressMessage('Checking categories...');
       const uniqueCategories = new Set(
-        jsonData
-          .map((item) => item.category)
-          .filter((category): category is string => !!category)
+        jsonData.map((item) => item.category).filter((category): category is string => !!category),
       );
 
-      const categoryResponse = await fetch("/api/validateCategories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const categoryResponse = await fetch('/api/validateCategories', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           categories: Array.from(uniqueCategories),
         }),
       });
 
       if (!categoryResponse.ok) {
-        throw new Error("Failed to validate/create categories");
+        throw new Error('Failed to validate/create categories');
       }
 
-      const { categoryMap } = await categoryResponse.json();
-      setProgressMessage("Processing items...");
+      const {categoryMap} = await categoryResponse.json();
+      setProgressMessage('Processing items...');
 
       // Process each item
       const itemsToProcess = jsonData.map((item) => ({
         name: item.name,
         size: item.size,
         weight: item.weight ? Number(item.weight) : undefined,
-        weight_unit: item.unit || "g",
+        weight_unit: item.unit || 'g',
         calories: item.calories ? Number(item.calories) : undefined,
         categoryId: item.category ? categoryMap[item.category] : null,
         imageAssetId: null,
@@ -122,9 +118,9 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
               imageAssetId = await uploadImageToSanity(itemData.image_url);
             }
 
-            const response = await fetch("/api/importItems", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
+            const response = await fetch('/api/importItems', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
               body: JSON.stringify([
                 {
                   name: itemData.name,
@@ -142,15 +138,13 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
               throw new Error(`Import failed for ${itemData.name}`);
             }
 
-            const { results } = await response.json();
+            const {results} = await response.json();
             return results[0];
           } catch (error) {
             return {
               success: false,
               name: itemData.name,
-              error: error instanceof Error
-                ? error.message
-                : "Unknown error occurred",
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
             };
           }
         });
@@ -158,25 +152,23 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         const chunkResults = await Promise.all(chunkPromises);
         processedResults = [...processedResults, ...chunkResults];
 
-        setProgress(
-          Math.round(((i + chunk.length) / itemsToProcess.length) * 100)
-        );
+        setProgress(Math.round(((i + chunk.length) / itemsToProcess.length) * 100));
       }
 
       setResults(processedResults);
       if (processedResults.every((r) => r.success)) {
-        setProgressMessage("Import completed successfully!");
+        setProgressMessage('Import completed successfully!');
         onSuccess();
       } else {
-        setProgressMessage("Import completed with some errors");
+        setProgressMessage('Import completed with some errors');
       }
     } catch (error) {
-      console.error("Import error:", error);
+      console.error('Import error:', error);
       setResults([
         {
           success: false,
-          name: "Import",
-          error: error instanceof Error ? error.message : "Unknown error occurred",
+          name: 'Import',
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
         },
       ]);
     } finally {
@@ -185,18 +177,16 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   }
 
   async function handleClearItems() {
-    const response = await fetch("/api/clearItems", {
-      method: "DELETE",
+    const response = await fetch('/api/clearItems', {
+      method: 'DELETE',
     });
 
     if (response.ok) {
-      setResults([{ success: true, name: "All items cleared." }]);
+      setResults([{success: true, name: 'All items cleared.'}]);
       onSuccess();
     } else {
       const error = await response.json();
-      setResults([
-        { success: false, name: "Clear failed", error: error.message },
-      ]);
+      setResults([{success: false, name: 'Clear failed', error: error.message}]);
     }
   }
 
@@ -206,13 +196,13 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
     let attempt = 0;
 
     try {
-      const categoryResponse = await fetch("/api/getCategories");
+      const categoryResponse = await fetch('/api/getCategories');
       if (!categoryResponse.ok) {
-        throw new Error("Failed to fetch categories");
+        throw new Error('Failed to fetch categories');
       }
       const categories = await categoryResponse.json();
       if (!categories?.length) {
-        throw new Error("No categories available");
+        throw new Error('No categories available');
       }
 
       while (attempt < maxRetries) {
@@ -226,24 +216,24 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
           }
 
           const blob = await response.blob();
-          console.log("Successfully created blob from image");
+          console.log('Successfully created blob from image');
 
           const formData = new FormData();
-          formData.append("image", blob);
+          formData.append('image', blob);
 
-          const uploadResponse = await fetch("/api/uploadAsset", {
-            method: "POST",
+          const uploadResponse = await fetch('/api/uploadAsset', {
+            method: 'POST',
             body: formData,
           });
 
           if (!uploadResponse.ok) {
-            throw new Error("Failed to upload image");
+            throw new Error('Failed to upload image');
           }
 
           const result = await uploadResponse.json();
           return result.assetId;
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           console.error(`Attempt ${attempt + 1} failed:`, errorMessage);
 
           if (attempt === maxRetries - 1) {
@@ -254,7 +244,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         }
       }
     } catch (error: unknown) {
-      console.error("Failed to upload image:", error);
+      console.error('Failed to upload image:', error);
       return null;
     }
 
@@ -262,18 +252,18 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
   }
 
   async function handleExport() {
-    const response = await fetch("/api/exportItems");
+    const response = await fetch('/api/exportItems');
     if (response.ok) {
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = "exported_items.xlsx";
+      a.download = 'exported_items.xlsx';
       document.body.appendChild(a);
       a.click();
       a.remove();
     } else {
-      console.error("Failed to export items");
+      console.error('Failed to export items');
     }
   }
 
@@ -285,7 +275,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             setIsImport(true);
             setIsClear(false);
           }}
-          className={isImport ? "tab-active" : "tab"}
+          className={isImport ? 'tab-active' : 'tab'}
         >
           Import
         </button>
@@ -294,7 +284,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             setIsImport(false);
             setIsClear(false);
           }}
-          className={!isImport && !isClear ? "tab-active" : "tab"}
+          className={!isImport && !isClear ? 'tab-active' : 'tab'}
         >
           Export
         </button>
@@ -303,7 +293,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             setIsClear(true);
             setIsImport(false);
           }}
-          className={isClear ? "tab-active" : "tab"}
+          className={isClear ? 'tab-active' : 'tab'}
         >
           Slett alt
         </button>
@@ -327,7 +317,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
               <div className="w-full bg-white/5 rounded-full h-2.5">
                 <div
                   className="bg-accent h-2.5 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{width: `${progress}%`}}
                 ></div>
               </div>
             </div>
@@ -337,18 +327,16 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
             <div className="pt-4">
               <h3>Import Results:</h3>
               <div className="text-sm text-white mb-2">
-                Successfully imported: {results.filter((r) => r.success).length}{" "}
-                / {results.length} items
+                Successfully imported: {results.filter((r) => r.success).length} / {results.length}{' '}
+                items
               </div>
               <ul className="mt-2 max-h-60 overflow-y-auto pt-4">
                 {results.map((result, index) => (
                   <li
                     key={index}
-                    className={`${
-                      result.success ? "text-green-500" : "text-red-500"
-                    } py-1`}
+                    className={`${result.success ? 'text-green-500' : 'text-red-500'} py-1`}
                   >
-                    {result.name}: {result.success ? "Success" : result.error}
+                    {result.name}: {result.success ? 'Success' : result.error}
                   </li>
                 ))}
               </ul>
@@ -361,10 +349,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
       ) : isClear ? (
         <div>
           <h3>Er du sikker på at du vil slette alt ustyret fra listen?</h3>
-          <button
-            onClick={handleClearItems}
-            className="button-primary-accent text-lg mt-8"
-          >
+          <button onClick={handleClearItems} className="button-primary-accent text-lg mt-8">
             Ja, slett alt
           </button>
           {results.length > 0 && (
@@ -374,9 +359,9 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
                 {results.map((result, index) => (
                   <li
                     key={index}
-                    className={`${result.success ? "text-green-500" : "text-red-500"} py-1`}
+                    className={`${result.success ? 'text-green-500' : 'text-red-500'} py-1`}
                   >
-                    {result.name}: {result.success ? "Success" : result.error}
+                    {result.name}: {result.success ? 'Success' : result.error}
                   </li>
                 ))}
               </ul>
@@ -385,10 +370,7 @@ export function ImportForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
       ) : (
         <div>
-          <button
-            className="button-primary-accent text-lg"
-            onClick={handleExport}
-          >
+          <button className="button-primary-accent text-lg" onClick={handleExport}>
             Eksporter utstyr til .xlsx
           </button>
         </div>

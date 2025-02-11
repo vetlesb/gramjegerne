@@ -1,15 +1,15 @@
-"use client";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Icon } from "@/components/Icon";
-import { ShareButton } from "@/components/ShareButton";
-import { client } from "@/sanity/client";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { nanoid } from "nanoid";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+'use client';
+import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
+import {Icon} from '@/components/Icon';
+import {ShareButton} from '@/components/ShareButton';
+import {client} from '@/sanity/client';
+import imageUrlBuilder from '@sanity/image-url';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import {nanoid} from 'nanoid';
+import {useSession} from 'next-auth/react';
+import Image from 'next/image';
+import {usePathname} from 'next/navigation';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   Dialog,
   DialogClose,
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../../../components/ui/dialog";
+} from '../../../components/ui/dialog';
 
 // Define Category and Item types
 interface Category {
@@ -149,33 +149,28 @@ const formatWeight = (weightInGrams: number): string => {
 // Add this sorting function at component level
 const sortListItems = (items: ListItem[]): ListItem[] => {
   return [...items].sort((a, b) => {
-    const nameA = a.item?.name || "";
-    const nameB = b.item?.name || "";
-    return nameA.localeCompare(nameB, "nb");
+    const nameA = a.item?.name || '';
+    const nameB = b.item?.name || '';
+    return nameA.localeCompare(nameB, 'nb');
   });
 };
 
 export default function ListPage() {
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   // Move getUserId into useCallback
   const getUserId = useCallback(() => {
     if (!session?.user?.id) return null;
-    return session.user.id.startsWith("google_")
-      ? session.user.id
-      : `google_${session.user.id}`;
+    return session.user.id.startsWith('google_') ? session.user.id : `google_${session.user.id}`;
   }, [session?.user?.id]);
 
   const formatNumber = (num: number): string => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   };
   // Move getEffectiveCategory inside the component
-  const getEffectiveCategory = useCallback(
-    (listItem: ListItem): Category | undefined => {
-      return listItem.categoryOverride || listItem.item?.category;
-    },
-    [],
-  );
+  const getEffectiveCategory = useCallback((listItem: ListItem): Category | undefined => {
+    return listItem.categoryOverride || listItem.item?.category;
+  }, []);
 
   // State variables and Hooks
   const [items, setItems] = useState<Item[]>([]);
@@ -183,10 +178,10 @@ export default function ListPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<ListItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery] = useState("");
+  const [searchQuery] = useState('');
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]);
   const pathname = usePathname();
-  const listSlug = pathname?.split("/")[2];
+  const listSlug = pathname?.split('/')[2];
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -200,7 +195,7 @@ export default function ListPage() {
   const [editingItemKey, setEditingItemKey] = useState<string | null>(null);
 
   // Add a new state for dialog search
-  const [dialogSearchQuery, setDialogSearchQuery] = useState("");
+  const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
@@ -213,15 +208,14 @@ export default function ListPage() {
       if (!listItem.item) return;
 
       // Get the effective category (override or original)
-      const effectiveCategory =
-        listItem.categoryOverride || listItem.item?.category;
+      const effectiveCategory = listItem.categoryOverride || listItem.item?.category;
       if (effectiveCategory) {
         activeCategories.set(effectiveCategory._id, effectiveCategory);
       }
     });
 
-    return Array.from(activeCategories.values()).sort(
-      (a: Category, b: Category) => a.title.localeCompare(b.title, "nb"),
+    return Array.from(activeCategories.values()).sort((a: Category, b: Category) =>
+      a.title.localeCompare(b.title, 'nb'),
     );
   }, [selectedItems]);
 
@@ -229,8 +223,8 @@ export default function ListPage() {
   useEffect(() => {
     const fetchData = async () => {
       const userId = getUserId();
-      const decodedSlug = decodeURIComponent(listSlug || "");
-      console.log("Fetching list with:", {
+      const decodedSlug = decodeURIComponent(listSlug || '');
+      console.log('Fetching list with:', {
         encodedSlug: listSlug,
         decodedSlug,
         userId,
@@ -240,22 +234,22 @@ export default function ListPage() {
 
       try {
         const [fetchedList, fetchedCategories] = await Promise.all([
-          client.fetch(LIST_QUERY(listSlug), { userId }),
-          client.fetch(CATEGORIES_QUERY, { userId }),
+          client.fetch(LIST_QUERY(listSlug), {userId}),
+          client.fetch(CATEGORIES_QUERY, {userId}),
         ]);
 
-        console.log("Fetched list:", fetchedList); // Add this debug log
+        console.log('Fetched list:', fetchedList); // Add this debug log
 
         if (fetchedList) {
           setList(fetchedList);
           setSelectedItems(fetchedList.items);
         } else {
-          console.log("No list found with slug:", decodedSlug); // Add this debug log
+          console.log('No list found with slug:', decodedSlug); // Add this debug log
         }
         setAllCategories(fetchedCategories);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to load data");
+        console.error('Error fetching data:', error);
+        setError('Failed to load data');
       }
     };
 
@@ -292,22 +286,22 @@ export default function ListPage() {
         _key: item._key,
         _type: item._type,
         quantity: item.quantity,
-        item: item.item ? { _ref: item.item._id, _type: "reference" } : null,
+        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
         ...(item.categoryOverride
           ? {
               categoryOverride: {
                 _ref: item.categoryOverride._id,
-                _type: "reference",
+                _type: 'reference',
               },
             }
           : {}),
       }));
 
       // Update through API route
-      const response = await fetch("/api/updateList", {
-        method: "PUT",
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           listId: list._id,
@@ -316,13 +310,13 @@ export default function ListPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update list");
+        throw new Error('Failed to update list');
       }
 
       setSelectedItems(updatedItems);
     } catch (error) {
-      console.error("Failed to remove item:", error);
-      alert("Failed to remove item. Please try again.");
+      console.error('Failed to remove item:', error);
+      alert('Failed to remove item. Please try again.');
     }
   };
 
@@ -352,16 +346,14 @@ export default function ListPage() {
       .filter((item) => {
         const matchesSearch = dialogSearchQuery
           ? item.name.toLowerCase().includes(dialogSearchQuery.toLowerCase()) ||
-            item.category.title
-              .toLowerCase()
-              .includes(dialogSearchQuery.toLowerCase())
+            item.category.title.toLowerCase().includes(dialogSearchQuery.toLowerCase())
           : true;
         const notAlreadyInList = !selectedItems.some(
           (selectedItem) => selectedItem.item?._id === item._id,
         );
         return matchesSearch && notAlreadyInList;
       })
-      .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+      .sort((a, b) => a.name.localeCompare(b.name, 'nb'));
   }, [items, dialogSearchQuery, selectedItems]);
 
   // Update the dialog open handler to clear the dialog search
@@ -369,72 +361,49 @@ export default function ListPage() {
     setIsDialogOpen(isOpen);
     if (isOpen) {
       setTempSelectedItems(
-        selectedItems
-          .map((item) => item.item)
-          .filter((item): item is Item => item !== null),
+        selectedItems.map((item) => item.item).filter((item): item is Item => item !== null),
       );
-      setDialogSearchQuery(""); // Clear dialog search query when dialog opens
+      setDialogSearchQuery(''); // Clear dialog search query when dialog opens
     }
   };
 
   // Update the categoryTotals calculation
-  const { categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides } =
-    useMemo(() => {
-      if (!selectedItems?.length) {
-        const emptyTotal = {
-          id: "total",
+  const {categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides} = useMemo(() => {
+    if (!selectedItems?.length) {
+      const emptyTotal = {
+        id: 'total',
+        count: 0,
+        weight: 0,
+        calories: 0,
+        title: 'Totalt',
+      };
+      return {
+        categoryTotals: [],
+        grandTotal: emptyTotal,
+        overrideTotals: [],
+        totalWithoutOverrides: emptyTotal,
+      };
+    }
+
+    // Create maps for both regular and override totals
+    const categoryMap = new Map<string, CategoryTotal>();
+    const overrideMap = new Map<string, OverrideTotal>();
+
+    // Calculate totals
+    selectedItems.forEach((item) => {
+      if (!item.item) return;
+      const quantity = item.quantity || 1;
+      const effectiveCategory = getEffectiveCategory(item);
+      if (!effectiveCategory) return;
+
+      // If this item has a category override, add it to overrides
+      if (item.categoryOverride) {
+        const existing = overrideMap.get(item.categoryOverride._id) || {
+          categoryId: item.categoryOverride._id,
+          categoryTitle: item.categoryOverride.title,
           count: 0,
           weight: 0,
           calories: 0,
-          title: "Totalt",
-        };
-        return {
-          categoryTotals: [],
-          grandTotal: emptyTotal,
-          overrideTotals: [],
-          totalWithoutOverrides: emptyTotal,
-        };
-      }
-
-      // Create maps for both regular and override totals
-      const categoryMap = new Map<string, CategoryTotal>();
-      const overrideMap = new Map<string, OverrideTotal>();
-
-      // Calculate totals
-      selectedItems.forEach((item) => {
-        if (!item.item) return;
-        const quantity = item.quantity || 1;
-        const effectiveCategory = getEffectiveCategory(item);
-        if (!effectiveCategory) return;
-
-        // If this item has a category override, add it to overrides
-        if (item.categoryOverride) {
-          const existing = overrideMap.get(item.categoryOverride._id) || {
-            categoryId: item.categoryOverride._id,
-            categoryTitle: item.categoryOverride.title,
-            count: 0,
-            weight: 0,
-            calories: 0,
-          };
-
-          existing.count += quantity;
-          if (item.item.weight) {
-            existing.weight += item.item.weight.weight * quantity;
-          }
-          if (item.item.calories) {
-            existing.calories += item.item.calories * quantity;
-          }
-
-          overrideMap.set(item.categoryOverride._id, existing);
-        }
-
-        // Regular category totals calculation (unchanged)
-        const existing = categoryMap.get(effectiveCategory._id) || {
-          id: effectiveCategory._id,
-          count: 0,
-          weight: 0,
-          calories: 0,
-          title: effectiveCategory.title,
         };
 
         existing.count += quantity;
@@ -445,52 +414,72 @@ export default function ListPage() {
           existing.calories += item.item.calories * quantity;
         }
 
-        categoryMap.set(effectiveCategory._id, existing);
-      });
+        overrideMap.set(item.categoryOverride._id, existing);
+      }
 
-      const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
-        a.title.localeCompare(b.title, "nb"),
-      );
-
-      const overrideTotals = Array.from(overrideMap.values()).sort((a, b) =>
-        a.categoryTitle.localeCompare(b.categoryTitle, "nb"),
-      );
-
-      // Calculate grand total
-      const grandTotal = categoryTotals.reduce(
-        (acc, cat) => ({
-          id: "total",
-          title: "Totalt",
-          count: acc.count + cat.count,
-          weight: acc.weight + cat.weight,
-          calories: acc.calories + cat.calories,
-        }),
-        { id: "total", title: "Totalt", count: 0, weight: 0, calories: 0 },
-      );
-
-      // Calculate total without overrides
-      const totalWithoutOverrides = {
-        id: "total-no-override",
-        title: "Totalt uten overkjøringer",
-        count: grandTotal.count,
-        weight: grandTotal.weight,
-        calories: grandTotal.calories,
+      // Regular category totals calculation (unchanged)
+      const existing = categoryMap.get(effectiveCategory._id) || {
+        id: effectiveCategory._id,
+        count: 0,
+        weight: 0,
+        calories: 0,
+        title: effectiveCategory.title,
       };
 
-      // Subtract override totals
-      overrideTotals.forEach((override) => {
-        totalWithoutOverrides.count -= override.count;
-        totalWithoutOverrides.weight -= override.weight;
-        totalWithoutOverrides.calories -= override.calories;
-      });
+      existing.count += quantity;
+      if (item.item.weight) {
+        existing.weight += item.item.weight.weight * quantity;
+      }
+      if (item.item.calories) {
+        existing.calories += item.item.calories * quantity;
+      }
 
-      return {
-        categoryTotals,
-        grandTotal,
-        overrideTotals,
-        totalWithoutOverrides,
-      };
-    }, [selectedItems, getEffectiveCategory]);
+      categoryMap.set(effectiveCategory._id, existing);
+    });
+
+    const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, 'nb'),
+    );
+
+    const overrideTotals = Array.from(overrideMap.values()).sort((a, b) =>
+      a.categoryTitle.localeCompare(b.categoryTitle, 'nb'),
+    );
+
+    // Calculate grand total
+    const grandTotal = categoryTotals.reduce(
+      (acc, cat) => ({
+        id: 'total',
+        title: 'Totalt',
+        count: acc.count + cat.count,
+        weight: acc.weight + cat.weight,
+        calories: acc.calories + cat.calories,
+      }),
+      {id: 'total', title: 'Totalt', count: 0, weight: 0, calories: 0},
+    );
+
+    // Calculate total without overrides
+    const totalWithoutOverrides = {
+      id: 'total-no-override',
+      title: 'Totalt uten overkjøringer',
+      count: grandTotal.count,
+      weight: grandTotal.weight,
+      calories: grandTotal.calories,
+    };
+
+    // Subtract override totals
+    overrideTotals.forEach((override) => {
+      totalWithoutOverrides.count -= override.count;
+      totalWithoutOverrides.weight -= override.weight;
+      totalWithoutOverrides.calories -= override.calories;
+    });
+
+    return {
+      categoryTotals,
+      grandTotal,
+      overrideTotals,
+      totalWithoutOverrides,
+    };
+  }, [selectedItems, getEffectiveCategory]);
 
   // Update the handleSaveChanges function
   const handleSaveChanges = async () => {
@@ -499,22 +488,22 @@ export default function ListPage() {
       const userId = getUserId();
 
       if (!list || !listSlug || !userId) {
-        throw new Error("Missing required data");
+        throw new Error('Missing required data');
       }
 
       // Keep existing items with their current quantities AND category overrides
       const existingItems = selectedItems.map((item) => ({
         _key: item._key,
-        _type: "listItem",
+        _type: 'listItem',
         item: {
-          _type: "reference",
+          _type: 'reference',
           _ref: item.item?._id,
         },
         quantity: item.quantity || 1,
         // Preserve category override if it exists
         categoryOverride: item.categoryOverride
           ? {
-              _type: "reference",
+              _type: 'reference',
               _ref: item.categoryOverride._id,
             }
           : undefined,
@@ -522,28 +511,23 @@ export default function ListPage() {
 
       // Add only truly new items
       const newItems = tempSelectedItems
-        .filter(
-          (newItem) =>
-            !selectedItems.some(
-              (existing) => existing.item?._id === newItem._id,
-            ),
-        )
+        .filter((newItem) => !selectedItems.some((existing) => existing.item?._id === newItem._id))
         .map((item) => ({
           _key: nanoid(),
-          _type: "listItem",
+          _type: 'listItem',
           item: {
-            _type: "reference",
+            _type: 'reference',
             _ref: item._id,
           },
           quantity: 1,
         }));
 
-      console.log("Saving items with overrides:", existingItems);
+      console.log('Saving items with overrides:', existingItems);
 
       // Update in Sanity
-      const response = await fetch("/api/updateList", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           listId: list._id,
           items: [...existingItems, ...newItems],
@@ -551,7 +535,7 @@ export default function ListPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update list");
+        throw new Error('Failed to update list');
       }
 
       // Fetch fresh data
@@ -567,7 +551,7 @@ export default function ListPage() {
       // Close the dialog after saving
       setIsDialogOpen(false); // Close the dialog here
     } catch (err) {
-      console.error("Error saving changes:", err);
+      console.error('Error saving changes:', err);
     } finally {
       setIsLoading(false);
     }
@@ -594,7 +578,7 @@ export default function ListPage() {
           : item,
       );
 
-      console.log("Updated selectedItems:", updatedItems); // Log updated items
+      console.log('Updated selectedItems:', updatedItems); // Log updated items
       return updatedItems;
     });
 
@@ -602,25 +586,25 @@ export default function ListPage() {
       // Prepare items for server update
       const itemsForUpdate = selectedItems.map((item) => ({
         _key: item._key,
-        _type: "listItem",
+        _type: 'listItem',
         item: {
-          _type: "reference",
+          _type: 'reference',
           _ref: item.item?._id,
         },
         quantity: item._key === itemKey ? newQuantity : item.quantity,
         categoryOverride: item.categoryOverride // Preserve category override
           ? {
-              _type: "reference",
+              _type: 'reference',
               _ref: item.categoryOverride._id,
             }
           : undefined,
       }));
 
-      console.log("Items for update:", itemsForUpdate); // Log items being sent to the API
+      console.log('Items for update:', itemsForUpdate); // Log items being sent to the API
 
-      const response = await fetch("/api/updateList", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           listId: list._id,
           items: itemsForUpdate,
@@ -628,28 +612,26 @@ export default function ListPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update quantity");
+        throw new Error('Failed to update quantity');
       }
 
       // Clear pending after successful update
       setPendingQuantities((prev) => {
-        const newPending = { ...prev };
+        const newPending = {...prev};
         delete newPending[itemKey];
         return newPending;
       });
     } catch (error) {
-      console.error("Error updating quantity:", error);
+      console.error('Error updating quantity:', error);
       // Revert both optimistic updates on error
       setPendingQuantities((prev) => {
-        const newPending = { ...prev };
+        const newPending = {...prev};
         delete newPending[itemKey];
         return newPending;
       });
       setSelectedItems((prev) =>
         prev.map((item) =>
-          item._key === itemKey
-            ? { ...item, quantity: item.quantity || 1 }
-            : item,
+          item._key === itemKey ? {...item, quantity: item.quantity || 1} : item,
         ),
       );
     }
@@ -661,14 +643,14 @@ export default function ListPage() {
       if (isDialogOpen && session?.user?.id) {
         // Add session check
         try {
-          console.log("Fetching items...");
+          console.log('Fetching items...');
           const fetchedItems = await client.fetch(ITEMS_QUERY, {
             userId: session.user.id, // Add userId parameter
           });
-          console.log("Fetched items:", fetchedItems);
+          console.log('Fetched items:', fetchedItems);
           setItems(fetchedItems);
         } catch (error) {
-          console.error("Error fetching items:", error);
+          console.error('Error fetching items:', error);
         }
       }
     };
@@ -706,24 +688,24 @@ export default function ListPage() {
       // Prepare the data for the API
       const sanityItems = updatedItems.map((item) => ({
         _key: item._key,
-        _type: "listItem",
+        _type: 'listItem',
         quantity: item.quantity || 1,
-        item: item.item ? { _ref: item.item._id, _type: "reference" } : null,
+        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
         ...(item.categoryOverride
           ? {
               categoryOverride: {
                 _ref: item.categoryOverride._id,
-                _type: "reference",
+                _type: 'reference',
               },
             }
           : {}),
       }));
 
       // Update through API route
-      const response = await fetch("/api/updateList", {
-        method: "PUT",
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           listId: list._id,
@@ -732,14 +714,14 @@ export default function ListPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update list");
+        throw new Error('Failed to update list');
       }
 
       // Update local state
       setSelectedItems(updatedItems);
     } catch (error) {
-      console.error("Failed to update category:", error);
-      alert("Failed to update category. Please try again.");
+      console.error('Failed to update category:', error);
+      alert('Failed to update category. Please try again.');
     }
   };
 
@@ -785,9 +767,7 @@ export default function ListPage() {
           <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
             {list.participants} personer
           </p>
-          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-            {list.days} dager
-          </p>
+          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">{list.days} dager</p>
         </div>
         <div className="flex gap-y-4 gap-x-2 pb-8">
           {/* Button to open the Add Item Dialog */}
@@ -829,11 +809,9 @@ export default function ListPage() {
                       <li
                         key={item._id}
                         className={`product-search flex items-center gap-4 py-2 cursor-pointer ${
-                          tempSelectedItems.some(
-                            (selected) => selected._id === item._id,
-                          )
-                            ? "active"
-                            : ""
+                          tempSelectedItems.some((selected) => selected._id === item._id)
+                            ? 'active'
+                            : ''
                         }`}
                         onClick={() => handleTempItemToggle(item)}
                       >
@@ -843,7 +821,7 @@ export default function ListPage() {
                               <Image
                                 className="rounded-md h-full w-full object-cover"
                                 src={urlFor(item.image).url()}
-                                alt={`Bilde av ${item?.name || "item"}`}
+                                alt={`Bilde av ${item?.name || 'item'}`}
                                 width={64}
                                 height={64}
                               />
@@ -881,11 +859,7 @@ export default function ListPage() {
                               )}
                               {item?.calories && item.calories > 0 && (
                                 <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
-                                  <Icon
-                                    name="calories"
-                                    width={16}
-                                    height={16}
-                                  />
+                                  <Icon name="calories" width={16} height={16} />
                                   {item.calories} kcal
                                 </p>
                               )}
@@ -922,7 +896,7 @@ export default function ListPage() {
               <button
                 onClick={() => handleCategorySelect(null)}
                 className={`menu-category text-md ${
-                  selectedCategory === null ? "menu-active" : ""
+                  selectedCategory === null ? 'menu-active' : ''
                 }`}
               >
                 Oversikt
@@ -932,7 +906,7 @@ export default function ListPage() {
                   key={category._id}
                   onClick={() => handleCategorySelect(category._id)}
                   className={`menu-category text-md ${
-                    selectedCategory === category._id ? "menu-active" : ""
+                    selectedCategory === category._id ? 'menu-active' : ''
                   }`}
                 >
                   {category.title}
@@ -954,13 +928,8 @@ export default function ListPage() {
                     {overrideTotals.length > 0 && (
                       <div className="product gap-y-16 flex flex-col w-full bg-dimmed">
                         {overrideTotals.map((override) => (
-                          <div
-                            key={override.categoryId}
-                            className="flex flex-col gap-x-3 gap-y-2"
-                          >
-                            <p className="text-md sm:text-xl">
-                              {override.categoryTitle}
-                            </p>
+                          <div key={override.categoryId} className="flex flex-col gap-x-3 gap-y-2">
+                            <p className="text-md sm:text-xl">{override.categoryTitle}</p>
                             <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
                               {formatWeight(override.weight)}
                             </p>
@@ -1000,9 +969,7 @@ export default function ListPage() {
                             {formatWeight(total.weight)}
                           </p>
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {total.calories > 0
-                              ? `${formatNumber(total.calories)} kcal`
-                              : ""}
+                            {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
                           </p>
                         </div>
                       ))}
@@ -1023,7 +990,7 @@ export default function ListPage() {
                         <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                           {grandTotal.calories > 0
                             ? `${formatNumber(grandTotal.calories)} kcal`
-                            : ""}
+                            : ''}
                         </p>
                       </div>
                     </div>
@@ -1034,22 +1001,19 @@ export default function ListPage() {
                 <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatNumber(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)
-                        ?.count || 0,
-                    )}{" "}
+                      categoryTotals.find((cat) => cat.id === selectedCategory)?.count || 0,
+                    )}{' '}
                     stk
                   </p>
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatWeight(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)
-                        ?.weight || 0,
+                      categoryTotals.find((cat) => cat.id === selectedCategory)?.weight || 0,
                     )}
                   </p>
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {(categoryTotals.find((cat) => cat.id === selectedCategory)
-                      ?.calories || 0) > 0
+                    {(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0) > 0
                       ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
-                      : ""}
+                      : ''}
                   </p>
                 </div>
               )}
@@ -1057,8 +1021,8 @@ export default function ListPage() {
           </ul>
         ) : (
           <div className="text-center text-accent text-2xl min-h-[50vh] flex items-center justify-center">
-            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du
-            har 0 kalorier å gå på
+            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du har 0 kalorier å gå
+            på
           </div>
         )}
 
@@ -1066,7 +1030,7 @@ export default function ListPage() {
 
         <ul className="flex flex-col divide-y divide-white/5">
           {filteredItemsForList.map((listItem) => {
-            console.log("Rendering item:", listItem);
+            console.log('Rendering item:', listItem);
             return (
               <li key={listItem._key} className="product py-4">
                 <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
@@ -1075,7 +1039,7 @@ export default function ListPage() {
                       <Image
                         className="rounded-md h-full w-full object-cover"
                         src={urlFor(listItem.item.image).url()}
-                        alt={`Bilde av ${listItem.item?.name || "item"}`}
+                        alt={`Bilde av ${listItem.item?.name || 'item'}`}
                         width={64}
                         height={64}
                       />
@@ -1098,9 +1062,7 @@ export default function ListPage() {
                   </div>
 
                   <div className="flex flex-col gap-y-2">
-                    <h2 className="text-xl text-accent">
-                      {listItem.item?.name || "Unnamed Item"}
-                    </h2>
+                    <h2 className="text-xl text-accent">{listItem.item?.name || 'Unnamed Item'}</h2>
                     <div className="flex flex-wrap gap-x-1">
                       <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         {listItem.quantity || 1} stk
@@ -1114,17 +1076,15 @@ export default function ListPage() {
                       {listItem.item?.weight && (
                         <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                           <Icon name="weight" width={16} height={16} />
-                          {listItem.item.weight.weight}{" "}
-                          {listItem.item.weight.unit}
+                          {listItem.item.weight.weight} {listItem.item.weight.unit}
                         </p>
                       )}
-                      {listItem.item?.calories &&
-                        listItem.item.calories > 0 && (
-                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                            <Icon name="calories" width={16} height={16} />
-                            {listItem.item.calories} kcal
-                          </p>
-                        )}
+                      {listItem.item?.calories && listItem.item.calories > 0 && (
+                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                          <Icon name="calories" width={16} height={16} />
+                          {listItem.item.calories} kcal
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex ml-auto"></div>
@@ -1134,10 +1094,7 @@ export default function ListPage() {
                       <div className="flex items-center gap-x-2 bg-dimmed-hover rounded px-2 py-1">
                         <button
                           onClick={() =>
-                            handleQuantityChange(
-                              listItem._key,
-                              (listItem.quantity || 1) - 1,
-                            )
+                            handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1)
                           }
                           disabled={(listItem.quantity || 1) <= 1}
                           className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
@@ -1151,10 +1108,7 @@ export default function ListPage() {
                         </span>
                         <button
                           onClick={() =>
-                            handleQuantityChange(
-                              listItem._key,
-                              (listItem.quantity || 1) + 1,
-                            )
+                            handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1)
                           }
                           className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
                         >
@@ -1169,27 +1123,15 @@ export default function ListPage() {
                       className="button-ghost flex gap-x-2 h-fit align-middle"
                       aria-label="Edit category"
                     >
-                      <Icon
-                        name="category"
-                        width={24}
-                        height={24}
-                        fill="#EAFFE2"
-                      />
+                      <Icon name="category" width={24} height={24} fill="#EAFFE2" />
                     </button>
 
                     {/* Existing delete button */}
                     <button
-                      onClick={() =>
-                        listItem.item && handleRemoveFromList(listItem.item)
-                      }
+                      onClick={() => listItem.item && handleRemoveFromList(listItem.item)}
                       className="button-ghost flex gap-x-2 h-fit align-middle"
                     >
-                      <Icon
-                        name="delete"
-                        width={24}
-                        height={24}
-                        fill="#EAFFE2"
-                      />
+                      <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
                     </button>
                   </div>
                 </div>
@@ -1199,19 +1141,16 @@ export default function ListPage() {
         </ul>
 
         {/* Category Edit Dialog */}
-        <Dialog
-          open={!!editingItemKey}
-          onOpenChange={() => setEditingItemKey(null)}
-        >
+        <Dialog open={!!editingItemKey} onOpenChange={() => setEditingItemKey(null)}>
           <DialogContent className="dialog">
             <DialogHeader className="gap-y-4">
               <DialogTitle className="text-2xl font-normal text-accent">
                 Overstyr kategori
               </DialogTitle>
               <DialogDescription className="text-lg">
-                Velg en ny kategori for dette utstyret kun for denne pakklisten.
-                Et tips er å lage en kategori for På kropp så du kan skille
-                mellom det du har på og det som er i sekken.
+                Velg en ny kategori for dette utstyret kun for denne pakklisten. Et tips er å lage
+                en kategori for På kropp så du kan skille mellom det du har på og det som er i
+                sekken.
               </DialogDescription>
             </DialogHeader>
 
@@ -1219,19 +1158,17 @@ export default function ListPage() {
               <select
                 className="w-full max-w-full p-4"
                 value={
-                  selectedItems.find((item) => item._key === editingItemKey)
-                    ?.categoryOverride?._id || ""
+                  selectedItems.find((item) => item._key === editingItemKey)?.categoryOverride
+                    ?._id || ''
                 }
                 onChange={(e) =>
-                  handleCategoryUpdate(
-                    e.target.value === "original" ? null : e.target.value,
-                  )
+                  handleCategoryUpdate(e.target.value === 'original' ? null : e.target.value)
                 }
               >
                 {/* Original category option */}
                 <option value="original">
-                  {selectedItems.find((item) => item._key === editingItemKey)
-                    ?.item?.category.title || "Unknown"}{" "}
+                  {selectedItems.find((item) => item._key === editingItemKey)?.item?.category
+                    .title || 'Unknown'}{' '}
                   (original)
                 </option>
 
@@ -1246,10 +1183,7 @@ export default function ListPage() {
 
             <DialogFooter>
               <DialogClose asChild>
-                <button
-                  className="button-secondary"
-                  onClick={() => setEditingItemKey(null)}
-                >
+                <button className="button-secondary" onClick={() => setEditingItemKey(null)}>
                   Avbryt
                 </button>
               </DialogClose>

@@ -1,14 +1,10 @@
-import { NextResponse } from "next/server";
+import {NextResponse} from 'next/server';
 
 interface SanityError extends Error {
   statusCode?: number;
 }
 
-export function handleApiError(
-  error: unknown,
-  logMessage: string,
-  defaultUserMessage: string,
-) {
+export function handleApiError(error: unknown, logMessage: string, defaultUserMessage: string) {
   console.error(logMessage, error);
 
   let statusCode = 500;
@@ -26,12 +22,9 @@ export function handleApiError(
   return NextResponse.json(
     {
       message,
-      error: process.env.NODE_ENV === "development" ? error : undefined,
-      stack:
-        process.env.NODE_ENV === "development"
-          ? (error as Error)?.stack
-          : undefined,
+      error: process.env.NODE_ENV === 'development' ? error : undefined,
+      stack: process.env.NODE_ENV === 'development' ? (error as Error)?.stack : undefined,
     },
-    { status: statusCode },
+    {status: statusCode},
   );
 }

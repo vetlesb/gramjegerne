@@ -1,6 +1,6 @@
-import {defineField, defineType} from 'sanity'
-import {UserIcon} from '@sanity/icons'
-import {UserPreview} from '../components/UserPreview'
+import {defineField, defineType} from 'sanity';
+import {UserIcon} from '@sanity/icons';
+import {UserPreview} from '../components/UserPreview';
 
 export const userType = defineType({
   name: 'user',
@@ -41,4 +41,4 @@ export const userType = defineType({
     },
     prepare: UserPreview,
   },
-})
+});

@@ -1,9 +1,9 @@
-import type { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import { createOrGetUser } from "@/lib/auth";
+import type {NextAuthOptions} from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import {createOrGetUser} from '@/lib/auth';
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  throw new Error("Missing Google OAuth credentials");
+  throw new Error('Missing Google OAuth credentials');
 }
 
 export const authOptions: NextAuthOptions = {
@@ -14,11 +14,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
+    signIn: '/auth/signin',
   },
   callbacks: {
-    async signIn({ user, account }) {
-      if (!account || account.provider !== "google") return false;
+    async signIn({user, account}) {
+      if (!account || account.provider !== 'google') return false;
 
       try {
         await createOrGetUser({
@@ -29,17 +29,17 @@ export const authOptions: NextAuthOptions = {
         });
         return true;
       } catch (error) {
-        console.error("Error in signIn callback:", error);
+        console.error('Error in signIn callback:', error);
         return false;
       }
     },
-    async session({ session, token }) {
+    async session({session, token}) {
       if (session?.user) {
         session.user.id = `google_${token.sub}`;
       }
       return session;
     },
-    async jwt({ token, account }) {
+    async jwt({token, account}) {
       if (account) {
         token.userId = account.providerAccountId;
       }

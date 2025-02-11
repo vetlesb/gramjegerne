@@ -1,11 +1,11 @@
-import { createClient } from "@sanity/client";
+import {createClient} from '@sanity/client';
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   token: process.env.SANITY_API_TOKEN,
   useCdn: false,
-  apiVersion: "2023-01-01",
+  apiVersion: '2023-01-01',
 });
 
 async function deleteAllItems() {
@@ -25,14 +25,12 @@ async function deleteAllItems() {
       });
 
       await transaction.commit();
-      console.log(
-        `Deleted items ${i + 1} to ${Math.min(i + batchSize, items.length)}`,
-      );
+      console.log(`Deleted items ${i + 1} to ${Math.min(i + batchSize, items.length)}`);
     }
 
-    console.log("Successfully deleted all items");
+    console.log('Successfully deleted all items');
   } catch (error) {
-    console.error("Error deleting items:", error);
+    console.error('Error deleting items:', error);
   }
 }
 

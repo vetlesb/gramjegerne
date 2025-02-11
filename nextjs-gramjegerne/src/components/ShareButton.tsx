@@ -1,24 +1,24 @@
-"use client";
-import { Icon } from "@/components/Icon";
-import { toast } from "sonner";
+'use client';
+import {Icon} from '@/components/Icon';
+import {toast} from 'sonner';
 
-export function ShareButton({ slug }: { slug: string }) {
+export function ShareButton({slug}: {slug: string}) {
   const shareUrl = `${window.location.origin}/share/${slug}`;
 
   async function handleShare() {
     // Only copy to clipboard, no native share dialog
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Lenke kopiert til utklippstavle!", {
+      toast.success('Lenke kopiert til utklippstavle!', {
         duration: 3000,
-        position: "bottom-center",
+        position: 'bottom-center',
       });
     } catch (err) {
-      toast.error("Kunne ikke kopiere lenke", {
+      toast.error('Kunne ikke kopiere lenke', {
         duration: 3000,
-        position: "bottom-center",
+        position: 'bottom-center',
       });
-      console.error("Copy failed:", err);
+      console.error('Copy failed:', err);
     }
   }
 

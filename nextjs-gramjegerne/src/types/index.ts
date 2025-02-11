@@ -3,7 +3,7 @@
 export interface Category {
   _id: string;
   title: string;
-  slug: { current: string };
+  slug: {current: string};
 }
 
 export interface ImageAsset {
@@ -19,14 +19,14 @@ export interface Item {
     asset: ImageAsset;
   };
   size?: string;
-  weight?: { weight: number; unit: string };
+  weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
   categories?: Category[]; // Populated categories
 }
 export interface ListDocument {
   _id: string;
-  slug: { current: string };
+  slug: {current: string};
   name: string;
 
   days: number;

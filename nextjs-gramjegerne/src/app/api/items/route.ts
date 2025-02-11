@@ -1,15 +1,15 @@
 // src/app/api/items/route.ts
 
-import { NextResponse } from "next/server";
-import { client } from "@/lib/sanity";
-import { getUserSession, formatUserId } from "@/lib/auth-helpers";
+import {NextResponse} from 'next/server';
+import {client} from '@/lib/sanity';
+import {getUserSession, formatUserId} from '@/lib/auth-helpers';
 
 export async function GET() {
   try {
     const session = await getUserSession();
 
     if (!session || !session.user) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      return new Response(JSON.stringify({message: 'Unauthorized'}), {
         status: 401,
       });
     }
@@ -34,19 +34,16 @@ export async function GET() {
         quantity,
         calories
       }`,
-      { userId },
+      {userId},
     );
 
-    return NextResponse.json(items, { status: 200 });
+    return NextResponse.json(items, {status: 200});
   } catch (error: unknown) {
     if (error instanceof Response && error.status === 401) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({message: 'Unauthorized'}, {status: 401});
     }
-    console.error("Error fetching items:", error);
-    return NextResponse.json(
-      { message: "Failed to fetch items." },
-      { status: 500 },
-    );
+    console.error('Error fetching items:', error);
+    return NextResponse.json({message: 'Failed to fetch items.'}, {status: 500});
   }
 }
 
@@ -55,7 +52,7 @@ export async function POST(request: Request) {
     const session = await getUserSession();
 
     if (!session || !session.user) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      return new Response(JSON.stringify({message: 'Unauthorized'}), {
         status: 401,
       });
     }
@@ -64,55 +61,47 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
 
-    const name = formData.get("name") as string;
+    const name = formData.get('name') as string;
     const slug =
-      (formData.get("slug") as string) ||
-      name.toLowerCase().replace(/\s+/g, "-").slice(0, 200);
-    const imageFile = formData.get("image") as File | null;
-    const categoryId = formData.get("category") as string;
-    const size = formData.get("size") as string;
-    const weight_weight = formData.get("weight.weight") as string;
-    const weight_unit = formData.get("weight.unit") as string;
-    const quantity = formData.get("quantity") as string;
-    const calories = formData.get("calories") as string;
+      (formData.get('slug') as string) || name.toLowerCase().replace(/\s+/g, '-').slice(0, 200);
+    const imageFile = formData.get('image') as File | null;
+    const categoryId = formData.get('category') as string;
+    const size = formData.get('size') as string;
+    const weight_weight = formData.get('weight.weight') as string;
+    const weight_unit = formData.get('weight.unit') as string;
+    const quantity = formData.get('quantity') as string;
+    const calories = formData.get('calories') as string;
 
     if (!name || !slug) {
-      return NextResponse.json(
-        { message: "Navn og slug er obligatorisk." },
-        { status: 400 },
-      );
+      return NextResponse.json({message: 'Navn og slug er obligatorisk.'}, {status: 400});
     }
 
     // Verify category exists
-    const category = await client.fetch(
-      `*[_type == "category" && _id == $categoryId][0]`,
-      { categoryId },
-    );
+    const category = await client.fetch(`*[_type == "category" && _id == $categoryId][0]`, {
+      categoryId,
+    });
 
     if (!category) {
-      return NextResponse.json(
-        { message: "Invalid category." },
-        { status: 400 },
-      );
+      return NextResponse.json({message: 'Invalid category.'}, {status: 400});
     }
 
     let imageAsset: string | undefined = undefined;
     if (imageFile) {
-      const imageResponse = await client.assets.upload("image", imageFile, {
+      const imageResponse = await client.assets.upload('image', imageFile, {
         filename: imageFile.name,
       });
       imageAsset = imageResponse._id;
     }
 
     const newItem = {
-      _type: "item",
+      _type: 'item',
       name,
-      slug: { _type: "slug", current: slug },
+      slug: {_type: 'slug', current: slug},
       ...(imageAsset && {
-        image: { _type: "image", asset: { _ref: imageAsset } },
+        image: {_type: 'image', asset: {_ref: imageAsset}},
       }),
-      category: { _type: "reference", _ref: categoryId },
-      user: { _type: "reference", _ref: userId },
+      category: {_type: 'reference', _ref: categoryId},
+      user: {_type: 'reference', _ref: userId},
       size,
       weight: {
         weight: Number(weight_weight),
@@ -123,15 +112,12 @@ export async function POST(request: Request) {
     };
 
     const createdItem = await client.create(newItem);
-    return NextResponse.json(createdItem, { status: 201 });
+    return NextResponse.json(createdItem, {status: 201});
   } catch (error: unknown) {
     if (error instanceof Response && error.status === 401) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({message: 'Unauthorized'}, {status: 401});
     }
-    console.error("Error creating item:", error);
-    return NextResponse.json(
-      { message: "Failed to create item." },
-      { status: 500 },
-    );
+    console.error('Error creating item:', error);
+    return NextResponse.json({message: 'Failed to create item.'}, {status: 500});
   }
 }

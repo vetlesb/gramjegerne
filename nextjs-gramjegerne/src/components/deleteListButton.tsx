@@ -1,5 +1,5 @@
-"use client";
-import { Icon } from "@/components/Icon";
+'use client';
+import {Icon} from '@/components/Icon';
 import {
   Dialog,
   DialogClose,
@@ -7,9 +7,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+} from '@/components/ui/dialog';
+import {useRouter} from 'next/navigation';
+import {useState} from 'react';
 
 interface DeleteListButtonProps {
   listId: string;
@@ -18,12 +18,7 @@ interface DeleteListButtonProps {
   onSuccess?: () => void;
 }
 
-export function DeleteListButton({
-  listId,
-  listName,
-  redirectTo,
-  onSuccess,
-}: DeleteListButtonProps) {
+export function DeleteListButton({listId, listName, redirectTo, onSuccess}: DeleteListButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,16 +29,13 @@ export function DeleteListButton({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/deleteList?listId=${encodeURIComponent(listId)}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`/api/deleteList?listId=${encodeURIComponent(listId)}`, {
+        method: 'DELETE',
+      });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete list");
+        throw new Error(data.error || 'Failed to delete list');
       }
 
       if (redirectTo) {
@@ -55,12 +47,8 @@ export function DeleteListButton({
         onSuccess();
       }
     } catch (error) {
-      console.error("Error deleting list:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.",
-      );
+      console.error('Error deleting list:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred.');
     } finally {
       setIsDeleting(false);
     }
@@ -96,12 +84,8 @@ export function DeleteListButton({
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <DialogFooter className="gap-y-4 gap-x-1">
-            <button
-              onClick={handleDelete}
-              className="button-primary-accent"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Sletter..." : "Slett"}
+            <button onClick={handleDelete} className="button-primary-accent" disabled={isDeleting}>
+              {isDeleting ? 'Sletter...' : 'Slett'}
             </button>
             <DialogClose asChild>
               <button type="button" className="button-secondary">

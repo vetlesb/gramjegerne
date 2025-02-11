@@ -1,5 +1,5 @@
-import { ReferenceRule } from '@sanity/types';
-import { defineField, defineType } from 'sanity';
+import {ReferenceRule} from '@sanity/types';
+import {defineField, defineType} from 'sanity';
 
 export const listType = defineType({
   name: 'list',
@@ -18,19 +18,19 @@ export const listType = defineType({
       options: {
         source: async (doc: any, options: any) => {
           // Create a base slug from the name
-          const baseName = doc.name?.toLowerCase().replace(/\s+/g, '-') || ''
+          const baseName = doc.name?.toLowerCase().replace(/\s+/g, '-') || '';
           // Add user reference to make it unique
-          return `${baseName}-${doc.user?._ref || 'unknown'}`
+          return `${baseName}-${doc.user?._ref || 'unknown'}`;
         },
         maxLength: 200,
       },
       validation: (Rule) =>
         Rule.required().custom(async (slug: any, context: any) => {
-          const {document, getClient} = context
-          const client = getClient({apiVersion: '2023-01-01'})
+          const {document, getClient} = context;
+          const client = getClient({apiVersion: '2023-01-01'});
 
           if (!slug?.current) {
-            return true // Let required validation handle this
+            return true; // Let required validation handle this
           }
 
           // Check for existing documents with same slug and user
@@ -39,16 +39,16 @@ export const listType = defineType({
             slug.current == $slug && 
             user._ref == $userId && 
             _id != $docId
-          ]) > 0`
+          ]) > 0`;
 
           const params = {
             slug: slug.current,
             userId: document.user?._ref,
             docId: document._id,
-          }
+          };
 
-          const hasDoubles = await client.fetch(query, params)
-          return hasDoubles ? 'A list with this name already exists for this user' : true
+          const hasDoubles = await client.fetch(query, params);
+          return hasDoubles ? 'A list with this name already exists for this user' : true;
         }),
     }),
     defineField({
@@ -111,7 +111,7 @@ export const listType = defineType({
               return {
                 title: `${title || 'Unnamed Item'} (${quantity || 1}x)`,
                 media: media,
-              }
+              };
             },
           },
         },
@@ -128,9 +128,9 @@ export const listType = defineType({
   validation: (Rule) => [
     Rule.custom((doc: any) => {
       if (!doc?.slug?.current?.includes(doc?.user?._ref)) {
-        return 'Slug must include user reference'
+        return 'Slug must include user reference';
       }
-      return true
+      return true;
     }).error(),
   ],
-})
+});

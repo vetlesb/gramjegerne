@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { client } from "@/lib/sanity";
-import { getUserSession } from "@/lib/auth-helpers";
+import {NextResponse} from 'next/server';
+import {client} from '@/lib/sanity';
+import {getUserSession} from '@/lib/auth-helpers';
 
 interface ImportResult {
   success: boolean;
@@ -22,12 +22,12 @@ interface ImportItem {
 export async function POST(request: Request) {
   try {
     const session = await getUserSession();
-    console.log("Session:", session);
+    console.log('Session:', session);
 
     // Check if session and user are valid
     if (!session || !session.user) {
-      console.error("Unauthorized access: No session or user found.");
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      console.error('Unauthorized access: No session or user found.');
+      return NextResponse.json({message: 'Unauthorized'}, {status: 401});
     }
 
     const items = (await request.json()) as ImportItem[];
@@ -43,14 +43,14 @@ export async function POST(request: Request) {
           // Check if item already exists for this user
           const existingItem = await client.fetch(
             `*[_type == "item" && name == $name && user._ref == $userId][0]`,
-            { name: item.name, userId: session.user.id },
+            {name: item.name, userId: session.user.id},
           );
 
           let categoryRef = null;
 
           if (item.categoryId) {
             categoryRef = {
-              _type: "reference",
+              _type: 'reference',
               _ref: item.categoryId,
             };
           }
@@ -58,20 +58,18 @@ export async function POST(request: Request) {
           if (existingItem) {
             // Update the existing item
             const updatedItem = {
-              _type: "item",
+              _type: 'item',
               size: item.size,
               weight: item.weight
                 ? {
                     weight: Number(item.weight),
-                    unit: item.weight_unit || "g",
+                    unit: item.weight_unit || 'g',
                   }
                 : existingItem.weight, // Keep existing weight if not provided
-              calories: item.calories
-                ? Number(item.calories)
-                : existingItem.calories, // Update calories if provided
+              calories: item.calories ? Number(item.calories) : existingItem.calories, // Update calories if provided
               category: categoryRef || existingItem.category, // Use new categoryRef or keep existing category
               user: {
-                _type: "reference",
+                _type: 'reference',
                 _ref: session.user.id,
               },
             };
@@ -83,9 +81,9 @@ export async function POST(request: Request) {
                 ...updatedItem,
                 ...(item.imageAssetId && {
                   image: {
-                    _type: "image",
+                    _type: 'image',
                     asset: {
-                      _type: "reference",
+                      _type: 'reference',
                       _ref: item.imageAssetId,
                     },
                   },
@@ -103,40 +101,37 @@ export async function POST(request: Request) {
 
           // Create a new item if it doesn't exist
           const newItem = {
-            _type: "item",
+            _type: 'item',
             name: item.name,
             slug: {
-              _type: "slug",
-              current: item.name
-                .toLowerCase()
-                .replace(/\s+/g, "-")
-                .slice(0, 200),
+              _type: 'slug',
+              current: item.name.toLowerCase().replace(/\s+/g, '-').slice(0, 200),
             },
             size: item.size,
             weight: item.weight
               ? {
                   weight: Number(item.weight),
-                  unit: item.weight_unit || "g",
+                  unit: item.weight_unit || 'g',
                 }
               : undefined,
             calories: item.calories ? Number(item.calories) : undefined,
             category: categoryRef, // Use the updated categoryRef here
             user: {
-              _type: "reference",
+              _type: 'reference',
               _ref: session.user.id,
             },
             ...(item.imageAssetId && {
               image: {
-                _type: "image",
+                _type: 'image',
                 asset: {
-                  _type: "reference",
+                  _type: 'reference',
                   _ref: item.imageAssetId,
                 },
               },
             }),
           };
 
-          console.log("Creating new item:", newItem); // Log the new item being created
+          console.log('Creating new item:', newItem); // Log the new item being created
           const createdItem = await client.create(newItem);
           results.push({
             success: true,
@@ -148,19 +143,15 @@ export async function POST(request: Request) {
           results.push({
             success: false,
             name: item.name,
-            error:
-              error instanceof Error ? error.message : "Unknown error occurred",
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
           });
         }
       }
     }
 
-    return NextResponse.json({ results });
+    return NextResponse.json({results});
   } catch (error) {
-    console.error("Import error:", error);
-    return NextResponse.json(
-      { error: "Failed to process items" },
-      { status: 500 },
-    );
+    console.error('Import error:', error);
+    return NextResponse.json({error: 'Failed to process items'}, {status: 500});
   }
 }

@@ -1,7 +1,7 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { client } from "@/sanity/client";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { notFound } from "next/navigation";
+import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
+import {client} from '@/sanity/client';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import {notFound} from 'next/navigation';
 
 // Define the types for Item and Category
 interface Item {
@@ -9,7 +9,7 @@ interface Item {
   name: string;
   image?: SanityImageSource;
   size?: string;
-  weight?: { weight: number; unit: string };
+  weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
 }
@@ -21,12 +21,12 @@ interface Category {
 }
 
 interface CategoryPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{slug: string}>;
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({params}: CategoryPageProps) {
   // Await params to ensure it's resolved
-  const { slug } = await params;
+  const {slug} = await params;
 
   // Fetch the category with items
   const category: Category | null = await client.fetch(
@@ -37,7 +37,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         _id, name, image, size, weight, quantity, calories
       }
     }`,
-    { slug },
+    {slug},
   );
 
   if (!category) {

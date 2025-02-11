@@ -1,11 +1,11 @@
-"use client";
-import { Icon } from "@/components/Icon";
-import { client } from "@/sanity/client";
-import type { Category, List, ListItem } from "@/types/list";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import Image from "next/image";
-import { useMemo, useState } from "react";
+'use client';
+import {Icon} from '@/components/Icon';
+import {client} from '@/sanity/client';
+import type {Category, List, ListItem} from '@/types/list';
+import imageUrlBuilder from '@sanity/image-url';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import Image from 'next/image';
+import {useMemo, useState} from 'react';
 
 const builder = imageUrlBuilder(client);
 
@@ -18,7 +18,7 @@ interface SharePageClientProps {
 }
 
 const formatNumber = (num: number): string => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 };
 
 const formatWeight = (weightInGrams: number): string => {
@@ -26,7 +26,7 @@ const formatWeight = (weightInGrams: number): string => {
   return `${weightInKg.toFixed(3)} kg`;
 };
 
-export default function SharePageClient({ list }: SharePageClientProps) {
+export default function SharePageClient({list}: SharePageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Get effective category helper
@@ -47,7 +47,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
     });
 
     return Array.from(uniqueCategories.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, "nb"),
+      a.title.localeCompare(b.title, 'nb'),
     );
   }, [list?.items]);
 
@@ -63,118 +63,115 @@ export default function SharePageClient({ list }: SharePageClientProps) {
   }, [list?.items, selectedCategory]);
 
   // Calculate totals including overrides
-  const { categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides } =
-    useMemo(() => {
-      if (!filteredItems?.length) {
-        const emptyTotal = { count: 0, weight: 0, calories: 0 };
-        return {
-          categoryTotals: [],
-          grandTotal: emptyTotal,
-          overrideTotals: [],
-          totalWithoutOverrides: emptyTotal,
-        };
-      }
+  const {categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides} = useMemo(() => {
+    if (!filteredItems?.length) {
+      const emptyTotal = {count: 0, weight: 0, calories: 0};
+      return {
+        categoryTotals: [],
+        grandTotal: emptyTotal,
+        overrideTotals: [],
+        totalWithoutOverrides: emptyTotal,
+      };
+    }
 
-      const categoryMap = new Map();
-      const overrideMap = new Map();
+    const categoryMap = new Map();
+    const overrideMap = new Map();
 
-      filteredItems.forEach((item) => {
-        if (!item.item) return;
-        const quantity = item.quantity || 1;
-        const effectiveCategory = getEffectiveCategory(item);
-        if (!effectiveCategory) return;
+    filteredItems.forEach((item) => {
+      if (!item.item) return;
+      const quantity = item.quantity || 1;
+      const effectiveCategory = getEffectiveCategory(item);
+      if (!effectiveCategory) return;
 
-        // Handle overrides
-        if (item.categoryOverride) {
-          const existing = overrideMap.get(item.categoryOverride._id) || {
-            categoryId: item.categoryOverride._id,
-            categoryTitle: item.categoryOverride.title,
-            count: 0,
-            weight: 0,
-            calories: 0,
-          };
-
-          if (item.item.weight) {
-            const multiplier = item.item.weight.unit === "kg" ? 1000 : 1;
-            existing.weight += item.item.weight.weight * multiplier * quantity;
-          }
-          if (item.item.calories) {
-            existing.calories += item.item.calories * quantity;
-          }
-          existing.count += quantity;
-
-          overrideMap.set(item.categoryOverride._id, existing);
-        }
-
-        // Regular category totals
-        const existing = categoryMap.get(effectiveCategory._id) || {
-          id: effectiveCategory._id,
-          title: effectiveCategory.title,
+      // Handle overrides
+      if (item.categoryOverride) {
+        const existing = overrideMap.get(item.categoryOverride._id) || {
+          categoryId: item.categoryOverride._id,
+          categoryTitle: item.categoryOverride.title,
           count: 0,
           weight: 0,
           calories: 0,
         };
 
-        existing.count += quantity;
         if (item.item.weight) {
-          const multiplier = item.item.weight.unit === "kg" ? 1000 : 1;
+          const multiplier = item.item.weight.unit === 'kg' ? 1000 : 1;
           existing.weight += item.item.weight.weight * multiplier * quantity;
         }
         if (item.item.calories) {
           existing.calories += item.item.calories * quantity;
         }
+        existing.count += quantity;
 
-        categoryMap.set(effectiveCategory._id, existing);
-      });
+        overrideMap.set(item.categoryOverride._id, existing);
+      }
 
-      const categoryTotals = Array.from(categoryMap.values());
-      const overrideTotals = Array.from(overrideMap.values());
-
-      // Calculate grand total
-      const grandTotal = categoryTotals.reduce(
-        (acc, cat) => ({
-          count: acc.count + cat.count,
-          weight: acc.weight + cat.weight,
-          calories: acc.calories + cat.calories,
-        }),
-        { count: 0, weight: 0, calories: 0 },
-      );
-
-      // Calculate total without overrides
-      const totalWithoutOverrides = {
-        count: grandTotal.count,
-        weight: grandTotal.weight,
-        calories: grandTotal.calories,
+      // Regular category totals
+      const existing = categoryMap.get(effectiveCategory._id) || {
+        id: effectiveCategory._id,
+        title: effectiveCategory.title,
+        count: 0,
+        weight: 0,
+        calories: 0,
       };
 
-      // Subtract override totals
-      overrideTotals.forEach((override) => {
-        totalWithoutOverrides.count -= override.count;
-        totalWithoutOverrides.weight -= override.weight;
-        totalWithoutOverrides.calories -= override.calories;
-      });
+      existing.count += quantity;
+      if (item.item.weight) {
+        const multiplier = item.item.weight.unit === 'kg' ? 1000 : 1;
+        existing.weight += item.item.weight.weight * multiplier * quantity;
+      }
+      if (item.item.calories) {
+        existing.calories += item.item.calories * quantity;
+      }
 
-      return {
-        categoryTotals,
-        grandTotal,
-        overrideTotals,
-        totalWithoutOverrides,
-      };
-    }, [filteredItems]);
+      categoryMap.set(effectiveCategory._id, existing);
+    });
+
+    const categoryTotals = Array.from(categoryMap.values());
+    const overrideTotals = Array.from(overrideMap.values());
+
+    // Calculate grand total
+    const grandTotal = categoryTotals.reduce(
+      (acc, cat) => ({
+        count: acc.count + cat.count,
+        weight: acc.weight + cat.weight,
+        calories: acc.calories + cat.calories,
+      }),
+      {count: 0, weight: 0, calories: 0},
+    );
+
+    // Calculate total without overrides
+    const totalWithoutOverrides = {
+      count: grandTotal.count,
+      weight: grandTotal.weight,
+      calories: grandTotal.calories,
+    };
+
+    // Subtract override totals
+    overrideTotals.forEach((override) => {
+      totalWithoutOverrides.count -= override.count;
+      totalWithoutOverrides.weight -= override.weight;
+      totalWithoutOverrides.calories -= override.calories;
+    });
+
+    return {
+      categoryTotals,
+      grandTotal,
+      overrideTotals,
+      totalWithoutOverrides,
+    };
+  }, [filteredItems]);
 
   return (
     <>
       <main className="container mx-auto min-h-screen p-16">
-        <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">
-          i {list.name}
-        </h1>
+        <h1 className="text-4xl md:text-6xl text-accent py-4 pb-12">i {list.name}</h1>
 
         {/* Category filters */}
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2">
           <button
             onClick={() => setSelectedCategory(null)}
             className={`px-4 py-2 rounded-md ${
-              selectedCategory === null ? "menu-active" : "menu-category"
+              selectedCategory === null ? 'menu-active' : 'menu-category'
             }`}
           >
             Alle
@@ -184,9 +181,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
               key={category._id}
               onClick={() => setSelectedCategory(category._id)}
               className={`px-4 py-2 rounded-md ${
-                selectedCategory === category._id
-                  ? "menu-active text-md"
-                  : "menu-category"
+                selectedCategory === category._id ? 'menu-active text-md' : 'menu-category'
               }`}
             >
               {category.title}
@@ -207,13 +202,8 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                     {overrideTotals.length > 0 && (
                       <div className="product gap-y-16 flex flex-col w-full bg-dimmed">
                         {overrideTotals.map((override) => (
-                          <div
-                            key={override.categoryId}
-                            className="flex flex-col gap-x-3 gap-y-2"
-                          >
-                            <p className="text-md sm:text-xl">
-                              {override.categoryTitle}
-                            </p>
+                          <div key={override.categoryId} className="flex flex-col gap-x-3 gap-y-2">
+                            <p className="text-md sm:text-xl">{override.categoryTitle}</p>
                             <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
                               {formatWeight(override.weight)}
                             </p>
@@ -253,9 +243,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                             {formatWeight(total.weight)}
                           </p>
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {total.calories > 0
-                              ? `${formatNumber(total.calories)} kcal`
-                              : ""}
+                            {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
                           </p>
                         </div>
                       ))}
@@ -276,7 +264,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                         <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                           {grandTotal.calories > 0
                             ? `${formatNumber(grandTotal.calories)} kcal`
-                            : ""}
+                            : ''}
                         </p>
                       </div>
                     </div>
@@ -287,22 +275,19 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                 <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatNumber(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)
-                        ?.count || 0,
-                    )}{" "}
+                      categoryTotals.find((cat) => cat.id === selectedCategory)?.count || 0,
+                    )}{' '}
                     stk
                   </p>
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatWeight(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)
-                        ?.weight || 0,
+                      categoryTotals.find((cat) => cat.id === selectedCategory)?.weight || 0,
                     )}
                   </p>
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {(categoryTotals.find((cat) => cat.id === selectedCategory)
-                      ?.calories || 0) > 0
+                    {(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0) > 0
                       ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
-                      : ""}
+                      : ''}
                   </p>
                 </div>
               )}
@@ -310,8 +295,8 @@ export default function SharePageClient({ list }: SharePageClientProps) {
           </ul>
         ) : (
           <div className="text-center text-accent text-2xl min-h-[50vh] flex items-center justify-center">
-            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du
-            har 0 kalorier å gå på
+            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du har 0 kalorier å gå
+            på
           </div>
         )}
 
@@ -325,7 +310,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                     <Image
                       className="rounded-md h-full w-full object-cover"
                       src={urlFor(listItem.item.image).url()}
-                      alt={`Bilde av ${listItem.item?.name || "item"}`}
+                      alt={`Bilde av ${listItem.item?.name || 'item'}`}
                       width={64}
                       height={64}
                     />
@@ -362,8 +347,7 @@ export default function SharePageClient({ list }: SharePageClientProps) {
                     {listItem.item?.weight && (
                       <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                         <Icon name="weight" width={16} height={16} />
-                        {listItem.item.weight.weight}{" "}
-                        {listItem.item.weight.unit}
+                        {listItem.item.weight.weight} {listItem.item.weight.unit}
                       </p>
                     )}
                     {listItem.item?.calories && listItem.item.calories > 0 && (

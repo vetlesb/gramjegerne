@@ -1,11 +1,11 @@
-"use client";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
+'use client';
+import Image from 'next/image';
+import React, {useEffect, useState} from 'react';
 
 interface Category {
   _id: string;
   title: string;
-  slug: { current: string };
+  slug: {current: string};
 }
 
 interface EditItemFormProps {
@@ -19,46 +19,41 @@ interface EditItemFormProps {
         url?: string;
       };
     };
-    category?: { _id: string; title: string };
+    category?: {_id: string; title: string};
     size?: string;
-    weight?: { weight: number; unit: string };
+    weight?: {weight: number; unit: string};
     quantity?: number;
     calories?: number;
   };
   onSuccess: () => void;
 }
 
-export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
+export function EditItemForm({item, onSuccess}: EditItemFormProps) {
   const [name, setName] = useState<string>(item.name);
   const [slug, setSlug] = useState<string>(item.slug);
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    item.image?.asset.url || null
-  );
+  const [imagePreview, setImagePreview] = useState<string | null>(item.image?.asset.url || null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    item.category?._id || ""
-  );
-  const [size, setSize] = useState<string>(item.size || "");
-  const [weight, setWeight] = useState<{ weight: number; unit: string; }>({
+  const [selectedCategory, setSelectedCategory] = useState<string>(item.category?._id || '');
+  const [size, setSize] = useState<string>(item.size || '');
+  const [weight, setWeight] = useState<{weight: number; unit: string}>({
     weight: item.weight?.weight || 0,
-    unit: item.weight?.unit || "g",
+    unit: item.weight?.unit || 'g',
   });
   const [calories, setCalories] = useState<number>(item.calories || 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/getCategories");
-        if (!response.ok) throw new Error("Failed to fetch categories");
+        const response = await fetch('/api/getCategories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
         const data: Category[] = await response.json();
 
         // Sort categories alphabetically
-        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, "nb")
-        );
+        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, 'nb'));
 
         setCategories(sortedCategories);
 
@@ -67,8 +62,8 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
           setSelectedCategory(sortedCategories[0]._id);
         }
       } catch (error) {
-        console.error("Category fetch error:", error);
-        setErrorMessage("Kunne ikke hente kategorier.");
+        console.error('Category fetch error:', error);
+        setErrorMessage('Kunne ikke hente kategorier.');
       }
     };
     fetchCategories();
@@ -76,13 +71,10 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
 
   useEffect(() => {
     if (name) {
-      const generatedSlug = name
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .slice(0, 200);
+      const generatedSlug = name.toLowerCase().replace(/\s+/g, '-').slice(0, 200);
       setSlug(generatedSlug);
     } else {
-      setSlug("");
+      setSlug('');
     }
   }, [name]);
 
@@ -100,7 +92,7 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
 
   useEffect(() => {
     return () => {
-      if (imagePreview && imagePreview.startsWith("blob:")) {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
         URL.revokeObjectURL(imagePreview);
       }
     };
@@ -109,7 +101,7 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name || !slug) {
-      setErrorMessage("Navn og slug er obligatorisk.");
+      setErrorMessage('Navn og slug er obligatorisk.');
       return;
     }
 
@@ -117,30 +109,30 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
     setErrorMessage(null);
 
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("slug", slug);
-    formData.append("itemId", item._id);
+    formData.append('name', name);
+    formData.append('slug', slug);
+    formData.append('itemId', item._id);
     if (image) {
-      formData.append("image", image);
+      formData.append('image', image);
     }
 
-    formData.append("category", selectedCategory);
+    formData.append('category', selectedCategory);
     if (size.trim()) {
-      formData.append("size", size);
+      formData.append('size', size);
     }
 
     if (weight.weight > 0) {
-      formData.append("weight.weight", weight.weight.toString());
-      formData.append("weight.unit", weight.unit);
+      formData.append('weight.weight', weight.weight.toString());
+      formData.append('weight.unit', weight.unit);
     }
 
     if (calories > 0) {
-      formData.append("calories", calories.toString());
+      formData.append('calories', calories.toString());
     }
 
     try {
       const response = await fetch(`/api/items/${item._id}`, {
-        method: "PUT",
+        method: 'PUT',
         body: formData,
       });
 
@@ -149,26 +141,26 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
         try {
           errorData = await response.json();
         } catch {
-          throw new Error("Kunne ikke oppdatere utstyr.");
+          throw new Error('Kunne ikke oppdatere utstyr.');
         }
-        throw new Error(errorData.message || "Kunne ikke oppdatere utstyr.");
+        throw new Error(errorData.message || 'Kunne ikke oppdatere utstyr.');
       }
 
       const updatedItem = await response.json();
-      console.log("Utstyr oppdatert:", updatedItem);
-      setSuccessMessage("Utstyr oppdatert suksessfullt!");
+      console.log('Utstyr oppdatert:', updatedItem);
+      setSuccessMessage('Utstyr oppdatert suksessfullt!');
       onSuccess();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error("Detailed error message:", error.message);
-        setErrorMessage(error.message || "Kunne ikke oppdatere utstyr.");
+        console.error('Detailed error message:', error.message);
+        setErrorMessage(error.message || 'Kunne ikke oppdatere utstyr.');
       } else {
-        console.error("Unexpected error:", error);
-        setErrorMessage("Kunne ikke oppdatere utstyr.");
+        console.error('Unexpected error:', error);
+        setErrorMessage('Kunne ikke oppdatere utstyr.');
       }
     } finally {
       setIsLoading(false);
-      setTimeout(() => setSuccessMessage(""), 3000);
+      setTimeout(() => setSuccessMessage(''), 3000);
     }
   }
 
@@ -195,7 +187,8 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Skriv inn utstyrsnavn" />
+              placeholder="Skriv inn utstyrsnavn"
+            />
           </label>
         </div>
 
@@ -207,16 +200,18 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
               type="file"
               className="w-full max-w-full p-4"
               accept="image/*"
-              onChange={handleImageChange} />
+              onChange={handleImageChange}
+            />
           </label>
           {(imagePreview || item.image) && (
             <div className="mt-4 relative">
               <Image
-                src={imagePreview || item.image?.asset?.url || ""}
+                src={imagePreview || item.image?.asset?.url || ''}
                 alt={`Forhåndsvisning av ${name}`}
                 width={96}
                 height={96}
-                className="h-24 w-24 object-cover rounded-md" />
+                className="h-24 w-24 object-cover rounded-md"
+              />
             </div>
           )}
         </div>
@@ -249,7 +244,8 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse" />
+              placeholder="Skriv inn størrelse"
+            />
           </label>
         </div>
 
@@ -262,14 +258,15 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
-                onChange={(e) => setWeight({ ...weight, weight: parseFloat(e.target.value) })}
+                onChange={(e) => setWeight({...weight, weight: parseFloat(e.target.value)})}
                 placeholder="Vekt"
                 min="0"
-                required />
+                required
+              />
               <select
                 className="w-full max-w-full p-4"
                 value={weight.unit}
-                onChange={(e) => setWeight({ ...weight, unit: e.target.value })}
+                onChange={(e) => setWeight({...weight, unit: e.target.value})}
               >
                 <option value="g">g</option>
                 <option value="kg">kg</option>
@@ -288,7 +285,8 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
-              min="0" />
+              min="0"
+            />
           </label>
         </div>
 
@@ -298,10 +296,9 @@ export function EditItemForm({ item, onSuccess }: EditItemFormProps) {
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? "Oppdaterer..." : "Oppdater Utstyr"}
+          {isLoading ? 'Oppdaterer...' : 'Oppdater Utstyr'}
         </button>
       </form>
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { client } from "@/lib/sanity";
-import { getUserSession } from "@/lib/auth-helpers";
+import {NextResponse} from 'next/server';
+import {client} from '@/lib/sanity';
+import {getUserSession} from '@/lib/auth-helpers';
 
 // Define an interface for the item structure
 interface Item {
@@ -14,20 +14,19 @@ export async function DELETE() {
     const session = await getUserSession();
 
     if (!session || !session.user) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      return new Response(JSON.stringify({message: 'Unauthorized'}), {
         status: 401,
       });
     }
 
     // Fetch items belonging to the current user
-    const items: Item[] = await client.fetch(
-      `*[_type == "item" && user._ref == $userId]`,
-      { userId: session.user.id },
-    );
-    console.log("Items to delete:", items); // Log the items to be deleted
+    const items: Item[] = await client.fetch(`*[_type == "item" && user._ref == $userId]`, {
+      userId: session.user.id,
+    });
+    console.log('Items to delete:', items); // Log the items to be deleted
 
     if (items.length === 0) {
-      return NextResponse.json({ message: "No items to clear." });
+      return NextResponse.json({message: 'No items to clear.'});
     }
 
     const BATCH_SIZE = 10; // Define a batch size
@@ -43,27 +42,25 @@ export async function DELETE() {
 
       try {
         await Promise.all(deletePromises);
-        console.log(
-          `Deleted batch: ${batch.map((item) => item._id).join(", ")}`,
-        ); // Log successful deletions
+        console.log(`Deleted batch: ${batch.map((item) => item._id).join(', ')}`); // Log successful deletions
       } catch (error) {
         const typedError = error as Error;
-        console.error("Error deleting batch:", typedError);
+        console.error('Error deleting batch:', typedError);
         console.error(
-          "Failed to delete items:",
+          'Failed to delete items:',
           batch.map((item) => item._id),
         ); // Log IDs of items that failed
         // Optionally, return an error response here if desired
       }
     }
 
-    return NextResponse.json({ message: "All items cleared for the user." });
+    return NextResponse.json({message: 'All items cleared for the user.'});
   } catch (error) {
     const typedError = error as Error;
-    console.error("Error clearing items:", typedError);
+    console.error('Error clearing items:', typedError);
     return NextResponse.json(
-      { message: "Failed to clear items.", error: typedError.message },
-      { status: 500 },
+      {message: 'Failed to clear items.', error: typedError.message},
+      {status: 500},
     );
   }
 }

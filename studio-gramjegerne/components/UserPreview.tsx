@@ -1,9 +1,9 @@
-import {UserIcon} from '@sanity/icons'
+import {UserIcon} from '@sanity/icons';
 
 interface UserPreviewProps {
-  title: string
-  subtitle: string
-  media?: string
+  title: string;
+  subtitle: string;
+  media?: string;
 }
 
 export function UserPreview({title, subtitle, media}: UserPreviewProps) {
@@ -26,5 +26,5 @@ export function UserPreview({title, subtitle, media}: UserPreviewProps) {
     ) : (
       UserIcon
     ),
-  }
+  };
 }

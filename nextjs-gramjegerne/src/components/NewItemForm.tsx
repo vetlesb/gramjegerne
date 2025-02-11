@@ -1,41 +1,41 @@
 // src/components/NewItemForm.tsx
 
-"use client";
+'use client';
 
-import { Icon } from "@/components/Icon";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Add this import
-import { Command } from "cmdk";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import {Icon} from '@/components/Icon';
+import {LoadingSpinner} from '@/components/ui/LoadingSpinner'; // Add this import
+import {Command} from 'cmdk';
+import Image from 'next/image';
+import React, {useEffect, useState} from 'react';
 
 interface Category {
   _id: string;
   title: string;
-  slug: { current: string };
+  slug: {current: string};
 }
 
 interface NewItemFormProps {
   onSuccess?: (item: Record<string, unknown>) => void;
 }
 
-function NewItemForm({ onSuccess }:NewItemFormProps) {
+function NewItemForm({onSuccess}: NewItemFormProps) {
   // State Definitions
-  const [name, setName] = useState<string>("");
-  const [slug, setSlug] = useState<string>("");
+  const [name, setName] = useState<string>('');
+  const [slug, setSlug] = useState<string>('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [size, setSize] = useState<string>("");
-  const [weight, setWeight] = useState<{ weight: number; unit: string; }>({
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [size, setSize] = useState<string>('');
+  const [weight, setWeight] = useState<{weight: number; unit: string}>({
     weight: 0,
-    unit: "g",
+    unit: 'g',
   });
   const [calories, setCalories] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const [categoryInput, setCategoryInput] = useState("");
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [categoryInput, setCategoryInput] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -43,18 +43,17 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/getCategories");
-        if (!response.ok) throw new Error("Failed to fetch categories");
+        const response = await fetch('/api/getCategories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
         const data: Category[] = await response.json();
 
         // Sort categories alphabetically by title
-        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, "nb")
-        );
+        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, 'nb'));
 
         setCategories(sortedCategories);
       } catch (error) {
         console.error(error);
-        setErrorMessage("Kunne ikke hente kategorier.");
+        setErrorMessage('Kunne ikke hente kategorier.');
       }
     };
 
@@ -63,13 +62,10 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
   // Automatically generate slug when name changes
   useEffect(() => {
     if (name) {
-      const generatedSlug = name
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .slice(0, 200);
+      const generatedSlug = name.toLowerCase().replace(/\s+/g, '-').slice(0, 200);
       setSlug(generatedSlug);
     } else {
-      setSlug("");
+      setSlug('');
     }
   }, [name]);
 
@@ -77,8 +73,6 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setImage(file || null); // Ensure null is set if no file is selected
-
-
 
     // Generate a preview URL if a file is selected
     if (file) {
@@ -97,35 +91,33 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
 
   // Filter categories based on input
   const filteredCategories = categories.filter(
-    (category) => !categoryInput ||
-      category.title.toLowerCase().includes(categoryInput.toLowerCase())
+    (category) =>
+      !categoryInput || category.title.toLowerCase().includes(categoryInput.toLowerCase()),
   );
 
   // Handle new category creation
   async function handleAddCategory(newCategoryName: string) {
     setIsAddingCategory(true);
     try {
-      const response = await fetch("/api/addCategory", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newCategoryName }),
+      const response = await fetch('/api/addCategory', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title: newCategoryName}),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to add category");
+        throw new Error(data.error || 'Failed to add category');
       }
 
       const newCategory = await response.json();
-      setCategories((prev) => [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, "nb")
-      )
+      setCategories((prev) =>
+        [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, 'nb')),
       );
       setSelectedCategory(newCategory._id);
       setCategoryInput(newCategory.title);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Failed to add category"
-      );
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to add category');
     } finally {
       setIsAddingCategory(false);
     }
@@ -141,41 +133,39 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
       const formData = new FormData();
 
       // Required fields
-      formData.append("name", name.trim());
-      formData.append("slug", JSON.stringify({ current: slug }));
-      formData.append("category", selectedCategory); // Make sure category is always sent
-
-
+      formData.append('name', name.trim());
+      formData.append('slug', JSON.stringify({current: slug}));
+      formData.append('category', selectedCategory); // Make sure category is always sent
 
       // Optional fields with validation
       if (image) {
-        formData.append("image", image);
+        formData.append('image', image);
       }
 
       if (size && size.trim()) {
-        formData.append("size", size.trim());
+        formData.append('size', size.trim());
       }
 
       // Weight handling
       if (weight.weight > 0) {
         formData.append(
-          "weight",
+          'weight',
           JSON.stringify({
             weight: weight.weight,
             unit: weight.unit,
-          })
+          }),
         );
       }
 
       if (calories > 0) {
-        formData.append("calories", calories.toString());
+        formData.append('calories', calories.toString());
       } else {
         // Don't append calories at all if it's 0 or less
         console.log("Skipping calories as it's 0 or less");
       }
 
       // Debug log
-      console.log("Sending form data:", {
+      console.log('Sending form data:', {
         name: name.trim(),
         slug,
         category: selectedCategory,
@@ -184,40 +174,38 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
         calories: calories > 0 ? calories : null,
       });
 
-      const response = await fetch("/api/createItem", {
-        method: "POST",
+      const response = await fetch('/api/createItem', {
+        method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create item");
+        throw new Error(errorData.message || 'Failed to create item');
       }
 
       const result = await response.json();
 
       // Reset form
-      setName("");
-      setSlug("");
+      setName('');
+      setSlug('');
       setImage(null);
       setImagePreview(null);
-      setSelectedCategory(categories[0]?._id || "");
-      setSize("");
-      setWeight({ weight: 0, unit: "g" });
+      setSelectedCategory(categories[0]?._id || '');
+      setSize('');
+      setWeight({weight: 0, unit: 'g'});
       setCalories(0);
 
-      setSuccessMessage("Utstyr opprettet!");
+      setSuccessMessage('Utstyr opprettet!');
 
       // Call onSuccess callback with the result
       if (onSuccess) {
         onSuccess(result);
       }
     } catch (error) {
-      console.error("Error creating item:", error);
+      console.error('Error creating item:', error);
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not create item. Please try again."
+        error instanceof Error ? error.message : 'Could not create item. Please try again.',
       );
     } finally {
       setIsLoading(false);
@@ -228,16 +216,16 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      const commandRoot = document.querySelector("[cmdk-root]");
-      const isCommandInput = target.closest("[cmdk-input]");
+      const commandRoot = document.querySelector('[cmdk-root]');
+      const isCommandInput = target.closest('[cmdk-input]');
 
       if (commandRoot && !commandRoot.contains(target) && !isCommandInput) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
@@ -268,7 +256,8 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
               onChange={(e) => setName(e.target.value)}
               required
               minLength={1}
-              placeholder="Skriv inn utstyrsnavn" />
+              placeholder="Skriv inn utstyrsnavn"
+            />
           </label>
         </div>
 
@@ -280,7 +269,8 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
               type="file"
               className="w-full max-w-full p-4"
               accept="image/*"
-              onChange={handleImageChange} />
+              onChange={handleImageChange}
+            />
           </label>
           {imagePreview && (
             <div className="mt-4 relative">
@@ -289,7 +279,8 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                 alt="Forhåndsvisning"
                 width={96}
                 height={96}
-                className="h-24 w-24 object-cover rounded-md" />
+                className="h-24 w-24 object-cover rounded-md"
+              />
               <button
                 type="button"
                 onClick={handleImageRemoval}
@@ -312,40 +303,42 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                 shouldFilter={false}
                 loop={true}
                 onKeyDown={(e) => {
-                  if (e.key === "Escape") {
+                  if (e.key === 'Escape') {
                     setIsOpen(false);
                   }
-                } }
+                }}
               >
                 <div className="relative">
                   <Command.Input
-                    value={selectedCategory
-                      ? categories.find((c) => c._id === selectedCategory)
-                        ?.title || ""
-                      : categoryInput}
+                    value={
+                      selectedCategory
+                        ? categories.find((c) => c._id === selectedCategory)?.title || ''
+                        : categoryInput
+                    }
                     onValueChange={(value) => {
                       setCategoryInput(value);
                       if (selectedCategory) {
-                        setSelectedCategory(""); // Clear selection only when actively typing
+                        setSelectedCategory(''); // Clear selection only when actively typing
                       }
                       setIsOpen(true);
-                    } }
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       setIsOpen(!isOpen);
-                    } }
-                    readOnly={selectedCategory !== ""} // Make input readonly when category is selected
+                    }}
+                    readOnly={selectedCategory !== ''} // Make input readonly when category is selected
                     placeholder="Søk eller legg til ny kategory..."
-                    className="w-full p-4 border border-gray-300 rounded cursor-pointer" />
+                    className="w-full p-4 border border-gray-300 rounded cursor-pointer"
+                  />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
                     {selectedCategory && (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
-                          setSelectedCategory("");
-                          setCategoryInput("");
-                        } }
+                          setSelectedCategory('');
+                          setCategoryInput('');
+                        }}
                         className="p-1 rounded-md"
                         title="Fjern valgt kategori"
                       >
@@ -357,7 +350,7 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                       onClick={(e) => {
                         e.preventDefault();
                         setIsOpen(!isOpen);
-                      } }
+                      }}
                       className="p-1"
                     >
                       <Icon name="chevrondown" width={16} height={16} />
@@ -376,7 +369,7 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                             onClick={() => {
                               handleAddCategory(categoryInput);
                               setIsOpen(false);
-                            } }
+                            }}
                             className="button-primary-accent text-md flex items-center gap-2 mt-2 text-accent"
                           >
                             Opprett &ldquo;{categoryInput}&rdquo;
@@ -393,10 +386,10 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                             // Use setTimeout to ensure state updates happen after event handling
                             setTimeout(() => {
                               setSelectedCategory(category._id);
-                              setCategoryInput("");
+                              setCategoryInput('');
                               setIsOpen(false);
                             }, 0);
-                          } }
+                          }}
                           className="px-4 py-2 cursor-pointer hover:bg-dimmed focus:bg-dimmed outline-none rounded"
                         >
                           {category.title}
@@ -419,7 +412,8 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse" />
+              placeholder="Skriv inn størrelse"
+            />
           </label>
         </div>
 
@@ -432,18 +426,21 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
-                onChange={(e) => setWeight({
-                  ...weight,
-                  weight: Math.max(0, parseFloat(e.target.value) || 0),
-                })}
+                onChange={(e) =>
+                  setWeight({
+                    ...weight,
+                    weight: Math.max(0, parseFloat(e.target.value) || 0),
+                  })
+                }
                 placeholder="Vekt"
                 min="0"
                 step="0.1"
-                required />
+                required
+              />
               <select
                 className="w-full max-w-full p-4"
                 value={weight.unit}
-                onChange={(e) => setWeight({ ...weight, unit: e.target.value })}
+                onChange={(e) => setWeight({...weight, unit: e.target.value})}
               >
                 <option value="g">g</option>
                 <option value="kg">kg</option>
@@ -462,17 +459,14 @@ function NewItemForm({ onSuccess }:NewItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
-              min="0" />
+              min="0"
+            />
           </label>
         </div>
 
         {/* Submit Button */}
-        <button
-          className="button-primary-accent py-2 px-4"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? "Oppretter..." : "Opprett"}
+        <button className="button-primary-accent py-2 px-4" type="submit" disabled={isLoading}>
+          {isLoading ? 'Oppretter...' : 'Opprett'}
         </button>
       </form>
     </div>

@@ -1,4 +1,4 @@
-import { client } from "@/sanity/client";
+import {client} from '@/sanity/client';
 
 interface UserData {
   name?: string | null;
@@ -11,10 +11,7 @@ export async function createOrGetUser(userData: UserData) {
   const userId = `google_${userData.googleId}`;
 
   // Check if user exists
-  const existingUser = await client.fetch(
-    `*[_type == "user" && _id == $userId][0]`,
-    { userId },
-  );
+  const existingUser = await client.fetch(`*[_type == "user" && _id == $userId][0]`, {userId});
 
   if (existingUser) {
     return existingUser;
@@ -22,7 +19,7 @@ export async function createOrGetUser(userData: UserData) {
 
   // Create new user
   const newUser = await client.create({
-    _type: "user",
+    _type: 'user',
     _id: userId,
     name: userData.name,
     email: userData.email,

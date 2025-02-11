@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "./ThemeProvider";
+} from '@/components/ui/dropdown-menu';
+import {useTheme} from './ThemeProvider';
 
-import { Icon } from "@/components/Icon";
+import {Icon} from '@/components/Icon';
 
 export function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
+  const {theme, setTheme} = useTheme();
 
   const themes = [
-    { value: "green", label: "Skog", icon: "tree" },
-    { value: "blue", label: "Hav", icon: "water" },
-    { value: "yellow", label: "Høst", icon: "leaf" },
+    {value: 'green', label: 'Skog', icon: 'tree'},
+    {value: 'blue', label: 'Hav', icon: 'water'},
+    {value: 'yellow', label: 'Høst', icon: 'leaf'},
   ] as const;
 
   const currentTheme = themes.find((t) => t.value === theme);
@@ -24,7 +24,7 @@ export function ThemeSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="menu-theme text-lg rounded-md flex items-center justify-center gap-x-1 md:w-28">
-        <Icon width={24} height={24} name={currentTheme?.icon ?? "tree"} />
+        <Icon width={24} height={24} name={currentTheme?.icon ?? 'tree'} />
         <span>{currentTheme?.label}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent

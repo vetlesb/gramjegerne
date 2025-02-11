@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity';
+import {defineField, defineType} from 'sanity';
 
 export const categoryType = defineType({
   name: 'category',
@@ -76,4 +76,4 @@ export const categoryType = defineType({
       by: [{field: 'order', direction: 'desc'}],
     },
   ],
-})
+});

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { client } from "@/sanity/client";
-import { notFound } from "next/navigation";
-import SharePageClient from "./SharePageClient";
-import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import { List } from "@/types/list";
+import {client} from '@/sanity/client';
+import {notFound} from 'next/navigation';
+import SharePageClient from './SharePageClient';
+import {useParams} from 'next/navigation';
+import {useState, useEffect} from 'react';
+import {List} from '@/types/list';
 
 export default function SharePage() {
   const params = useParams();
@@ -44,7 +44,7 @@ export default function SharePage() {
             }
           }
         }`,
-        { slug },
+        {slug},
       );
 
       if (!fetchedList) {

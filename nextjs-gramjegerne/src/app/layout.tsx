@@ -1,40 +1,36 @@
 // src/components/layout.tsx
 
-"use client";
+'use client';
 
-import { Navbar } from "@/components/Navbar";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import localFont from "next/font/local";
-import { usePathname } from "next/navigation";
-import { Toaster } from "sonner";
-import "./globals.css";
-import { Providers } from "./providers";
+import {Navbar} from '@/components/Navbar';
+import {ThemeProvider} from '@/components/ThemeProvider';
+import localFont from 'next/font/local';
+import {usePathname} from 'next/navigation';
+import {Toaster} from 'sonner';
+import './globals.css';
+import {Providers} from './providers';
 
 const apfel = localFont({
   src: [
     {
-      path: "../../public/fonts/ApfelGrotezk-Regular.woff2",
-      weight: "400",
+      path: '../../public/fonts/ApfelGrotezk-Regular.woff2',
+      weight: '400',
     },
     {
-      path: "../../public/fonts/ApfelGrotezk-Mittel.woff2",
-      weight: "500",
+      path: '../../public/fonts/ApfelGrotezk-Mittel.woff2',
+      weight: '500',
     },
     {
-      path: "../../public/fonts/ApfelGrotezk-Fett.woff2",
-      weight: "700",
+      path: '../../public/fonts/ApfelGrotezk-Fett.woff2',
+      weight: '700',
     },
   ],
-  variable: "--font-apfel",
+  variable: '--font-apfel',
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith("/auth/");
+  const isAuthPage = pathname?.startsWith('/auth/');
 
   return (
     <html lang="en">

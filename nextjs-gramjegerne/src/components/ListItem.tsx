@@ -1,16 +1,16 @@
 // src/components/ListItem.tsx
 
-"use client";
-import { client } from "@/sanity/client";
-import { ListDocument } from "@/types"; // Import the interface
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { AddListDialog } from "./addListDialog"; // Import AddListDialog
-import { DeleteListButton } from "./deleteListButton";
-import { Icon } from "./Icon"; // Import Icon if not already imported
+'use client';
+import {client} from '@/sanity/client';
+import {ListDocument} from '@/types'; // Import the interface
+import imageUrlBuilder from '@sanity/image-url';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import Image from 'next/image';
+import {useRouter} from 'next/navigation';
+import {useMemo, useState} from 'react';
+import {AddListDialog} from './addListDialog'; // Import AddListDialog
+import {DeleteListButton} from './deleteListButton';
+import {Icon} from './Icon'; // Import Icon if not already imported
 
 interface ListItemProps {
   list: ListDocument;
@@ -36,7 +36,7 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-export function ListItem({ list, onDelete }: ListItemProps) {
+export function ListItem({list, onDelete}: ListItemProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false); // Add state for edit dialog
 
@@ -58,11 +58,11 @@ export function ListItem({ list, onDelete }: ListItemProps) {
   }
 
   function formatNumber(num: number): string {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
   // Calculate totals
-  const { totalWeight, totalCalories } = useMemo(() => {
+  const {totalWeight, totalCalories} = useMemo(() => {
     let weight = 0;
     let calories = 0;
 
@@ -79,7 +79,7 @@ export function ListItem({ list, onDelete }: ListItemProps) {
       }
     });
 
-    return { totalWeight: weight, totalCalories: calories };
+    return {totalWeight: weight, totalCalories: calories};
   }, [list.items]);
 
   return (
@@ -114,10 +114,7 @@ export function ListItem({ list, onDelete }: ListItemProps) {
             )}
           </div>
           <div className="flex flex-col gap-y-2 gap-x-4 p-2">
-            <h2
-              className="text-3xl text-accent cursor-pointer"
-              onClick={handleClick}
-            >
+            <h2 className="text-3xl text-accent cursor-pointer" onClick={handleClick}>
               {list.name}
             </h2>
 
@@ -142,10 +139,7 @@ export function ListItem({ list, onDelete }: ListItemProps) {
           </div>
           <div className="flex flex-col pt-4 gap-x-4 gap-y-4">
             <div className="flex gap-x-2">
-              <button
-                onClick={() => setShowEditDialog(true)}
-                className="button-secondary w-full"
-              >
+              <button onClick={() => setShowEditDialog(true)} className="button-secondary w-full">
                 <div className="flex items-center justify-center gap-x-1 w-full text-lg">
                   <Icon name="edit" width={24} height={24} />
                   Rediger
