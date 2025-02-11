@@ -1,5 +1,5 @@
-import {createClient} from '@sanity/client'
-import {v4 as uuidv4} from 'uuid'
+import { createClient } from '@sanity/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = createClient({
   projectId: 'your-project-id',

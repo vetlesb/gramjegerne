@@ -1,5 +1,5 @@
-import {defineField, defineType} from 'sanity'
-import {ReferenceDefinition, Rule, ValidationBuilder, ReferenceRule} from '@sanity/types'
+import { ReferenceRule } from '@sanity/types';
+import { defineField, defineType } from 'sanity';
 
 export const itemType = defineType({
   name: 'item',
