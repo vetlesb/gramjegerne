@@ -11,8 +11,6 @@
 		"deploy": "sanity deploy",
 		"deploy-graphql": "sanity graphql deploy",
 		"fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
-		"vetle-update//": "echo oppdaterer til siste versjoner gitt formlene i package.json og oppdaterer filen",
-		"vetle-update": "npm update --save",
 		"rm-node-modules": "rm -rf node_modules/"
 	},
 	"keywords": [
