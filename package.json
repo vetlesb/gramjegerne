@@ -1,0 +1,18 @@
+{
+	"name": "gramjegerne",
+	"scripts": {
+		"install-corepack": "brew install corepack && corepack enable && corepack install",
+		"update-pnpm": "corepack install -g pnpm@latest && corepack up && corepack use pnpm",
+		"ci": "pnpm install --frozen-lockfile",
+		"outdated": "pnpm -r outdated",
+		"update//": "echo Updates packages and lockfile. (`pnpm i` is required because `pnpm up` creates non-deterministic lockfile)",
+		"update": "pnpm -r up && pnpm i",
+		"up": "pnpm run update",
+		"rm-node-modules//": "echo Removes all `node_modules/` from all workspaces",
+		"rm-node-modules": "rm -rf node_modules/ && pnpm -r run rm-node-modules",
+		"clean-update//": "echo Removes everything before updating packages",
+		"clean-update": "rm -f pnpm-lock.yaml && pnpm cache delete && pnpm run rm-node-modules && pnpm run update",
+		"iup": "pnpm -r upgrade --interactive --latest"
+	},
+	"packageManager": "pnpm@10.3.0+sha512.ee592eda8815a8a293c206bb0917c4bb0ff274c50def7cbc17be05ec641fc2d1b02490ce660061356bd0d126a4d7eb2ec8830e6959fb8a447571c631d5a2442d"
+}

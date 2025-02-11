@@ -1,46 +1,47 @@
 {
-  "name": "gramjegerne",
-  "private": true,
-  "version": "1.0.0",
-  "main": "package.json",
-  "license": "UNLICENSED",
-  "scripts": {
-    "dev": "sanity dev",
-    "start": "sanity start",
-    "build": "sanity build",
-    "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy",
-    "fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
-    "vetle-update//": "echo oppdaterer til siste versjoner gitt formlene i package.json og oppdaterer filen",
-    "vetle-update": "npm update --save"
-  },
-  "keywords": [
-    "sanity"
-  ],
-  "dependencies": {
-    "@sanity/types": "^3.64.2",
-    "@sanity/vision": "^3.74.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sanity": "^3.74.1",
-    "styled-components": "^6.1.15",
-    "uuid": "^11.0.5"
-  },
-  "devDependencies": {
-    "@sanity/eslint-config-studio": "^4.0.0",
-    "@types/node": "^22.13.1",
-    "@types/react": "^18.3.18",
-    "@types/uuid": "^10.0.0",
-    "eslint": "^8.57.1",
-    "prettier": "^3.4.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
-  },
-  "prettier": {
-    "semi": false,
-    "printWidth": 100,
-    "bracketSpacing": false,
-    "singleQuote": true
-  },
-  "type": "module"
+	"name": "gramjegerne",
+	"private": true,
+	"version": "1.0.0",
+	"main": "package.json",
+	"license": "UNLICENSED",
+	"scripts": {
+		"dev": "sanity dev",
+		"start": "sanity start",
+		"build": "sanity build",
+		"deploy": "sanity deploy",
+		"deploy-graphql": "sanity graphql deploy",
+		"fix-keys": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/fixListKeys.ts",
+		"vetle-update//": "echo oppdaterer til siste versjoner gitt formlene i package.json og oppdaterer filen",
+		"vetle-update": "npm update --save",
+		"rm-node-modules": "rm -rf node_modules/"
+	},
+	"keywords": [
+		"sanity"
+	],
+	"dependencies": {
+		"@sanity/types": "^3.74.1",
+		"@sanity/vision": "^3.74.1",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"sanity": "^3.74.1",
+		"styled-components": "^6.1.15",
+		"uuid": "^11.0.5"
+	},
+	"devDependencies": {
+		"@sanity/eslint-config-studio": "^4.0.0",
+		"@types/node": "^22.13.1",
+		"@types/react": "^18.3.18",
+		"@types/uuid": "^10.0.0",
+		"eslint": "^8.57.1",
+		"prettier": "^3.5.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.3"
+	},
+	"prettier": {
+		"semi": false,
+		"printWidth": 100,
+		"bracketSpacing": false,
+		"singleQuote": true
+	},
+	"type": "module"
 }
