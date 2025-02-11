@@ -52,14 +52,14 @@ export default function ListItem({ list, onDelete }: ListItemProps) {
   };
 
   // Format functions
-  const formatWeight = (weightInGrams: number): string => {
+  function formatWeight(weightInGrams: number): string {
     const weightInKg = weightInGrams / 1000;
     return `${weightInKg.toFixed(3)} kg`;
-  };
+  }
 
-  const formatNumber = (num: number): string => {
+  function formatNumber(num: number): string {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  };
+  }
 
   // Calculate totals
   const { totalWeight, totalCalories } = useMemo(() => {

@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import React, { useEffect, useState } from "react";
 
 interface Category {
   _id: string;
@@ -28,19 +28,19 @@ interface EditItemFormProps {
   onSuccess: () => void;
 }
 
-const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
+function EditItemForm({ item, onSuccess }: EditItemFormProps) {
   const [name, setName] = useState<string>(item.name);
   const [slug, setSlug] = useState<string>(item.slug);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
-    item.image?.asset.url || null,
+    item.image?.asset.url || null
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    item.category?._id || "",
+    item.category?._id || ""
   );
   const [size, setSize] = useState<string>(item.size || "");
-  const [weight, setWeight] = useState<{ weight: number; unit: string }>({
+  const [weight, setWeight] = useState<{ weight: number; unit: string; }>({
     weight: item.weight?.weight || 0,
     unit: item.weight?.unit || "g",
   });
@@ -57,8 +57,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
         const data: Category[] = await response.json();
 
         // Sort categories alphabetically
-        const sortedCategories = [...data].sort((a, b) =>
-          a.title.localeCompare(b.title, "nb"),
+        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, "nb")
         );
 
         setCategories(sortedCategories);
@@ -87,7 +86,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     }
   }, [name]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setImage(file || null);
     if (file) {
@@ -97,7 +96,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     } else {
       setImagePreview(null);
     }
-  };
+  }
 
   useEffect(() => {
     return () => {
@@ -107,7 +106,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
     };
   }, [imagePreview]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name || !slug) {
       setErrorMessage("Navn og slug er obligatorisk.");
@@ -171,7 +170,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       setIsLoading(false);
       setTimeout(() => setSuccessMessage(""), 3000);
     }
-  };
+  }
 
   return (
     <div>
@@ -196,8 +195,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Skriv inn utstyrsnavn"
-            />
+              placeholder="Skriv inn utstyrsnavn" />
           </label>
         </div>
 
@@ -209,8 +207,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
               type="file"
               className="w-full max-w-full p-4"
               accept="image/*"
-              onChange={handleImageChange}
-            />
+              onChange={handleImageChange} />
           </label>
           {(imagePreview || item.image) && (
             <div className="mt-4 relative">
@@ -219,8 +216,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
                 alt={`Forhåndsvisning av ${name}`}
                 width={96}
                 height={96}
-                className="h-24 w-24 object-cover rounded-md"
-              />
+                className="h-24 w-24 object-cover rounded-md" />
             </div>
           )}
         </div>
@@ -253,8 +249,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse"
-            />
+              placeholder="Skriv inn størrelse" />
           </label>
         </div>
 
@@ -267,13 +262,10 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
-                onChange={(e) =>
-                  setWeight({ ...weight, weight: parseFloat(e.target.value) })
-                }
+                onChange={(e) => setWeight({ ...weight, weight: parseFloat(e.target.value) })}
                 placeholder="Vekt"
                 min="0"
-                required
-              />
+                required />
               <select
                 className="w-full max-w-full p-4"
                 value={weight.unit}
@@ -296,8 +288,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
-              min="0"
-            />
+              min="0" />
           </label>
         </div>
 
@@ -312,6 +303,6 @@ const EditItemForm: React.FC<EditItemFormProps> = ({ item, onSuccess }) => {
       </form>
     </div>
   );
-};
+}
 
 export default EditItemForm;

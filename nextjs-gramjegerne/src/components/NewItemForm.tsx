@@ -2,11 +2,11 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import { Command } from "cmdk";
 import Icon from "@/components/Icon";
 import LoadingSpinner from "@/components/ui/LoadingSpinner"; // Add this import
+import { Command } from "cmdk";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
 
 interface Category {
   _id: string;
@@ -18,7 +18,7 @@ interface NewItemFormProps {
   onSuccess?: (item: Record<string, unknown>) => void;
 }
 
-const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
+function NewItemForm({ onSuccess }:NewItemFormProps) {
   // State Definitions
   const [name, setName] = useState<string>("");
   const [slug, setSlug] = useState<string>("");
@@ -27,7 +27,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [size, setSize] = useState<string>("");
-  const [weight, setWeight] = useState<{ weight: number; unit: string }>({
+  const [weight, setWeight] = useState<{ weight: number; unit: string; }>({
     weight: 0,
     unit: "g",
   });
@@ -48,8 +48,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
         const data: Category[] = await response.json();
 
         // Sort categories alphabetically by title
-        const sortedCategories = [...data].sort((a, b) =>
-          a.title.localeCompare(b.title, "nb"),
+        const sortedCategories = [...data].sort((a, b) => a.title.localeCompare(b.title, "nb")
         );
 
         setCategories(sortedCategories);
@@ -75,9 +74,11 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
   }, [name]);
 
   // Handle Image Input Changes
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setImage(file || null); // Ensure null is set if no file is selected
+
+
 
     // Generate a preview URL if a file is selected
     if (file) {
@@ -86,23 +87,22 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
     } else {
       setImagePreview(null); // Clear preview if no file is selected
     }
-  };
+  }
 
   // Handle Image Removal
-  const handleImageRemoval = () => {
+  function handleImageRemoval() {
     setImage(null);
     setImagePreview(null);
-  };
+  }
 
   // Filter categories based on input
   const filteredCategories = categories.filter(
-    (category) =>
-      !categoryInput ||
-      category.title.toLowerCase().includes(categoryInput.toLowerCase()),
+    (category) => !categoryInput ||
+      category.title.toLowerCase().includes(categoryInput.toLowerCase())
   );
 
   // Handle new category creation
-  const handleAddCategory = async (newCategoryName: string) => {
+  async function handleAddCategory(newCategoryName: string) {
     setIsAddingCategory(true);
     try {
       const response = await fetch("/api/addCategory", {
@@ -117,24 +117,22 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       }
 
       const newCategory = await response.json();
-      setCategories((prev) =>
-        [...prev, newCategory].sort((a, b) =>
-          a.title.localeCompare(b.title, "nb"),
-        ),
+      setCategories((prev) => [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, "nb")
+      )
       );
       setSelectedCategory(newCategory._id);
       setCategoryInput(newCategory.title);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Failed to add category",
+        error instanceof Error ? error.message : "Failed to add category"
       );
     } finally {
       setIsAddingCategory(false);
     }
-  };
+  }
 
   // Handle Form Submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
@@ -146,6 +144,8 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       formData.append("name", name.trim());
       formData.append("slug", JSON.stringify({ current: slug }));
       formData.append("category", selectedCategory); // Make sure category is always sent
+
+
 
       // Optional fields with validation
       if (image) {
@@ -163,7 +163,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
           JSON.stringify({
             weight: weight.weight,
             unit: weight.unit,
-          }),
+          })
         );
       }
 
@@ -217,12 +217,12 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Could not create item. Please try again.",
+          : "Could not create item. Please try again."
       );
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   // Add this useEffect near your other effects
   useEffect(() => {
@@ -268,8 +268,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               onChange={(e) => setName(e.target.value)}
               required
               minLength={1}
-              placeholder="Skriv inn utstyrsnavn"
-            />
+              placeholder="Skriv inn utstyrsnavn" />
           </label>
         </div>
 
@@ -281,8 +280,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               type="file"
               className="w-full max-w-full p-4"
               accept="image/*"
-              onChange={handleImageChange}
-            />
+              onChange={handleImageChange} />
           </label>
           {imagePreview && (
             <div className="mt-4 relative">
@@ -291,8 +289,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                 alt="Forhåndsvisning"
                 width={96}
                 height={96}
-                className="h-24 w-24 object-cover rounded-md"
-              />
+                className="h-24 w-24 object-cover rounded-md" />
               <button
                 type="button"
                 onClick={handleImageRemoval}
@@ -318,31 +315,28 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                   if (e.key === "Escape") {
                     setIsOpen(false);
                   }
-                }}
+                } }
               >
                 <div className="relative">
                   <Command.Input
-                    value={
-                      selectedCategory
-                        ? categories.find((c) => c._id === selectedCategory)
-                            ?.title || ""
-                        : categoryInput
-                    }
+                    value={selectedCategory
+                      ? categories.find((c) => c._id === selectedCategory)
+                        ?.title || ""
+                      : categoryInput}
                     onValueChange={(value) => {
                       setCategoryInput(value);
                       if (selectedCategory) {
                         setSelectedCategory(""); // Clear selection only when actively typing
                       }
                       setIsOpen(true);
-                    }}
+                    } }
                     onClick={(e) => {
                       e.preventDefault();
                       setIsOpen(!isOpen);
-                    }}
+                    } }
                     readOnly={selectedCategory !== ""} // Make input readonly when category is selected
                     placeholder="Søk eller legg til ny kategory..."
-                    className="w-full p-4 border border-gray-300 rounded cursor-pointer"
-                  />
+                    className="w-full p-4 border border-gray-300 rounded cursor-pointer" />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
                     {selectedCategory && (
                       <button
@@ -351,7 +345,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                           e.preventDefault();
                           setSelectedCategory("");
                           setCategoryInput("");
-                        }}
+                        } }
                         className="p-1 rounded-md"
                         title="Fjern valgt kategori"
                       >
@@ -363,7 +357,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                       onClick={(e) => {
                         e.preventDefault();
                         setIsOpen(!isOpen);
-                      }}
+                      } }
                       className="p-1"
                     >
                       <Icon name="chevrondown" width={16} height={16} />
@@ -382,7 +376,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                             onClick={() => {
                               handleAddCategory(categoryInput);
                               setIsOpen(false);
-                            }}
+                            } }
                             className="button-primary-accent text-md flex items-center gap-2 mt-2 text-accent"
                           >
                             Opprett &ldquo;{categoryInput}&rdquo;
@@ -402,7 +396,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                               setCategoryInput("");
                               setIsOpen(false);
                             }, 0);
-                          }}
+                          } }
                           className="px-4 py-2 cursor-pointer hover:bg-dimmed focus:bg-dimmed outline-none rounded"
                         >
                           {category.title}
@@ -425,8 +419,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse"
-            />
+              placeholder="Skriv inn størrelse" />
           </label>
         </div>
 
@@ -439,17 +432,14 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
-                onChange={(e) =>
-                  setWeight({
-                    ...weight,
-                    weight: Math.max(0, parseFloat(e.target.value) || 0),
-                  })
-                }
+                onChange={(e) => setWeight({
+                  ...weight,
+                  weight: Math.max(0, parseFloat(e.target.value) || 0),
+                })}
                 placeholder="Vekt"
                 min="0"
                 step="0.1"
-                required
-              />
+                required />
               <select
                 className="w-full max-w-full p-4"
                 value={weight.unit}
@@ -472,8 +462,7 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               placeholder="Skriv inn kalorier"
-              min="0"
-            />
+              min="0" />
           </label>
         </div>
 
@@ -488,6 +477,6 @@ const NewItemForm: React.FC<NewItemFormProps> = ({ onSuccess }) => {
       </form>
     </div>
   );
-};
+}
 
 export default NewItemForm;

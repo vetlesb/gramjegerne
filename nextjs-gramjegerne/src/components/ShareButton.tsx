@@ -1,11 +1,11 @@
 "use client";
-import { toast } from "sonner";
 import Icon from "@/components/Icon";
+import { toast } from "sonner";
 
 export function ShareButton({ slug }: { slug: string }) {
   const shareUrl = `${window.location.origin}/share/${slug}`;
 
-  const handleShare = async () => {
+  async function handleShare() {
     // Only copy to clipboard, no native share dialog
     try {
       await navigator.clipboard.writeText(shareUrl);
@@ -20,7 +20,7 @@ export function ShareButton({ slug }: { slug: string }) {
       });
       console.error("Copy failed:", err);
     }
-  };
+  }
 
   return (
     <button
