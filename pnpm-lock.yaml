@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      prettier:
+        specifier: ^3.5.0
+        version: 3.5.0
 
   nextjs-gramjegerne:
     dependencies:
@@ -104,9 +108,6 @@ importers:
       postcss:
         specifier: ^8.5.2
         version: 8.5.2
-      prettier:
-        specifier: ^3.5.0
-        version: 3.5.0
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17(ts-node@10.9.2(@types/node@20.17.17)(typescript@5.7.3))
@@ -159,9 +160,6 @@ importers:
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
-      prettier:
-        specifier: ^3.5.0
-        version: 3.5.0
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.13.1)(typescript@5.7.3)

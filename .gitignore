@@ -1,5 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about 
-ignoring files.
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 .DS_Store
 
 # dependencies
@@ -8,11 +7,13 @@ ignoring files.
 .pnp.js
 .yarn/install-state.gz
 
+.vscode/
+
 # testing
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
