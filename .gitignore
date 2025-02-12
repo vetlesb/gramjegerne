@@ -2,10 +2,8 @@
 .DS_Store
 
 # dependencies
-/node_modules
-/.pnp
+node_modules/
 .pnp.js
-.yarn/install-state.gz
 
 .vscode/settings.json
 
@@ -14,12 +12,12 @@
 
 # next.js
 .next/
-/out/
+out/
+dist/
 
 # production
-/build
+build/
 
-dist/
 
 # misc
 .DS_Store
