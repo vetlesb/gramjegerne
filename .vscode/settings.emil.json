@@ -9,5 +9,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[json][jsonc][javascript][javascriptreact][typescript][typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "never"
   }
 }
