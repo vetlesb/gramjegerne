@@ -2,11 +2,13 @@
 
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {client} from '@/sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
 
 import {Icon} from '@/components/Icon';
 import {ImportForm} from '@/components/ImportForm';
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
+import {urlFor} from '@/sanity/images';
+import {Query} from '@/sanity/queries';
+import type {Category, Item} from '@/types';
 import {useSession} from 'next-auth/react';
 import Image from 'next/image';
 import {useEffect, useMemo, useState} from 'react';
@@ -23,64 +25,6 @@ import {
   DialogTrigger,
 } from '../components/ui/dialog';
 
-interface Category {
-  _id: string;
-  title: string;
-  slug: {current: string};
-}
-
-interface ImageAsset {
-  _ref: string;
-  url?: string;
-}
-
-interface Item {
-  _id: string;
-  name: string;
-  slug: string;
-  image?: {
-    asset: ImageAsset;
-  };
-  category?: {
-    _id: string;
-    title: string;
-  };
-  size?: string;
-  weight?: {weight: number; unit: string};
-  quantity?: number;
-  calories?: number;
-}
-
-const builder = imageUrlBuilder(client);
-
-function urlFor(source: ImageAsset) {
-  return source.url || builder.image(source._ref).url();
-}
-
-const CATEGORIES_QUERY = `*[_type == "category" && user._ref == $userId]{
-  _id, 
-  title, 
-  slug {
-    current
-  }
-}`;
-
-const ITEMS_QUERY = `*[_type == "item" && user._ref == $userId]{
-  _id,
-  name,
-  slug,
-  image{
-    asset->{
-      _ref,
-      url
-    }
-  },
-  "category": category->{_id, title},
-  size,
-  weight,
-  quantity,
-  calories
-}`;
 export default function IndexPage() {
   const {data: session} = useSession();
   const [items, setItems] = useState<Item[]>([]);
@@ -99,15 +43,15 @@ export default function IndexPage() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       if (!session?.user?.id) return;
 
       try {
         const [fetchedItems, fetchedCategories] = await Promise.all([
-          client.fetch<Item[]>(ITEMS_QUERY, {
+          client.fetch<Item[]>(Query.ITEMS, {
             userId: session.user.id,
           }),
-          client.fetch<Category[]>(CATEGORIES_QUERY, {
+          client.fetch<Category[]>(Query.CATEGORIES, {
             userId: session.user.id,
           }),
         ]);
@@ -143,7 +87,7 @@ export default function IndexPage() {
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchData();
   }, [session?.user?.id]);
@@ -158,20 +102,20 @@ export default function IndexPage() {
     return sortedItems.filter((item: Item) => item.category?._id === selectedCategory);
   }, [sortedItems, selectedCategory]);
 
-  const handleCategorySelect = (category: Category | null) => {
+  function handleCategorySelect(category: Category | null) {
     if (category) {
       setSelectedCategory(category._id);
     } else {
       setSelectedCategory(null);
     }
-  };
+  }
 
-  const refreshItems = async () => {
+  async function refreshItems() {
     if (!session?.user?.id) return;
 
     setLoading(true);
     try {
-      const fetchedItems: Item[] = await client.fetch(ITEMS_QUERY, {
+      const fetchedItems: Item[] = await client.fetch(Query.ITEMS, {
         userId: session.user.id,
       });
       setItems(fetchedItems);
@@ -181,8 +125,8 @@ export default function IndexPage() {
     } finally {
       setLoading(false);
     }
-  };
-  const handleAddCategory = async () => {
+  }
+  async function handleAddCategory() {
     if (!newCategoryName || isLoadingDelete) return;
     setIsLoadingDelete(true);
     setErrorMessage(null);
@@ -215,17 +159,17 @@ export default function IndexPage() {
     } finally {
       setIsLoadingDelete(false);
     }
-  };
+  }
 
-  const hasReferences = async (categoryId: string): Promise<boolean> => {
+  async function hasReferences(categoryId: string): Promise<boolean> {
     const itemsWithCategory = await client.fetch<Item[]>(
       `*[_type == "item" && category._ref == $categoryId]`,
       {categoryId},
     );
     return itemsWithCategory.length > 0;
-  };
+  }
 
-  const confirmDeleteCategory = async () => {
+  async function confirmDeleteCategory() {
     if (!categoryToDelete) return;
 
     try {
@@ -261,9 +205,9 @@ export default function IndexPage() {
       setErrorMessage('Failed to delete category.');
       alert('Failed to delete category.');
     }
-  };
+  }
 
-  const confirmDeleteItem = async () => {
+  async function confirmDeleteItem() {
     if (!itemToDelete) return;
     setIsLoadingDelete(true);
     try {
@@ -284,18 +228,18 @@ export default function IndexPage() {
     } finally {
       setIsLoadingDelete(false);
     }
-  };
+  }
 
-  const handleImportSuccess = async () => {
+  async function handleImportSuccess() {
     // Refresh data immediately after successful import
     await refreshData();
-  };
+  }
 
-  const handleOpenImportDialog = () => {
+  function handleOpenImportDialog() {
     setIsImportDialogOpen(true);
-  };
+  }
 
-  const refreshData = async () => {
+  async function refreshData() {
     if (!session?.user?.id) {
       console.log('No user session found');
       return;
@@ -304,10 +248,10 @@ export default function IndexPage() {
     try {
       console.log('Fetching data for user:', session.user.id);
       const [fetchedItems, fetchedCategories] = await Promise.all([
-        client.fetch(ITEMS_QUERY, {
+        client.fetch(Query.ITEMS, {
           userId: session.user.id,
         }),
-        client.fetch(CATEGORIES_QUERY, {
+        client.fetch(Query.CATEGORIES, {
           userId: session.user.id,
         }),
       ]);
@@ -330,7 +274,7 @@ export default function IndexPage() {
       console.error('Error refreshing data:', error);
       setErrorMessage('Failed to refresh data');
     }
-  };
+  }
 
   if (loading) {
     return (

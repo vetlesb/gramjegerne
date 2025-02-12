@@ -11,3 +11,30 @@ export interface ListDocument extends SanityDocument {
   weight?: number;
   participants?: number;
 }
+
+export interface Item {
+  _id: string;
+  name: string;
+  slug: string;
+  image?: {
+    asset: ImageAsset;
+  };
+  category?: {
+    _id: string;
+    title: string;
+  };
+  size?: string;
+  weight?: {weight: number; unit: string};
+  quantity?: number;
+  calories?: number;
+}
+
+export interface ImageAsset {
+  _ref: string;
+  url?: string;
+}
+export interface Category {
+  _id: string;
+  title: string;
+  slug: {current: string};
+}
