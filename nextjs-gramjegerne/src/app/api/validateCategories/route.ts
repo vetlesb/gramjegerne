@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     console.log('Categories to process:', categories);
 
     const existingCategories = await client.fetch<SanityCategory[]>(
-      `*[_type == "category" && user._ref == $userId]{
+      /* groq */ `*[_type == "category" && user._ref == $userId]{
         _id,
         title
       }`,

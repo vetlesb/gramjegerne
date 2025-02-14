@@ -17,7 +17,7 @@
     "sanity"
   ],
   "dependencies": {
-    "@sanity/icons": "^3.5.7",
+    "@sanity/icons": "^3.6.0",
     "@sanity/types": "^3.75.0",
     "@sanity/vision": "^3.75.0",
     "react": "^18.3.1",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.13.4",
     "@types/react": "^18.3.18",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",
