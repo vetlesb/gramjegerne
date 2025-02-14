@@ -3,8 +3,6 @@ import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
 import {ShareButton} from '@/components/ShareButton';
 import {client} from '@/sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
-import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import {nanoid} from 'nanoid';
 import {useSession} from 'next-auth/react';
 import Image from 'next/image';
@@ -20,140 +18,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../../components/ui/dialog';
-
-// Define Category and Item types
-interface Category {
-  _id: string;
-  title: string;
-}
-
-interface Item {
-  _id: string;
-  name: string;
-  category: Category;
-  image?: {
-    _type: string;
-    asset: {
-      _ref: string;
-      _type: string;
-    };
-  };
-  size?: string;
-  weight?: {
-    weight: number;
-    unit: string;
-  };
-  calories?: number;
-}
-
-interface ListItem {
-  _key: string;
-  _type: string;
-  quantity?: number;
-  item: Item | null;
-  categoryOverride?: Category;
-}
-
-interface List {
-  _id: string;
-  name: string;
-  participants: number;
-  days: number;
-  items: ListItem[];
-}
-
-const builder = imageUrlBuilder(client);
-
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
-
-const ITEMS_QUERY = `*[_type == "item" && user._ref == $userId] {
-  _id,
-  name,
-  "category": category->{
-    _id,
-    title
-  },
-  image,
-  size,
-  weight{
-    weight,
-    unit
-  },
-  calories
-} | order(name asc)`;
-
-const LIST_QUERY = (
-  slug: string,
-) => `*[_type == "list" && slug.current == "${decodeURIComponent(slug)}" && user._ref == $userId][0] {
-  _id,
-  name,
-  days,
-  weight,
-  participants,
-  image,
-  "items": items[] {
-    _key,
-    _type,
-    quantity,
-    categoryOverride->{
-      _id,
-      title
-    },
-    "item": item->{
-      _id,
-      name,
-      weight,
-      image,
-      calories,
-      size,
-      "category": category->{
-        _id,
-        title
-      }
-    }
-  }
-}`;
-
-const CATEGORIES_QUERY = `*[_type == "category" && user._ref == $userId] {
-  _id,
-  title
-} | order(title asc)`;
-
-// Add this interface for category totals
-interface CategoryTotal {
-  id: string;
-  count: number;
-  weight: number;
-  calories: number;
-  title: string;
-}
-
-// Add this interface for override totals
-interface OverrideTotal {
-  categoryId: string;
-  categoryTitle: string;
-  count: number;
-  weight: number;
-  calories: number;
-}
-
-// Update the formatWeight function
-const formatWeight = (weightInGrams: number): string => {
-  const weightInKg = weightInGrams / 1000;
-  // Always use 3 decimals for precision
-  return `${weightInKg.toFixed(3)} kg`;
-};
-
-// Add this sorting function at component level
-const sortListItems = (items: ListItem[]): ListItem[] => {
-  return [...items].sort((a, b) => {
-    const nameA = a.item?.name || '';
-    const nameB = b.item?.name || '';
-    return nameA.localeCompare(nameB, 'nb');
-  });
-};
+import {
+  CATEGORIES_QUERY,
+  formatNumber,
+  formatWeight,
+  ITEMS_QUERY,
+  LIST_QUERY,
+  sortListItems,
+  urlFor,
+  type Category,
+  type CategoryTotal,
+  type Item,
+  type List,
+  type ListItem,
+  type OverrideTotal,
+} from './utils';
 
 export default function ListPage() {
   const {data: session} = useSession();
@@ -164,9 +43,6 @@ export default function ListPage() {
     return session.user.id.startsWith('google_') ? session.user.id : `google_${session.user.id}`;
   }, [session?.user?.id]);
 
-  const formatNumber = (num: number): string => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  };
   // Move getEffectiveCategory inside the component
   const getEffectiveCategory = useCallback((listItem: ListItem): Category | undefined => {
     return listItem.categoryOverride || listItem.item?.category;
@@ -273,7 +149,7 @@ export default function ListPage() {
     });
   }, []);
 
-  const handleRemoveFromList = async (itemToRemove: Item) => {
+  async function handleRemoveFromList(itemToRemove: Item) {
     if (!list) return;
 
     try {
@@ -318,7 +194,7 @@ export default function ListPage() {
       console.error('Failed to remove item:', error);
       alert('Failed to remove item. Please try again.');
     }
-  };
+  }
 
   // Update the filteredItemsForList useMemo
   const filteredItemsForList = useMemo(() => {
@@ -357,7 +233,7 @@ export default function ListPage() {
   }, [items, dialogSearchQuery, selectedItems]);
 
   // Update the dialog open handler to clear the dialog search
-  const handleDialogOpenChange = (isOpen: boolean) => {
+  function handleDialogOpenChange(isOpen: boolean) {
     setIsDialogOpen(isOpen);
     if (isOpen) {
       setTempSelectedItems(
@@ -365,7 +241,7 @@ export default function ListPage() {
       );
       setDialogSearchQuery(''); // Clear dialog search query when dialog opens
     }
-  };
+  }
 
   // Update the categoryTotals calculation
   const {categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides} = useMemo(() => {
@@ -482,7 +358,7 @@ export default function ListPage() {
   }, [selectedItems, getEffectiveCategory]);
 
   // Update the handleSaveChanges function
-  const handleSaveChanges = async () => {
+  async function handleSaveChanges() {
     try {
       setIsLoading(true);
       const userId = getUserId();
@@ -555,9 +431,9 @@ export default function ListPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
+  async function handleQuantityChange(itemKey: string, newQuantity: number) {
     if (!list || !session?.user?.id || newQuantity < 1) return;
 
     // Update pending quantities immediately for optimistic UI
@@ -635,11 +511,11 @@ export default function ListPage() {
         ),
       );
     }
-  };
+  }
 
   // Update the useEffect for dialog items
   useEffect(() => {
-    const fetchItems = async () => {
+    async function fetchItems() {
       if (isDialogOpen && session?.user?.id) {
         // Add session check
         try {
@@ -653,13 +529,13 @@ export default function ListPage() {
           console.error('Error fetching items:', error);
         }
       }
-    };
+    }
 
     fetchItems();
   }, [isDialogOpen, session?.user?.id]); // Add session?.user?.id to dependencies
 
   // Add the category update handler
-  const handleCategoryUpdate = async (categoryId: string | null) => {
+  async function handleCategoryUpdate(categoryId: string | null) {
     if (!editingItemKey || !list) return;
 
     try {
@@ -723,7 +599,7 @@ export default function ListPage() {
       console.error('Failed to update category:', error);
       alert('Failed to update category. Please try again.');
     }
-  };
+  }
 
   // First, let's add a loading and error state check at the start of the component render
   if (error) {
@@ -1091,13 +967,13 @@ export default function ListPage() {
 
                   <div className="flex items-center w-full md:w-auto gap-x-2 ml-auto">
                     <div className="flex w-full">
-                      <div className="flex items-center gap-x-2 bg-dimmed-hover rounded px-2 py-1">
+                      <div className="flex items-center gap-x-1 bg-dimmed-hover rounded p-1">
                         <button
                           onClick={() =>
                             handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1)
                           }
                           disabled={(listItem.quantity || 1) <= 1}
-                          className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
+                          className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
                         >
                           –
                         </button>
@@ -1110,7 +986,7 @@ export default function ListPage() {
                           onClick={() =>
                             handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1)
                           }
-                          className="p-1 hover:bg-dimmed rounded disabled:opacity-50"
+                          className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
                         >
                           +
                         </button>
