@@ -4,6 +4,7 @@
 import {client} from '@/sanity/client';
 import {ListDocument} from '@/types'; // Import the interface
 import imageUrlBuilder from '@sanity/image-url';
+
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
 import {useRouter} from 'next/navigation';
@@ -84,9 +85,22 @@ export function ListItem({list, onDelete}: ListItemProps) {
 
   return (
     <>
-      <li className="product flex flex-col basis-full">
+      <li className="product-list flex flex-col basis-full">
         <div className="flex flex-col gap-y-4">
-          <div>
+          <div className="relative">
+            <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
+              <button onClick={() => setShowEditDialog(true)} className="button-trans">
+                <div className="flex items-center justify-center gap-x-1 w-full text-lg">
+                  <Icon name="edit" width={16} height={16} />
+                </div>
+              </button>
+              <DeleteListButton
+                listId={list._id}
+                listName={list.name}
+                redirectTo="/lists"
+                onSuccess={onDelete}
+              />
+            </div>
             {list.image ? (
               <Image
                 className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
@@ -97,7 +111,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onClick={handleClick}
               />
             ) : (
-              <div className="h-full w-full aspect-video flex items-center placeholder_image">
+              <div
+                className="h-full w-full aspect-video flex items-center placeholder_image cursor-pointer"
+                onClick={handleClick}
+              >
                 <svg
                   width="16"
                   height="16"
@@ -118,40 +135,40 @@ export function ListItem({list, onDelete}: ListItemProps) {
               {list.name}
             </h2>
 
-            <ul className="flex flex-col gap-y-1 pt-2">
-              <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
-                <p>Deltagere</p>
-                {list.participants && <p>{list.participants}</p>}
+            <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
+              <li className="gap-x-3">
+                {list.participants && (
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
+                    <Icon name="user" width={16} height={16} />
+                    {list.participants}
+                  </p>
+                )}
               </li>
-              <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
-                <p>Varighet</p>
-                {list.days && <p>{list.days} dager</p>}
+              <li className="gap-x-3">
+                {list.days && (
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
+                    <Icon name="calendar" width={16} height={16} />
+                    {list.days}
+                  </p>
+                )}
               </li>
-              <li className="grid grid-cols-2 gap-x-3 text-lg border-b border-white/5 pb-2">
-                <p>Vekt</p>
-                {totalWeight > 0 && <p>{formatWeight(totalWeight)}</p>}
+              <li className="gap-x-3">
+                {totalWeight > 0 && (
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
+                    <Icon name="weight" width={16} height={16} />
+                    {formatWeight(totalWeight)}
+                  </p>
+                )}
               </li>
-              <li className="grid grid-cols-2 gap-x-3 text-lg">
-                <p>Kalorier</p>
-                {totalCalories > 0 && <p>{formatNumber(totalCalories)} kcal</p>}
+              <li className="gap-x-3">
+                {totalCalories > 0 && (
+                  <p className="tag w-fit items-center gap-x-1 flex text-lg fle-wrap">
+                    <Icon name="calories" width={16} height={16} />
+                    {formatNumber(totalCalories)} kcal
+                  </p>
+                )}
               </li>
             </ul>
-          </div>
-          <div className="flex flex-col pt-4 gap-x-4 gap-y-4">
-            <div className="flex gap-x-2">
-              <button onClick={() => setShowEditDialog(true)} className="button-secondary w-full">
-                <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                  <Icon name="edit" width={24} height={24} />
-                  Rediger
-                </div>
-              </button>
-              <DeleteListButton
-                listId={list._id}
-                listName={list.name}
-                redirectTo="/lists"
-                onSuccess={onDelete}
-              />
-            </div>
           </div>
         </div>
       </li>

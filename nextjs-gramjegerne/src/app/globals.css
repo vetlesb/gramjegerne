@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --font-apfel: "ApfelGrotezk", sans-serif;
+  --font-apfel: 'ApfelGrotezk', sans-serif;
 }
 body {
   font-family: var(--font-apfel);
@@ -24,6 +24,70 @@ body {
   font-size: 16vw;
   font-weight: 500;
   text-align: center;
+}
+button {
+  color: var(--fg-primary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+button:hover {
+  background-color: var(--bg-primary-hover);
+}
+.button-primary {
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-primary:hover {
+  background-color: var(--bg-accent-hover);
+}
+
+.button-primary-accent {
+  background-color: var(--bg-accent);
+  color: #1f261c;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-primary-accent:hover {
+  background-color: var(--bg-accent-hover);
+}
+.button-secondary {
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-trans {
+  background-color: var(--bg-25);
+  padding: 0.7rem;
+  -webkit-backdrop-filter: blur(12.5px);
+  backdrop-filter: blur(12.5px);
+  border-radius: 4px;
+}
+.button-trans:hover {
+  background-color: var(--bg-50);
+}
+.button-secondary:hover {
+  background-color: var(--bg-primary-hover);
+}
+.button-ghost {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.button-ghost:hover {
+  background-color: var(--bg-dimmed-hover);
+}
+.button-create {
+  color: var(--fg-primary);
+  background-color: var(--bg-dimmed);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-create:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 
 :focus-visible {
@@ -122,6 +186,19 @@ li.product {
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;
+}
+li.product-list {
+  display: grid;
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
+li.product-list:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 .product {
   display: grid;
@@ -326,7 +403,7 @@ input::file-selector-button {
   border-radius: 4px;
 }
 .form-select {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==");
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==');
   background-size: 0.7rem;
   background-position: right 0.7rem center;
 }
@@ -361,60 +438,7 @@ input::file-selector-button {
   background-color: var(--bg-dimmed-hover);
   border-radius: 4px;
 }
-button {
-  color: var(--fg-primary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-button:hover {
-  background-color: var(--bg-primary-hover);
-}
-.button-primary {
-  background-color: var(--bg-secondary);
-  color: var(--fg-secondary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-primary:hover {
-  background-color: var(--bg-accent-hover);
-}
 
-.button-primary-accent {
-  background-color: var(--bg-accent);
-  color: #1f261c;
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-primary-accent:hover {
-  background-color: var(--bg-accent-hover);
-}
-.button-secondary {
-  background-color: var(--bg-primary);
-  color: var(--fg-primary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-secondary:hover {
-  background-color: var(--bg-primary-hover);
-}
-.button-ghost {
-  background-color: var(--bg-dimmed);
-  color: var(--fg-primary);
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-.button-ghost:hover {
-  background-color: var(--bg-dimmed-hover);
-}
-.button-create {
-  color: var(--fg-primary);
-  background-color: var(--bg-dimmed);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-create:hover {
-  background-color: var(--bg-dimmed-hover);
-}
 .is-loading {
   background-color: var(--bg-accent);
   color: var(--fg-secondary);
@@ -548,8 +572,6 @@ select {
   .logo {
     font-size: 2rem;
   }
-  ul.totals {
-  }
 }
 
 @media (min-width: 768px) {
@@ -582,7 +604,7 @@ select {
 
 @layer base {
   /* Default theme (dark green) */
-  :root[data-theme="green"] {
+  :root[data-theme='green'] {
     --bg-primary: #1f261c;
     --bg-primary-hover: #1c2219;
     --bg-secondary: #eaffe2;
@@ -594,11 +616,13 @@ select {
     --fg-secondary: #1f261c;
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
+    --bg-25: rgba(23, 38, 28, 0.25);
+    --bg-50: rgba(23, 38, 28, 0.5);
     --radius: 8px;
   }
 
   /* Blue theme */
-  :root[data-theme="blue"] {
+  :root[data-theme='blue'] {
     --bg-primary: #1a1f26;
     --bg-primary-hover: #161b22;
     --bg-secondary: #e2f1ff;
@@ -610,10 +634,12 @@ select {
     --fg-secondary: #1a1f26;
     --fg-dimmed: #232b36;
     --fg-accent: #67b5ff;
+    --bg-25: rgba(26, 31, 38, 0.25);
+    --bg-50: rgba(26, 31, 38, 0.5);
     --radius: 8px;
   }
   /* Yellow theme */
-  :root[data-theme="yellow"] {
+  :root[data-theme='yellow'] {
     --bg-primary: #262419;
     --bg-primary-hover: #221f16;
     --bg-secondary: #fffae2;
@@ -625,6 +651,8 @@ select {
     --fg-secondary: #262419;
     --fg-dimmed: #363223;
     --fg-accent: #ffe883;
+    --bg-25: rgba(38, 36, 25, 0.25);
+    --bg-50: rgba(38, 36, 25, 0.5);
     --radius: 8px;
   }
 
@@ -697,7 +725,7 @@ select {
   cursor: pointer;
 }
 
-[cmdk-item][data-selected="true"] {
+[cmdk-item][data-selected='true'] {
   background: var(--bg-primary);
 }
 

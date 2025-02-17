@@ -148,7 +148,7 @@ export function AddListDialog({
             className="button-create text-lg flex flex-row items-center gap-x-1 text-md"
           >
             <Icon name="add" width={24} height={24} />
-            Ny pakkliste
+            Ny liste
           </button>
         </div>
       )}
