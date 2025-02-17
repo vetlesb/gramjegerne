@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --font-apfel: "ApfelGrotezk", sans-serif;
+  --font-apfel: 'ApfelGrotezk', sans-serif;
 }
 body {
   font-family: var(--font-apfel);
@@ -326,7 +326,7 @@ input::file-selector-button {
   border-radius: 4px;
 }
 .form-select {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==");
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==');
   background-size: 0.7rem;
   background-position: right 0.7rem center;
 }
@@ -393,6 +393,15 @@ button:hover {
   color: var(--fg-primary);
   padding: 1rem;
   border-radius: 4px;
+}
+.button-trans {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-secondary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.button-trans:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 .button-secondary:hover {
   background-color: var(--bg-primary-hover);
@@ -548,8 +557,6 @@ select {
   .logo {
     font-size: 2rem;
   }
-  ul.totals {
-  }
 }
 
 @media (min-width: 768px) {
@@ -582,7 +589,7 @@ select {
 
 @layer base {
   /* Default theme (dark green) */
-  :root[data-theme="green"] {
+  :root[data-theme='green'] {
     --bg-primary: #1f261c;
     --bg-primary-hover: #1c2219;
     --bg-secondary: #eaffe2;
@@ -598,7 +605,7 @@ select {
   }
 
   /* Blue theme */
-  :root[data-theme="blue"] {
+  :root[data-theme='blue'] {
     --bg-primary: #1a1f26;
     --bg-primary-hover: #161b22;
     --bg-secondary: #e2f1ff;
@@ -613,7 +620,7 @@ select {
     --radius: 8px;
   }
   /* Yellow theme */
-  :root[data-theme="yellow"] {
+  :root[data-theme='yellow'] {
     --bg-primary: #262419;
     --bg-primary-hover: #221f16;
     --bg-secondary: #fffae2;
@@ -697,7 +704,7 @@ select {
   cursor: pointer;
 }
 
-[cmdk-item][data-selected="true"] {
+[cmdk-item][data-selected='true'] {
   background: var(--bg-primary);
 }
 

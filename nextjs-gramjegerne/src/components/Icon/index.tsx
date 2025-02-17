@@ -17,6 +17,8 @@ import {SizeIcon} from './icons/SizeIcon';
 import {TreeIcon} from './icons/TreeIcon';
 import {WaterIcon} from './icons/WaterIcon';
 import {WeightIcon} from './icons/WeightIcon';
+import {UserIcon} from './icons/UserIcon';
+import {CalendarIcon} from './icons/CalendarIcon';
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -39,6 +41,8 @@ const iconMap = {
   water: WaterIcon,
   leaf: LeafIcon,
   tree: TreeIcon,
+  user: UserIcon,
+  calendar: CalendarIcon,
 };
 
 type IconName = keyof typeof iconMap;

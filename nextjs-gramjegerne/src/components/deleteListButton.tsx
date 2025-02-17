@@ -57,7 +57,7 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
   return (
     <>
       <button
-        className="button-secondary text-lg flex flex-row items-center justify-center gap-x-1 w-full"
+        className="button-trans text-lg flex flex-row items-center justify-center gap-x-1"
         onClick={(event) => {
           event.stopPropagation(); // Prevents the parent onClick from firing
           event.preventDefault(); // Prevents any default behavior
@@ -65,7 +65,6 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
         }}
       >
         <Icon name="delete" width={24} height={24} />
-        Slett
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
