@@ -59,12 +59,14 @@ button:hover {
   border-radius: 4px;
 }
 .button-trans {
-  background-color: var(--bg-primary);
-  padding: 0.5rem;
-  border-radius: 100px;
+  background-color: var(--bg-25);
+  padding: 0.7rem;
+  -webkit-backdrop-filter: blur(12.5px);
+  backdrop-filter: blur(12.5px);
+  border-radius: 4px;
 }
 .button-trans:hover {
-  background-color: var(--bg-primary-hover);
+  background-color: var(--bg-50);
 }
 .button-secondary:hover {
   background-color: var(--bg-primary-hover);
@@ -614,6 +616,8 @@ select {
     --fg-secondary: #1f261c;
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
+    --bg-25: rgba(23, 38, 28, 0.25);
+    --bg-50: rgba(23, 38, 28, 0.5);
     --radius: 8px;
   }
 
@@ -630,6 +634,8 @@ select {
     --fg-secondary: #1a1f26;
     --fg-dimmed: #232b36;
     --fg-accent: #67b5ff;
+    --bg-25: rgba(26, 31, 38, 0.25);
+    --bg-50: rgba(26, 31, 38, 0.5);
     --radius: 8px;
   }
   /* Yellow theme */
@@ -645,6 +651,8 @@ select {
     --fg-secondary: #262419;
     --fg-dimmed: #363223;
     --fg-accent: #ffe883;
+    --bg-25: rgba(38, 36, 25, 0.25);
+    --bg-50: rgba(38, 36, 25, 0.5);
     --radius: 8px;
   }
 

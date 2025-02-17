@@ -91,7 +91,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
             <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
               <button onClick={() => setShowEditDialog(true)} className="button-trans">
                 <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                  <Icon name="edit" width={24} height={24} />
+                  <Icon name="edit" width={16} height={16} />
                 </div>
               </button>
               <DeleteListButton

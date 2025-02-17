@@ -64,7 +64,7 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
           setIsDialogOpen(true);
         }}
       >
-        <Icon name="delete" width={24} height={24} />
+        <Icon name="delete" width={16} height={16} />
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

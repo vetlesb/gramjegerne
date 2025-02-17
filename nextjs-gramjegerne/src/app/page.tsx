@@ -348,7 +348,7 @@ export default function IndexPage() {
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="p-4 rounded"
                   required
-                  placeholder="Kategori navn"
+                  placeholder="Navn på kategorien"
                 />
                 <button type="submit" className="button-primary-accent" disabled={isLoadingDelete}>
                   {isLoadingDelete ? 'Legger til...' : 'Legg til'}
@@ -364,7 +364,7 @@ export default function IndexPage() {
                       className="button-link"
                       onClick={() => setCategoryToDelete(category._id)}
                     >
-                      Slett
+                      <Icon name="delete" width={24} height={24} />
                     </button>
                   </li>
                 ))}
@@ -585,7 +585,7 @@ export default function IndexPage() {
 
         {/* Delete Category Dialog */}
         <Dialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
-          <DialogContent>
+          <DialogContent className="dialog gap-y-8">
             <DialogHeader>
               <DialogTitle>Er du sikker på at du vil slette denne kategorien?</DialogTitle>
             </DialogHeader>
