@@ -111,7 +111,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onClick={handleClick}
               />
             ) : (
-              <div className="h-full w-full aspect-video flex items-center placeholder_image">
+              <div
+                className="h-full w-full aspect-video flex items-center placeholder_image cursor-pointer"
+                onClick={handleClick}
+              >
                 <svg
                   width="16"
                   height="16"
@@ -158,10 +161,12 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 )}
               </li>
               <li className="gap-x-3">
-                <div className="tag w-fit items-center gap-x-1 flex text-lg flex-wrap">
-                  <Icon name="calories" width={16} height={16} />
-                  {totalCalories > 0 && <p>{formatNumber(totalCalories)} kcal</p>}
-                </div>
+                {totalCalories > 0 && (
+                  <p className="tag w-fit items-center gap-x-1 flex text-lg fle-wrap">
+                    <Icon name="calories" width={16} height={16} />
+                    {formatNumber(totalCalories)} kcal
+                  </p>
+                )}
               </li>
             </ul>
           </div>
