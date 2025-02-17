@@ -616,13 +616,17 @@ export default function ListPage() {
 
     try {
       // Prepare the data for the API
+      const sanityItems = updatedItems.map((item) => ({
+        ...item,
+        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
+      }));
 
       await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           listId: list._id,
-          items: updatedItems,
+          items: sanityItems,
         }),
       });
     } catch (error) {

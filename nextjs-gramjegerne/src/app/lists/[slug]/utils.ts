@@ -38,7 +38,7 @@ export function LIST_QUERY(slug: string) {
     _key,
     _type,
     quantity,
-	checked,
+	  checked,
     categoryOverride->{
       _id,
       title
