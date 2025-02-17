@@ -23,9 +23,8 @@ export function ThemeSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="menu-theme text-lg rounded-md flex items-center justify-center gap-x-1 md:w-28">
+      <DropdownMenuTrigger className="menu-theme text-lg rounded-md flex items-center justify-center gap-x-1">
         <Icon width={24} height={24} name={currentTheme?.icon ?? 'tree'} />
-        <span>{currentTheme?.label}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="center"
@@ -35,7 +34,7 @@ export function ThemeSelector() {
           <DropdownMenuItem
             key={t.value}
             onClick={() => setTheme(t.value)}
-            className="text-lg gap-x-1"
+            className="text-lg gap-x-2"
           >
             <Icon name={t.icon} width={24} height={24} />
             {t.label}

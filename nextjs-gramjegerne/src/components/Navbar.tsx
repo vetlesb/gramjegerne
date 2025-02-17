@@ -74,7 +74,7 @@ export function Navbar() {
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Pakklister
+                    Lister
                   </Link>
                 </li>
                 <ThemeSelector />

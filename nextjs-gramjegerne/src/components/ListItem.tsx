@@ -85,7 +85,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
 
   return (
     <>
-      <li className="product flex flex-col basis-full">
+      <li className="product-list flex flex-col basis-full">
         <div className="flex flex-col gap-y-4">
           <div className="relative">
             <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
@@ -132,10 +132,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
               {list.name}
             </h2>
 
-            <ul className="flex flex-wrap gap-x-1 pt-2">
+            <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
               <li className="gap-x-3">
                 {list.participants && (
-                  <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                     <Icon name="user" width={16} height={16} />
                     {list.participants}
                   </p>
@@ -143,25 +143,25 @@ export function ListItem({list, onDelete}: ListItemProps) {
               </li>
               <li className="gap-x-3">
                 {list.days && (
-                  <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                     <Icon name="calendar" width={16} height={16} />
-                    {list.days} dager
+                    {list.days}
                   </p>
                 )}
               </li>
               <li className="gap-x-3">
                 {totalWeight > 0 && (
-                  <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                     <Icon name="weight" width={16} height={16} />
                     {formatWeight(totalWeight)}
                   </p>
                 )}
               </li>
               <li className="gap-x-3">
-                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
+                <div className="tag w-fit items-center gap-x-1 flex text-lg flex-wrap">
                   <Icon name="calories" width={16} height={16} />
                   {totalCalories > 0 && <p>{formatNumber(totalCalories)} kcal</p>}
-                </p>
+                </div>
               </li>
             </ul>
           </div>

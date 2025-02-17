@@ -25,6 +25,68 @@ body {
   font-weight: 500;
   text-align: center;
 }
+button {
+  color: var(--fg-primary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+button:hover {
+  background-color: var(--bg-primary-hover);
+}
+.button-primary {
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-primary:hover {
+  background-color: var(--bg-accent-hover);
+}
+
+.button-primary-accent {
+  background-color: var(--bg-accent);
+  color: #1f261c;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-primary-accent:hover {
+  background-color: var(--bg-accent-hover);
+}
+.button-secondary {
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-trans {
+  background-color: var(--bg-primary);
+  padding: 0.5rem;
+  border-radius: 100px;
+}
+.button-trans:hover {
+  background-color: var(--bg-primary-hover);
+}
+.button-secondary:hover {
+  background-color: var(--bg-primary-hover);
+}
+.button-ghost {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.button-ghost:hover {
+  background-color: var(--bg-dimmed-hover);
+}
+.button-create {
+  color: var(--fg-primary);
+  background-color: var(--bg-dimmed);
+  padding: 1rem;
+  border-radius: 4px;
+}
+.button-create:hover {
+  background-color: var(--bg-dimmed-hover);
+}
 
 :focus-visible {
   border: 0px solid var(--fg-accent);
@@ -122,6 +184,19 @@ li.product {
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;
+}
+li.product-list {
+  display: grid;
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
+li.product-list:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 .product {
   display: grid;
@@ -361,69 +436,7 @@ input::file-selector-button {
   background-color: var(--bg-dimmed-hover);
   border-radius: 4px;
 }
-button {
-  color: var(--fg-primary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-button:hover {
-  background-color: var(--bg-primary-hover);
-}
-.button-primary {
-  background-color: var(--bg-secondary);
-  color: var(--fg-secondary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-primary:hover {
-  background-color: var(--bg-accent-hover);
-}
 
-.button-primary-accent {
-  background-color: var(--bg-accent);
-  color: #1f261c;
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-primary-accent:hover {
-  background-color: var(--bg-accent-hover);
-}
-.button-secondary {
-  background-color: var(--bg-primary);
-  color: var(--fg-primary);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-trans {
-  background-color: var(--bg-dimmed);
-  color: var(--fg-secondary);
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-.button-trans:hover {
-  background-color: var(--bg-dimmed-hover);
-}
-.button-secondary:hover {
-  background-color: var(--bg-primary-hover);
-}
-.button-ghost {
-  background-color: var(--bg-dimmed);
-  color: var(--fg-primary);
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-.button-ghost:hover {
-  background-color: var(--bg-dimmed-hover);
-}
-.button-create {
-  color: var(--fg-primary);
-  background-color: var(--bg-dimmed);
-  padding: 1rem;
-  border-radius: 4px;
-}
-.button-create:hover {
-  background-color: var(--bg-dimmed-hover);
-}
 .is-loading {
   background-color: var(--bg-accent);
   color: var(--fg-secondary);

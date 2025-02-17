@@ -641,9 +641,13 @@ export default function ListPage() {
         <h1 className="text-4xl md:text-6xl text-accent py-4">i {list.name}</h1>
         <div className="flex flex-wrap gap-x-1 gap-y-1 pb-12">
           <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-            {list.participants} personer
+            <Icon name="user" width={16} height={16} />
+            {list.participants}
           </p>
-          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">{list.days} dager</p>
+          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
+            <Icon name="calendar" width={16} height={16} />
+            {list.days}
+          </p>
         </div>
         <div className="flex gap-y-4 gap-x-2 pb-8">
           {/* Button to open the Add Item Dialog */}
