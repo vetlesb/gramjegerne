@@ -38,6 +38,7 @@ export function LIST_QUERY(slug: string) {
     _key,
     _type,
     quantity,
+	checked,
     categoryOverride->{
       _id,
       title
@@ -122,6 +123,7 @@ export interface ListItem {
   _type: string;
   quantity?: number;
   item: Item | null;
+  checked: boolean;
   categoryOverride?: Category;
 }
 

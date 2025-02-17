@@ -22,7 +22,7 @@ export async function PUT(request: Request) {
 
     // Verify list belongs to user
     const list = await client.fetch(
-      `*[_type == "list" && _id == $listId && user._ref == $userId][0]`,
+      /* groq */ `*[_type == "list" && _id == $listId && user._ref == $userId][0]`,
       {listId, userId: session.user.id},
     );
 

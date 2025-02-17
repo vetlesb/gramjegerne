@@ -601,6 +601,38 @@ export default function ListPage() {
     }
   }
 
+  async function handleCheckboxChange(itemKey: string, checked: boolean) {
+    if (!list) return;
+
+    const updatedItems = selectedItems.map((item) => {
+      return {
+        ...item,
+        checked: item._key === itemKey ? checked : item.checked,
+      };
+    });
+
+    // Optimistically update the UI.
+    setSelectedItems(updatedItems);
+
+    try {
+      // Prepare the data for the API
+
+      await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: updatedItems,
+        }),
+      });
+    } catch (error) {
+      // Revert the checkbox state on error.
+      setSelectedItems((prev) =>
+        prev.map((item) => (item._key === itemKey ? {...item, checked: !checked} : item)),
+      );
+    }
+  }
+
   // First, let's add a loading and error state check at the start of the component render
   if (error) {
     return (
@@ -1001,6 +1033,14 @@ export default function ListPage() {
                     >
                       <Icon name="category" width={24} height={24} fill="#EAFFE2" />
                     </button>
+
+                    {/* Add check button */}
+                    <input
+                      type="checkbox"
+                      title="Pakket"
+                      checked={listItem.checked || false}
+                      onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
+                    />
 
                     {/* Existing delete button */}
                     <button
