@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {client} from '@/lib/sanity';
 import {getUserSession} from '@/lib/auth-helpers';
 import {STATUS} from '@/utils/http';
+import {isListItemsPatch} from './utils';
 
 export async function PUT(request: Request) {
   try {
@@ -40,7 +41,7 @@ export async function PUT(request: Request) {
     console.log('With items:', items);
 
     // Validate input
-    if (!Array.isArray(items)) {
+    if (!isListItemsPatch(items)) {
       return NextResponse.json(
         {success: false, error: 'Invalid input'},
         {status: STATUS._400_BAD_REQUEST},

@@ -145,3 +145,18 @@ export interface List {
 export function formatNumber(num: number): string {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
+
+/**
+ * `ListItems` retrieved from Sanity is not the expected format of a PATCH request.
+ * Parse references into correct format.
+ */
+export function prepareItems(items: ListItem[]) {
+  return items.map((item) => ({
+    ...item,
+    item: item.item && {_ref: item.item._id, _type: 'reference'},
+    categoryOverride: item.categoryOverride && {
+      _ref: item.categoryOverride._id,
+      _type: 'reference',
+    },
+  }));
+}
