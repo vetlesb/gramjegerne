@@ -24,6 +24,7 @@ import {
   formatWeight,
   ITEMS_QUERY,
   LIST_QUERY,
+  prepareItems,
   sortListItems,
   urlFor,
   type Category,
@@ -131,11 +132,6 @@ export default function ListPage() {
 
     fetchData();
   }, [listSlug, getUserId]);
-
-  // Handle category selection
-  const handleCategorySelect = (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
-  };
 
   // Update handleTempItemToggle to track existing overrides
   const handleTempItemToggle = useCallback((item: Item) => {
@@ -368,22 +364,7 @@ export default function ListPage() {
       }
 
       // Keep existing items with their current quantities AND category overrides
-      const existingItems = selectedItems.map((item) => ({
-        _key: item._key,
-        _type: 'listItem',
-        item: {
-          _type: 'reference',
-          _ref: item.item?._id,
-        },
-        quantity: item.quantity || 1,
-        // Preserve category override if it exists
-        categoryOverride: item.categoryOverride
-          ? {
-              _type: 'reference',
-              _ref: item.categoryOverride._id,
-            }
-          : undefined,
-      }));
+      const existingItems = prepareItems(selectedItems);
 
       // Add only truly new items
       const newItems = tempSelectedItems
@@ -459,22 +440,8 @@ export default function ListPage() {
     });
 
     try {
-      // Prepare items for server update
-      const itemsForUpdate = selectedItems.map((item) => ({
-        _key: item._key,
-        _type: 'listItem',
-        item: {
-          _type: 'reference',
-          _ref: item.item?._id,
-        },
-        quantity: item._key === itemKey ? newQuantity : item.quantity,
-        categoryOverride: item.categoryOverride // Preserve category override
-          ? {
-              _type: 'reference',
-              _ref: item.categoryOverride._id,
-            }
-          : undefined,
-      }));
+      // Prepare items for server update.
+      const itemsForUpdate = prepareItems(selectedItems);
 
       console.log('Items for update:', itemsForUpdate); // Log items being sent to the API
 
@@ -561,22 +528,6 @@ export default function ListPage() {
         };
       });
 
-      // Prepare the data for the API
-      const sanityItems = updatedItems.map((item) => ({
-        _key: item._key,
-        _type: 'listItem',
-        quantity: item.quantity || 1,
-        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
-        ...(item.categoryOverride
-          ? {
-              categoryOverride: {
-                _ref: item.categoryOverride._id,
-                _type: 'reference',
-              },
-            }
-          : {}),
-      }));
-
       // Update through API route
       const response = await fetch('/api/updateList', {
         method: 'PUT',
@@ -585,7 +536,7 @@ export default function ListPage() {
         },
         body: JSON.stringify({
           listId: list._id,
-          items: sanityItems,
+          items: prepareItems(updatedItems),
         }),
       });
 
@@ -615,18 +566,12 @@ export default function ListPage() {
     setSelectedItems(updatedItems);
 
     try {
-      // Prepare the data for the API
-      const sanityItems = updatedItems.map((item) => ({
-        ...item,
-        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
-      }));
-
       await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           listId: list._id,
-          items: sanityItems,
+          items: prepareItems(updatedItems),
         }),
       });
     } catch {
@@ -810,7 +755,7 @@ export default function ListPage() {
           {categories.length > 0 && (
             <>
               <button
-                onClick={() => handleCategorySelect(null)}
+                onClick={() => setSelectedCategory(null)}
                 className={`menu-category text-md ${
                   selectedCategory === null ? 'menu-active' : ''
                 }`}
@@ -820,7 +765,7 @@ export default function ListPage() {
               {categories.map((category) => (
                 <button
                   key={category._id}
-                  onClick={() => handleCategorySelect(category._id)}
+                  onClick={() => setSelectedCategory(category._id)}
                   className={`menu-category text-md ${
                     selectedCategory === category._id ? 'menu-active' : ''
                   }`}
