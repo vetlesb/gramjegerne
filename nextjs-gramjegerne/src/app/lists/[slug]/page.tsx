@@ -629,7 +629,7 @@ export default function ListPage() {
           items: sanityItems,
         }),
       });
-    } catch (error) {
+    } catch {
       // Revert the checkbox state on error.
       setSelectedItems((prev) =>
         prev.map((item) => (item._key === itemKey ? {...item, checked: !checked} : item)),
