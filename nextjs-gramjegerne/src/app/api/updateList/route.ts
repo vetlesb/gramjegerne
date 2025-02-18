@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {client} from '@/lib/sanity';
 import {getUserSession} from '@/lib/auth-helpers';
+import {STATUS} from '@/utils/http';
 
 export async function PUT(request: Request) {
   try {
@@ -9,7 +10,7 @@ export async function PUT(request: Request) {
 
     if (!session || !session.user) {
       return new Response(JSON.stringify({message: 'Unauthorized'}), {
-        status: 401,
+        status: STATUS._401_UNAUTHORIZED,
       });
     }
 
@@ -17,7 +18,7 @@ export async function PUT(request: Request) {
     console.log('Incoming request data:', {listId, items});
 
     if (!listId) {
-      return NextResponse.json({error: 'List ID is required'}, {status: 400});
+      return NextResponse.json({error: 'List ID is required'}, {status: STATUS._400_BAD_REQUEST});
     }
 
     // Verify list belongs to user
@@ -29,7 +30,10 @@ export async function PUT(request: Request) {
     console.log('Fetched list:', list);
 
     if (!list) {
-      return NextResponse.json({error: 'List not found or unauthorized'}, {status: 404});
+      return NextResponse.json(
+        {error: 'List not found or unauthorized'},
+        {status: STATUS._404_NOT_FOUND},
+      );
     }
 
     console.log('Updating list:', listId);
@@ -37,7 +41,10 @@ export async function PUT(request: Request) {
 
     // Validate input
     if (!Array.isArray(items)) {
-      return NextResponse.json({success: false, error: 'Invalid input'}, {status: 400});
+      return NextResponse.json(
+        {success: false, error: 'Invalid input'},
+        {status: STATUS._400_BAD_REQUEST},
+      );
     }
 
     // Update items in the list
@@ -51,6 +58,9 @@ export async function PUT(request: Request) {
     return NextResponse.json({success: true, result});
   } catch (error) {
     console.error('Error updating list:', error);
-    return NextResponse.json({success: false, error: (error as Error).message}, {status: 500});
+    return NextResponse.json(
+      {success: false, error: (error as Error).message},
+      {status: STATUS._500_INTERNAL_SERVER_ERROR},
+    );
   }
 }
