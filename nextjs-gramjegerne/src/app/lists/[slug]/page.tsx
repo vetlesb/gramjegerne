@@ -12,14 +12,12 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '../../../components/ui/dialog';
 import {
-  CATEGORIES_QUERY,
   formatNumber,
   formatWeight,
   ITEMS_QUERY,
@@ -32,7 +30,6 @@ import {
   type Item,
   type List,
   type ListItem,
-  type OverrideTotal,
 } from './utils';
 
 export default function ListPage() {
@@ -43,11 +40,6 @@ export default function ListPage() {
     if (!session?.user?.id) return null;
     return session.user.id.startsWith('google_') ? session.user.id : `google_${session.user.id}`;
   }, [session?.user?.id]);
-
-  // Move getEffectiveCategory inside the component
-  const getEffectiveCategory = useCallback((listItem: ListItem): Category | undefined => {
-    return listItem.categoryOverride || listItem.item?.category;
-  }, []);
 
   // State variables and Hooks
   const [items, setItems] = useState<Item[]>([]);
@@ -67,10 +59,6 @@ export default function ListPage() {
     [key: string]: number;
   }>({});
 
-  // Add these new state variables
-  const [allCategories, setAllCategories] = useState<Category[]>([]);
-  const [editingItemKey, setEditingItemKey] = useState<string | null>(null);
-
   // Add a new state for dialog search
   const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
@@ -84,8 +72,8 @@ export default function ListPage() {
     selectedItems.forEach((listItem) => {
       if (!listItem.item) return;
 
-      // Get the effective category (override or original)
-      const effectiveCategory = listItem.categoryOverride || listItem.item?.category;
+      // Get the effective category
+      const effectiveCategory = listItem.item?.category;
       if (effectiveCategory) {
         activeCategories.set(effectiveCategory._id, effectiveCategory);
       }
@@ -98,7 +86,7 @@ export default function ListPage() {
 
   // Add initial data fetch useEffect
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       const userId = getUserId();
       const decodedSlug = decodeURIComponent(listSlug || '');
       console.log('Fetching list with:', {
@@ -110,10 +98,7 @@ export default function ListPage() {
       if (!listSlug || !userId) return;
 
       try {
-        const [fetchedList, fetchedCategories] = await Promise.all([
-          client.fetch(LIST_QUERY(listSlug), {userId}),
-          client.fetch(CATEGORIES_QUERY, {userId}),
-        ]);
+        const [fetchedList] = await Promise.all([client.fetch(LIST_QUERY(listSlug), {userId})]);
 
         console.log('Fetched list:', fetchedList); // Add this debug log
 
@@ -123,12 +108,11 @@ export default function ListPage() {
         } else {
           console.log('No list found with slug:', decodedSlug); // Add this debug log
         }
-        setAllCategories(fetchedCategories);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to load data');
       }
-    };
+    }
 
     fetchData();
   }, [listSlug, getUserId]);
@@ -153,22 +137,6 @@ export default function ListPage() {
         (listItem) => listItem.item?._id !== itemToRemove._id,
       );
 
-      // Prepare the data for the API
-      const sanityItems = updatedItems.map((item) => ({
-        _key: item._key,
-        _type: item._type,
-        quantity: item.quantity,
-        item: item.item ? {_ref: item.item._id, _type: 'reference'} : null,
-        ...(item.categoryOverride
-          ? {
-              categoryOverride: {
-                _ref: item.categoryOverride._id,
-                _type: 'reference',
-              },
-            }
-          : {}),
-      }));
-
       // Update through API route
       const response = await fetch('/api/updateList', {
         method: 'PUT',
@@ -177,7 +145,7 @@ export default function ListPage() {
         },
         body: JSON.stringify({
           listId: list._id,
-          items: sanityItems,
+          items: prepareItems(updatedItems),
         }),
       });
 
@@ -197,10 +165,7 @@ export default function ListPage() {
     let items = selectedItems;
 
     if (selectedCategory) {
-      items = items.filter((item) => {
-        const effectiveCategory = getEffectiveCategory(item);
-        return effectiveCategory?._id === selectedCategory;
-      });
+      items = items.filter((item) => item.item?.category?._id === selectedCategory);
     }
 
     if (searchQuery) {
@@ -210,7 +175,7 @@ export default function ListPage() {
     }
 
     return sortListItems(items);
-  }, [selectedItems, selectedCategory, searchQuery, getEffectiveCategory]);
+  }, [selectedItems, selectedCategory, searchQuery]);
 
   // Update the filteredItemsForDialog to use dialogSearchQuery instead
   const filteredItemsForDialog = useMemo(() => {
@@ -240,7 +205,7 @@ export default function ListPage() {
   }
 
   // Update the categoryTotals calculation
-  const {categoryTotals, grandTotal, overrideTotals, totalWithoutOverrides} = useMemo(() => {
+  const {categoryTotals, grandTotal} = useMemo(() => {
     if (!selectedItems?.length) {
       const emptyTotal = {
         id: 'total',
@@ -252,42 +217,19 @@ export default function ListPage() {
       return {
         categoryTotals: [],
         grandTotal: emptyTotal,
-        overrideTotals: [],
         totalWithoutOverrides: emptyTotal,
       };
     }
 
     // Create maps for both regular and override totals
     const categoryMap = new Map<string, CategoryTotal>();
-    const overrideMap = new Map<string, OverrideTotal>();
 
     // Calculate totals
     selectedItems.forEach((item) => {
       if (!item.item) return;
       const quantity = item.quantity || 1;
-      const effectiveCategory = getEffectiveCategory(item);
+      const effectiveCategory = item.item.category;
       if (!effectiveCategory) return;
-
-      // If this item has a category override, add it to overrides
-      if (item.categoryOverride) {
-        const existing = overrideMap.get(item.categoryOverride._id) || {
-          categoryId: item.categoryOverride._id,
-          categoryTitle: item.categoryOverride.title,
-          count: 0,
-          weight: 0,
-          calories: 0,
-        };
-
-        existing.count += quantity;
-        if (item.item.weight) {
-          existing.weight += item.item.weight.weight * quantity;
-        }
-        if (item.item.calories) {
-          existing.calories += item.item.calories * quantity;
-        }
-
-        overrideMap.set(item.categoryOverride._id, existing);
-      }
 
       // Regular category totals calculation (unchanged)
       const existing = categoryMap.get(effectiveCategory._id) || {
@@ -313,10 +255,6 @@ export default function ListPage() {
       a.title.localeCompare(b.title, 'nb'),
     );
 
-    const overrideTotals = Array.from(overrideMap.values()).sort((a, b) =>
-      a.categoryTitle.localeCompare(b.categoryTitle, 'nb'),
-    );
-
     // Calculate grand total
     const grandTotal = categoryTotals.reduce(
       (acc, cat) => ({
@@ -329,29 +267,11 @@ export default function ListPage() {
       {id: 'total', title: 'Totalt', count: 0, weight: 0, calories: 0},
     );
 
-    // Calculate total without overrides
-    const totalWithoutOverrides = {
-      id: 'total-no-override',
-      title: 'Totalt uten overkjøringer',
-      count: grandTotal.count,
-      weight: grandTotal.weight,
-      calories: grandTotal.calories,
-    };
-
-    // Subtract override totals
-    overrideTotals.forEach((override) => {
-      totalWithoutOverrides.count -= override.count;
-      totalWithoutOverrides.weight -= override.weight;
-      totalWithoutOverrides.calories -= override.calories;
-    });
-
     return {
       categoryTotals,
       grandTotal,
-      overrideTotals,
-      totalWithoutOverrides,
     };
-  }, [selectedItems, getEffectiveCategory]);
+  }, [selectedItems]);
 
   // Update the handleSaveChanges function
   async function handleSaveChanges() {
@@ -423,17 +343,16 @@ export default function ListPage() {
       [itemKey]: newQuantity,
     }));
 
-    // Update selectedItems to reflect the new quantity while preserving category overrides
+    // Update selectedItems to reflect the new quantity.
     setSelectedItems((prev) => {
-      const updatedItems = prev.map((item) =>
-        item._key === itemKey
-          ? {
-              ...item,
-              quantity: newQuantity, // Update quantity
-              categoryOverride: item.categoryOverride, // Ensure categoryOverride is preserved
-            }
-          : item,
-      );
+      const updatedItems = prev.map((item) => {
+        if (item._key !== itemKey) return item;
+
+        return {
+          ...item,
+          quantity: newQuantity,
+        };
+      });
 
       console.log('Updated selectedItems:', updatedItems); // Log updated items
       return updatedItems;
@@ -501,64 +420,14 @@ export default function ListPage() {
     fetchItems();
   }, [isDialogOpen, session?.user?.id]); // Add session?.user?.id to dependencies
 
-  // Add the category update handler
-  async function handleCategoryUpdate(categoryId: string | null) {
-    if (!editingItemKey || !list) return;
-
-    try {
-      const updatedItems = selectedItems.map((item: ListItem) => {
-        if (item._key !== editingItemKey) return item;
-
-        // If categoryId is null, remove the override
-        if (categoryId === null) {
-          return {
-            ...item,
-            categoryOverride: undefined, // Remove override
-          };
-        }
-
-        // Find the new category
-        const newCategory = allCategories.find((cat) => cat._id === categoryId);
-        if (!newCategory) return item;
-
-        // Return updated item with new category override
-        return {
-          ...item,
-          categoryOverride: newCategory,
-        };
-      });
-
-      // Update through API route
-      const response = await fetch('/api/updateList', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          listId: list._id,
-          items: prepareItems(updatedItems),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update list');
-      }
-
-      // Update local state
-      setSelectedItems(updatedItems);
-    } catch (error) {
-      console.error('Failed to update category:', error);
-      alert('Failed to update category. Please try again.');
-    }
-  }
-
   async function handleOnBodyChange(itemKey: string, checked: boolean) {
     if (!list) return;
 
     const updatedItems = selectedItems.map((item) => {
+      if (item._key !== itemKey) return item;
       return {
         ...item,
-        onBody: item._key === itemKey ? checked : item.onBody,
+        onBody: checked,
       };
     });
 
@@ -586,9 +455,10 @@ export default function ListPage() {
     if (!list) return;
 
     const updatedItems = selectedItems.map((item) => {
+      if (item._key !== itemKey) return item;
       return {
         ...item,
-        checked: item._key === itemKey ? checked : item.checked,
+        checked: checked,
       };
     });
 
@@ -660,7 +530,7 @@ export default function ListPage() {
             {list.days}
           </p>
         </div>
-        <div className="flex gap-y-4 gap-x-2 pb-8">
+        <div className="flex gap-y-4 gap-x-2">
           {/* Button to open the Add Item Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
@@ -781,7 +651,7 @@ export default function ListPage() {
           <ShareButton slug={listSlug} />
         </div>
 
-        <div className="flex gap-x-2 no-scrollbar mb-4 p-2s">
+        <div className="flex gap-x-2 no-scrollbar my-8 p-2">
           {categories.length > 0 && (
             <>
               <button
@@ -809,38 +679,11 @@ export default function ListPage() {
         {/* Totalt for weight and calories */}
 
         {selectedItems.length > 0 ? (
-          <ul className="totals flex flex-col w-full mt-8 gap-y-4">
+          <ul className="totals flex flex-col w-full gap-y-4">
             <li>
               {selectedCategory === null ? (
-                // "Alle" view with overrides and category totals
+                // "Alle" view with category totals
                 <div className="flex flex-col gap-y-2">
-                  {/* Override totals section */}
-                  <div className="flex flex-row w-full gap-x-4">
-                    {overrideTotals.length > 0 && (
-                      <div className="product gap-y-16 flex flex-col w-full bg-dimmed">
-                        {overrideTotals.map((override) => (
-                          <div key={override.categoryId} className="flex flex-col gap-x-3 gap-y-2">
-                            <p className="text-md sm:text-xl">{override.categoryTitle}</p>
-                            <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
-                              {formatWeight(override.weight)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Total without overrides section */}
-                    {overrideTotals.length > 0 && (
-                      <div className="product flex w-full flex-col gap-y-2 pb-8">
-                        <div className="flex flex-col gap-x-3 gap-y-2">
-                          <p className="text-md sm:text-xl">Sekk</p>
-                          <p className="text-2xl sm:text-4xl lg:text-8xl text-accent font-bold">
-                            {formatWeight(totalWithoutOverrides.weight)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                   {/* Category totals section */}
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-4">
@@ -1008,15 +851,6 @@ export default function ListPage() {
                       </div>
                     </div>
 
-                    {/* Add category edit button */}
-                    <button
-                      onClick={() => setEditingItemKey(listItem._key)}
-                      className="button-ghost flex gap-x-2 h-fit align-middle"
-                      aria-label="Edit category"
-                    >
-                      <Icon name="category" width={24} height={24} fill="#EAFFE2" />
-                    </button>
-
                     {/* Add check button */}
                     <input
                       type="checkbox"
@@ -1046,57 +880,6 @@ export default function ListPage() {
             );
           })}
         </ul>
-
-        {/* Category Edit Dialog */}
-        <Dialog open={!!editingItemKey} onOpenChange={() => setEditingItemKey(null)}>
-          <DialogContent className="dialog">
-            <DialogHeader className="gap-y-4">
-              <DialogTitle className="text-2xl font-normal text-accent">
-                Overstyr kategori
-              </DialogTitle>
-              <DialogDescription className="text-lg">
-                Velg en ny kategori for dette utstyret kun for denne pakklisten. Et tips er å lage
-                en kategori for På kropp så du kan skille mellom det du har på og det som er i
-                sekken.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-y-4 pt-4 pb-4">
-              <select
-                className="w-full max-w-full p-4"
-                value={
-                  selectedItems.find((item) => item._key === editingItemKey)?.categoryOverride
-                    ?._id || ''
-                }
-                onChange={(e) =>
-                  handleCategoryUpdate(e.target.value === 'original' ? null : e.target.value)
-                }
-              >
-                {/* Original category option */}
-                <option value="original">
-                  {selectedItems.find((item) => item._key === editingItemKey)?.item?.category
-                    .title || 'Unknown'}{' '}
-                  (original)
-                </option>
-
-                {/* Available categories */}
-                {allCategories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <DialogFooter>
-              <DialogClose asChild>
-                <button className="button-secondary" onClick={() => setEditingItemKey(null)}>
-                  Avbryt
-                </button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </main>
     </ProtectedRoute>
   );

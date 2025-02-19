@@ -20,6 +20,9 @@ const listItemFields = [
     type: 'reference',
     to: [{type: 'category'}],
     title: 'Category Override',
+    deprecated: {
+      reason: "Overriding category is no longer supported. Use item's category instead.",
+    },
   }),
   defineField({
     title: 'Packed',

@@ -40,10 +40,6 @@ export function LIST_QUERY(slug: string) {
     quantity,
 	  checked,
     onBody,
-    categoryOverride->{
-      _id,
-      title
-    },
     "item": item->{
       _id,
       name,
@@ -60,26 +56,14 @@ export function LIST_QUERY(slug: string) {
 }`;
 }
 
-export const CATEGORIES_QUERY = /* groq */ `*[_type == "category" && user._ref == $userId] {
-  _id,
-  title
-} | order(title asc)`; // Add this interface for category totals
-
-export interface CategoryTotal {
+// Add this interface for category totals
+export type CategoryTotal = {
   id: string;
   count: number;
   weight: number;
   calories: number;
   title: string;
-} // Add this interface for override totals
-
-export interface OverrideTotal {
-  categoryId: string;
-  categoryTitle: string;
-  count: number;
-  weight: number;
-  calories: number;
-} // Update the formatWeight function
+};
 
 export function formatWeight(weightInGrams: number): string {
   const weightInKg = weightInGrams / 1000;
@@ -127,7 +111,6 @@ export interface ListItem {
   item: Item | null;
   checked?: boolean;
   onBody?: boolean;
-  categoryOverride?: Category;
 }
 
 export interface List {
@@ -157,9 +140,5 @@ export function prepareItems(items: ListItem[]) {
   return items.map((item) => ({
     ...item,
     item: item.item && {_ref: item.item._id, _type: 'reference'},
-    categoryOverride: item.categoryOverride && {
-      _ref: item.categoryOverride._id,
-      _type: 'reference',
-    },
   }));
 }
