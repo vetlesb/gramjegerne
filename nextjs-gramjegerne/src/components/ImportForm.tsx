@@ -343,7 +343,7 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
             </div>
           )}
           <button type="submit" className="button-primary-accent text-lg mt-8">
-            Importer utstyr
+            Importer
           </button>
         </form>
       ) : isClear ? (
@@ -371,7 +371,7 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
       ) : (
         <div>
           <button className="button-primary-accent text-lg" onClick={handleExport}>
-            Eksporter utstyr til .xlsx
+            Eksporter
           </button>
         </div>
       )}
