@@ -103,7 +103,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
             </div>
             {list.image ? (
               <Image
-                className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
+                className="rounded-md h-full w-full aspect-square object-cover cursor-pointer"
                 src={urlFor(list.image).url()}
                 alt={`Bilde av ${list.name}`}
                 width={400}
@@ -112,7 +112,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
               />
             ) : (
               <div
-                className="h-full w-full aspect-video flex items-center placeholder_image cursor-pointer"
+                className="h-full w-full aspect-square flex items-center placeholder_image cursor-pointer"
                 onClick={handleClick}
               >
                 <svg
