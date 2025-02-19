@@ -192,7 +192,7 @@ li.product-list {
   gap: 4px;
   background-color: var(--bg-dimmed);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.5rem;
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;
@@ -433,6 +433,15 @@ input::file-selector-button {
   border-bottom: 2px solid var(--fg-secondary);
   color: var(--fg-primary);
   border-radius: 0px;
+}
+.tab-disabled {
+  padding: 8px 16px 8px 16px;
+  border-bottom: 2px solid var(--fg-secondary);
+  color: var(--fg-secondary);
+  border-radius: 0px;
+}
+.tab-disabled:hover {
+  background-color: var(--bg-dimmed);
 }
 .tab-active {
   padding: 8px 16px 8px 16px;

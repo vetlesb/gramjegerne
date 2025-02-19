@@ -293,7 +293,8 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
             setIsClear(true);
             setIsImport(false);
           }}
-          className={isClear ? 'tab-active' : 'tab'}
+          disabled
+          className={isClear ? 'tab-active' : 'tab-disabled'}
         >
           Slett alt
         </button>
