@@ -28,6 +28,13 @@ const listItemFields = [
     type: 'boolean',
     initialValue: false,
   }),
+  defineField({
+    title: 'On body',
+    name: 'onBody',
+    description: 'Mark item as worn on body, excluding the weight calculation from backpack.',
+    type: 'boolean',
+    initialValue: false,
+  }),
 ];
 
 const fields = [

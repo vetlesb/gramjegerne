@@ -552,6 +552,36 @@ export default function ListPage() {
     }
   }
 
+  async function handleOnBodyChange(itemKey: string, checked: boolean) {
+    if (!list) return;
+
+    const updatedItems = selectedItems.map((item) => {
+      return {
+        ...item,
+        onBody: item._key === itemKey ? checked : item.onBody,
+      };
+    });
+
+    // Optimistically update the UI.
+    setSelectedItems(updatedItems);
+
+    try {
+      await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: prepareItems(updatedItems),
+        }),
+      });
+    } catch {
+      // Revert the checkbox state on error.
+      setSelectedItems((prev) =>
+        prev.map((item) => (item._key === itemKey ? {...item, onBody: !checked} : item)),
+      );
+    }
+  }
+
   async function handleCheckboxChange(itemKey: string, checked: boolean) {
     if (!list) return;
 
@@ -990,8 +1020,16 @@ export default function ListPage() {
                     {/* Add check button */}
                     <input
                       type="checkbox"
+                      title="På kropp"
+                      checked={listItem.onBody ?? false}
+                      onChange={(e) => handleOnBodyChange(listItem._key, e.target.checked)}
+                    />
+
+                    {/* Add check button */}
+                    <input
+                      type="checkbox"
                       title="Pakket"
-                      checked={listItem.checked || false}
+                      checked={listItem.checked ?? false}
                       onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
                     />
 

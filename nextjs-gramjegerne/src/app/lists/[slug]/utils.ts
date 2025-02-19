@@ -39,6 +39,7 @@ export function LIST_QUERY(slug: string) {
     _type,
     quantity,
 	  checked,
+    onBody,
     categoryOverride->{
       _id,
       title
@@ -84,8 +85,9 @@ export function formatWeight(weightInGrams: number): string {
   const weightInKg = weightInGrams / 1000;
   // Always use 3 decimals for precision
   return `${weightInKg.toFixed(3)} kg`;
-} // Add this sorting function at component level
+}
 
+/** Add this sorting function at component level */
 export function sortListItems(items: ListItem[]): ListItem[] {
   return [...items].sort((a, b) => {
     const nameA = a.item?.name || '';
@@ -123,7 +125,8 @@ export interface ListItem {
   _type: string;
   quantity?: number;
   item: Item | null;
-  checked: boolean;
+  checked?: boolean;
+  onBody?: boolean;
   categoryOverride?: Category;
 }
 
