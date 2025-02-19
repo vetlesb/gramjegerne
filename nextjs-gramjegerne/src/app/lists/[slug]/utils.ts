@@ -56,11 +56,11 @@ export function LIST_QUERY(slug: string) {
 }`;
 }
 
-// Add this interface for category totals
 export type CategoryTotal = {
   id: string;
   count: number;
-  weight: number;
+  weight: number; // excluding onBody
+  weightOnBody: number;
   calories: number;
   title: string;
 };

@@ -205,19 +205,19 @@ export default function ListPage() {
   }
 
   // Update the categoryTotals calculation
-  const {categoryTotals, grandTotal} = useMemo(() => {
+  const {categoryTotals, grandTotal, categoryTotalsMap} = useMemo(() => {
+    const emptyTotal = {
+      count: 0,
+      weight: 0,
+      weightOnBody: 0,
+      calories: 0,
+    };
+
     if (!selectedItems?.length) {
-      const emptyTotal = {
-        id: 'total',
-        count: 0,
-        weight: 0,
-        calories: 0,
-        title: 'Totalt',
-      };
       return {
         categoryTotals: [],
+        categoryTotalsMap: new Map<string, CategoryTotal>(),
         grandTotal: emptyTotal,
-        totalWithoutOverrides: emptyTotal,
       };
     }
 
@@ -236,14 +236,24 @@ export default function ListPage() {
         id: effectiveCategory._id,
         count: 0,
         weight: 0,
+        weightOnBody: 0,
         calories: 0,
         title: effectiveCategory.title,
       };
 
       existing.count += quantity;
+
       if (item.item.weight) {
-        existing.weight += item.item.weight.weight * quantity;
+        let packedQuantity = quantity;
+
+        if (item.onBody) {
+          // If one of the items is on body, we need to subtract one from the count.
+          packedQuantity = Math.max(packedQuantity - 1, 0);
+          existing.weightOnBody += item.item.weight.weight;
+        }
+        existing.weight += item.item.weight.weight * packedQuantity;
       }
+
       if (item.item.calories) {
         existing.calories += item.item.calories * quantity;
       }
@@ -251,6 +261,7 @@ export default function ListPage() {
       categoryMap.set(effectiveCategory._id, existing);
     });
 
+    /** Sorted array for overview. */
     const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
       a.title.localeCompare(b.title, 'nb'),
     );
@@ -258,20 +269,25 @@ export default function ListPage() {
     // Calculate grand total
     const grandTotal = categoryTotals.reduce(
       (acc, cat) => ({
-        id: 'total',
-        title: 'Totalt',
         count: acc.count + cat.count,
         weight: acc.weight + cat.weight,
+        weightOnBody: acc.weightOnBody + cat.weightOnBody,
         calories: acc.calories + cat.calories,
       }),
-      {id: 'total', title: 'Totalt', count: 0, weight: 0, calories: 0},
+      {...emptyTotal},
     );
 
     return {
       categoryTotals,
+      categoryTotalsMap: categoryMap,
       grandTotal,
     };
   }, [selectedItems]);
+
+  const selectedCategoryTotals = categoryTotalsMap.get(selectedCategory ?? '');
+  const selectedCategoryWeight = selectedCategoryTotals
+    ? selectedCategoryTotals.weight + selectedCategoryTotals.weightOnBody
+    : 0;
 
   // Update the handleSaveChanges function
   async function handleSaveChanges() {
@@ -700,13 +716,31 @@ export default function ListPage() {
                           {formatNumber(total.count)} stk
                         </p>*/}
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {formatWeight(total.weight)}
+                            {formatWeight(total.weight + total.weightOnBody)}
                           </p>
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                             {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
                           </p>
                         </div>
                       ))}
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2">
+                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                        På kropp
+                      </p>
+                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                        {formatWeight(grandTotal.weightOnBody)}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2">
+                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                        I sekk
+                      </p>
+                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                        {formatWeight(grandTotal.weight)}
+                      </p>
                     </div>
 
                     {/* Grand total section */}
@@ -719,7 +753,7 @@ export default function ListPage() {
                         {formatNumber(grandTotal.count)} stk
                       </p> */}
                         <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                          {formatWeight(grandTotal.weight)}
+                          {formatWeight(grandTotal.weight + grandTotal.weightOnBody)}
                         </p>
                         <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                           {grandTotal.calories > 0
@@ -734,19 +768,16 @@ export default function ListPage() {
                 // Category-specific view
                 <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {formatNumber(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)?.count || 0,
-                    )}{' '}
-                    stk
+                    {formatNumber(selectedCategoryTotals?.count || 0)} stk
                   </p>
+
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {formatWeight(
-                      categoryTotals.find((cat) => cat.id === selectedCategory)?.weight || 0,
-                    )}
+                    {formatWeight(selectedCategoryWeight)}
                   </p>
+
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0) > 0
-                      ? `${formatNumber(categoryTotals.find((cat) => cat.id === selectedCategory)?.calories || 0)} kcal`
+                    {(selectedCategoryTotals?.calories || 0) > 0
+                      ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
                       : ''}
                   </p>
                 </div>
