@@ -39,10 +39,7 @@ export function LIST_QUERY(slug: string) {
     _type,
     quantity,
 	  checked,
-    categoryOverride->{
-      _id,
-      title
-    },
+    onBody,
     "item": item->{
       _id,
       name,
@@ -59,33 +56,22 @@ export function LIST_QUERY(slug: string) {
 }`;
 }
 
-export const CATEGORIES_QUERY = /* groq */ `*[_type == "category" && user._ref == $userId] {
-  _id,
-  title
-} | order(title asc)`; // Add this interface for category totals
-
-export interface CategoryTotal {
+export type CategoryTotal = {
   id: string;
   count: number;
-  weight: number;
+  weight: number; // excluding onBody
+  weightOnBody: number;
   calories: number;
   title: string;
-} // Add this interface for override totals
-
-export interface OverrideTotal {
-  categoryId: string;
-  categoryTitle: string;
-  count: number;
-  weight: number;
-  calories: number;
-} // Update the formatWeight function
+};
 
 export function formatWeight(weightInGrams: number): string {
   const weightInKg = weightInGrams / 1000;
   // Always use 3 decimals for precision
   return `${weightInKg.toFixed(3)} kg`;
-} // Add this sorting function at component level
+}
 
+/** Add this sorting function at component level */
 export function sortListItems(items: ListItem[]): ListItem[] {
   return [...items].sort((a, b) => {
     const nameA = a.item?.name || '';
@@ -123,8 +109,8 @@ export interface ListItem {
   _type: string;
   quantity?: number;
   item: Item | null;
-  checked: boolean;
-  categoryOverride?: Category;
+  checked?: boolean;
+  onBody?: boolean;
 }
 
 export interface List {
@@ -154,9 +140,5 @@ export function prepareItems(items: ListItem[]) {
   return items.map((item) => ({
     ...item,
     item: item.item && {_ref: item.item._id, _type: 'reference'},
-    categoryOverride: item.categoryOverride && {
-      _ref: item.categoryOverride._id,
-      _type: 'reference',
-    },
   }));
 }

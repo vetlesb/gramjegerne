@@ -20,11 +20,21 @@ const listItemFields = [
     type: 'reference',
     to: [{type: 'category'}],
     title: 'Category Override',
+    deprecated: {
+      reason: "Overriding category is no longer supported. Use item's category instead.",
+    },
   }),
   defineField({
     title: 'Packed',
     description: 'Mark that item has been packed',
     name: 'checked',
+    type: 'boolean',
+    initialValue: false,
+  }),
+  defineField({
+    title: 'On body',
+    name: 'onBody',
+    description: 'Mark item as worn on body, excluding the weight calculation from backpack.',
     type: 'boolean',
     initialValue: false,
   }),
