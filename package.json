@@ -13,6 +13,7 @@
     "update//": "echo Updates packages and lockfile. (`pnpm i` is required because `pnpm up` creates non-deterministic lockfile)",
     "update": "pnpm -r up && pnpm i",
     "up": "pnpm run update",
+    "vetle-update": "pnpm run update",
     "rm-node-modules//": "echo Removes all `node_modules/` from all workspaces",
     "rm-node-modules": "rm -rf node_modules/ && pnpm -r run rm-node-modules",
     "rmnm": "pnpm run rm-node-modules",
