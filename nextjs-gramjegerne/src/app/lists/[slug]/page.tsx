@@ -62,6 +62,9 @@ export default function ListPage() {
   // Add a new state for dialog search
   const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
+  // Add new state for onBody filter
+  const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
+
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
     if (!selectedItems?.length) return [];
@@ -164,10 +167,17 @@ export default function ListPage() {
   const filteredItemsForList = useMemo(() => {
     let items = selectedItems;
 
+    // If showOnBodyOnly is true, show all onBody items regardless of category
+    if (showOnBodyOnly) {
+      return sortListItems(items.filter((item) => item.onBody === true));
+    }
+
+    // Otherwise, apply category filter as normal
     if (selectedCategory) {
       items = items.filter((item) => item.item?.category?._id === selectedCategory);
     }
 
+    // Existing search filter
     if (searchQuery) {
       items = items.filter((item) =>
         item.item?.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -175,7 +185,7 @@ export default function ListPage() {
     }
 
     return sortListItems(items);
-  }, [selectedItems, selectedCategory, searchQuery]);
+  }, [selectedItems, selectedCategory, searchQuery, showOnBodyOnly]);
 
   // Update the filteredItemsForDialog to use dialogSearchQuery instead
   const filteredItemsForDialog = useMemo(() => {
@@ -665,32 +675,43 @@ export default function ListPage() {
           <ShareButton slug={listSlug} />
         </div>
         <div className="flex gap-x-2 no-scrollbar my-8 p-2">
-          {categories.length > 0 && (
-            <>
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className={`menu-category text-md ${
-                  selectedCategory === null ? 'menu-active' : ''
-                }`}
-              >
-                Oversikt
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  onClick={() => setSelectedCategory(category._id)}
-                  className={`menu-category text-md ${
-                    selectedCategory === category._id ? 'menu-active' : ''
-                  }`}
-                >
-                  {category.title}
-                </button>
-              ))}
-            </>
-          )}
+          <button
+            onClick={() => {
+              setSelectedCategory(null);
+              setShowOnBodyOnly(false);
+            }}
+            className={`menu-category text-md ${
+              selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
+            }`}
+          >
+            Oversikt
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category._id}
+              onClick={() => {
+                setSelectedCategory(category._id);
+                setShowOnBodyOnly(false); // Disable onBody filter when selecting category
+              }}
+              className={`menu-category text-md ${
+                selectedCategory === category._id && !showOnBodyOnly ? 'menu-active' : ''
+              }`}
+            >
+              {category.title}
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              setShowOnBodyOnly(!showOnBodyOnly);
+              setSelectedCategory(null);
+            }}
+            className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
+          >
+            På kropp
+          </button>
         </div>
-        {/* Totalt for weight and calories */}
-        {selectedCategory === null && (
+        {/* Show totals only when not in "På kropp" view */}
+        {selectedCategory === null && !showOnBodyOnly && (
           <div className="grid grid-cols-2 gap-x-2">
             <div className="grid product gap-y-2">
               <p className="text-md sm:text-xl">Sekk</p>
@@ -721,7 +742,7 @@ export default function ListPage() {
         {selectedItems.length > 0 ? (
           <ul className="totals flex flex-col w-full">
             <li>
-              {selectedCategory === null ? (
+              {selectedCategory === null && !showOnBodyOnly ? (
                 // "Alle" view with category totals
                 <div className="flex flex-col">
                   {/* Category totals section */}
@@ -784,7 +805,7 @@ export default function ListPage() {
                   </div>
                 </div>
               ) : (
-                // Category-specific view
+                // Category-specific or "På kropp" view
                 <div className="product items-center grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <div className="flex items-center gap-x-1 text-md sm:text-xl fg-accent font-medium font-sans tabular-nums">
                     <Icon name="backpack" width={24} height={24} />
@@ -805,14 +826,9 @@ export default function ListPage() {
               )}
             </li>
           </ul>
-        ) : (
-          <div className="text-center text-accent text-2xl min-h-[50vh] flex items-center justify-center">
-            Fordelen med en tom liste er at den veier 0 gram. Ulempen er at du har 0 kalorier å gå
-            på
-          </div>
-        )}
-        {/* Display selected items */}
-        {selectedCategory && (
+        ) : null}
+        {/* Show filtered items when either category is selected OR showOnBodyOnly is true */}
+        {(selectedCategory || showOnBodyOnly) && (
           <ul className="flex flex-col divide-y divide-white/5">
             {filteredItemsForList.map((listItem) => {
               console.log('Rendering item:', listItem);
@@ -820,7 +836,7 @@ export default function ListPage() {
                 <li
                   key={listItem._key}
                   onClick={() => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
-                  className={`product py-4 ${listItem.checked == true ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
+                  className={`product py-4 ${listItem.checked ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
                 >
                   <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
                     {/* Add check button */}
@@ -934,17 +950,17 @@ export default function ListPage() {
                       </button>
 
                       {/* Existing delete button */}
+
                       <button
-                        title="Fjern fra liste"
                         onClick={(e) => {
-                          e.stopPropagation(); // Stop event from bubbling up
+                          e.stopPropagation();
                           if (listItem.item) {
                             handleRemoveFromList(listItem.item);
                           }
                         }}
                         className="button-ghost flex gap-x-2 h-fit align-middle"
                       >
-                        <Icon name="close" width={24} height={24} fill="#EAFFE2" />
+                        <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
                       </button>
                     </div>
                   </div>
