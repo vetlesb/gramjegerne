@@ -25,7 +25,7 @@ export default function SignIn() {
 
   // Show sign in form
   return (
-    <div className="flex justify-center min-h-screen justify-center items-center">
+    <div className="flex justify-center min-h-screen items-center">
       <div className="w-full space-y-8">
         <h2 className="signin-logo text-accent text-center">Gramjegerne</h2>
         <div className="flex flex-col justify-center items-center ingress">
