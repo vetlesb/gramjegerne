@@ -46,6 +46,7 @@ export const itemType = defineType({
       name: 'calories',
       type: 'number',
     }),
+
     defineField({
       name: 'user',
       type: 'reference',

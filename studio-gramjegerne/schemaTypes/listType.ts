@@ -107,6 +107,13 @@ const fields = [
     title: 'Participants',
   }),
   defineField({
+    title: 'Completed',
+    description: 'Mark that trip is completed',
+    name: 'completed',
+    type: 'boolean',
+    initialValue: false,
+  }),
+  defineField({
     name: 'items',
     type: 'array',
     title: 'Items',

@@ -69,6 +69,9 @@ export default function Page() {
             </div>
           ) : (
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-8 gap-x-4">
+              <li className="product-list flex flex-col basis-full text-4xl text-accent">
+                <p className="flex items-center justify-center">Planlagte turer</p>
+              </li>
               {lists.map((list) => (
                 <ListItem key={list._id} list={list} onDelete={fetchLists} />
               ))}
