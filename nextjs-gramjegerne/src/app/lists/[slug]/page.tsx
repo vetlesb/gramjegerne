@@ -812,7 +812,7 @@ export default function ListPage() {
             return (
               <li
                 key={listItem._key}
-                onClick={(e) => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
+                onClick={() => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
                 className={`product py-4 ${listItem.checked == true ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
               >
                 <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
