@@ -930,7 +930,9 @@ export default function ListPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); // Stop event from bubbling up
-                          listItem.item && handleRemoveFromList(listItem.item);
+                          if (listItem.item) {
+                            handleRemoveFromList(listItem.item);
+                          }
                         }}
                         className="button-ghost flex gap-x-2 h-fit align-middle"
                       >
