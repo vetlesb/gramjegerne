@@ -238,10 +238,15 @@ export default function ListPage() {
         weight: 0,
         weightOnBody: 0,
         calories: 0,
+        checkedCount: 0,
         title: effectiveCategory.title,
       };
 
       existing.count += quantity;
+
+      if (item.checked) {
+        existing.checkedCount += quantity;
+      }
 
       if (item.item.weight) {
         let packedQuantity = quantity;
@@ -775,6 +780,7 @@ export default function ListPage() {
                 // Category-specific view
                 <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                    {formatNumber(selectedCategoryTotals?.checkedCount || 0)}/
                     {formatNumber(selectedCategoryTotals?.count || 0)} stk
                   </p>
 

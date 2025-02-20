@@ -61,6 +61,7 @@ export type CategoryTotal = {
   count: number;
   weight: number; // excluding onBody
   weightOnBody: number;
+  checkedCount: number;
   calories: number;
   title: string;
 };
