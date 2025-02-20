@@ -188,7 +188,7 @@ li.product {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 1rem;
-  margin-bottom: 8px;
+
   box-shadow: none;
   border: 0px;
 }
@@ -224,7 +224,6 @@ ul.product {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 8px;
 }
 li.product-search {
   display: grid;

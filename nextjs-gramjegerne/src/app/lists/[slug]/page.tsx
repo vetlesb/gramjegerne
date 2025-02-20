@@ -698,7 +698,7 @@ export default function ListPage() {
         </div>
         {/* Totalt for weight and calories */}
         {selectedCategory === null && (
-          <div className="grid grid-cols-2 gap-x-3">
+          <div className="grid grid-cols-2 gap-x-2">
             <div className="grid product">
               <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Sekk</p>
               <p className="text-4xl md:text-8xl text-accent font-bold">
@@ -714,11 +714,11 @@ export default function ListPage() {
           </div>
         )}
         {selectedItems.length > 0 ? (
-          <ul className="totals flex flex-col w-full gap-y-4">
+          <ul className="totals flex flex-col w-full">
             <li>
               {selectedCategory === null ? (
                 // "Alle" view with category totals
-                <div className="flex flex-col gap-y-2">
+                <div className="flex flex-col">
                   {/* Category totals section */}
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
