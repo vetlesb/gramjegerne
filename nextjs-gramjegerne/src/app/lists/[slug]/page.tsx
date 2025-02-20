@@ -881,9 +881,10 @@ export default function ListPage() {
                       <div className="flex w-full">
                         <div className="flex items-center gap-x-1 bg-dimmed-hover rounded p-1">
                           <button
-                            onClick={() =>
-                              handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1)
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation(); // Stop event from bubbling up
+                              handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1);
+                            }}
                             disabled={(listItem.quantity || 1) <= 1}
                             className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
                           >
@@ -895,9 +896,10 @@ export default function ListPage() {
                               : listItem.quantity || 1}
                           </span>
                           <button
-                            onClick={() =>
-                              handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1)
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation(); // Stop event from bubbling up
+                              handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1);
+                            }}
                             className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
                           >
                             +
@@ -909,21 +911,27 @@ export default function ListPage() {
                       <button
                         type="button"
                         title="På kropp"
-                        onClick={() =>
-                          handleOnBodyChange(listItem._key, !(listItem.onBody ?? false))
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation(); // Stop event from bubbling up
+                          handleOnBodyChange(listItem._key, !(listItem.onBody ?? false));
+                        }}
                         className={`button-toggle p-2 rounded transition-colors ${
-                          listItem.onBody
-                            ? 'bg-accent fg-secondary hover:bg-secondary'
-                            : 'bg-dimmed-hover fg-primary'
+                          listItem.onBody ? 'fg-accent' : 'fg-primary'
                         }`}
                       >
-                        <Icon name="clothing" width={20} height={20} />
+                        {listItem.onBody ? (
+                          <Icon name="clothingfilled" width={20} height={20} />
+                        ) : (
+                          <Icon name="clothing" width={20} height={20} />
+                        )}
                       </button>
 
                       {/* Existing delete button */}
                       <button
-                        onClick={() => listItem.item && handleRemoveFromList(listItem.item)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Stop event from bubbling up
+                          listItem.item && handleRemoveFromList(listItem.item);
+                        }}
                         className="button-ghost flex gap-x-2 h-fit align-middle"
                       >
                         <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
