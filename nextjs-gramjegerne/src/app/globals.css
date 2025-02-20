@@ -34,9 +34,11 @@ button:hover {
   background-color: var(--bg-primary-hover);
 }
 .button-toggle {
-  background-color: var(--bg-dimmed);
   padding: 0.5rem;
   border-radius: 4px;
+}
+.button-toggle:hover {
+  background-color: var(--bg-dimmed-hover);
 }
 .button-primary {
   background-color: var(--bg-secondary);
@@ -77,7 +79,6 @@ button:hover {
   background-color: var(--bg-primary-hover);
 }
 .button-ghost {
-  background-color: var(--bg-dimmed);
   color: var(--fg-primary);
   padding: 0.5rem;
   border-radius: 4px;
@@ -126,6 +127,9 @@ button:hover {
 }
 .bg-primary {
   background-color: var(--bg-primary);
+}
+.bg-secondary {
+  background-color: var(--bg-secondary);
 }
 .fg-dimmed {
   color: var(--fg-dimmed);
@@ -193,7 +197,7 @@ li.product {
   border: 0px;
 }
 li.product-checked {
-  background-color: var(--bg-dimmed-hover);
+  background-color: var(--bg-checked);
 }
 li.product-list {
   display: grid;
@@ -650,6 +654,7 @@ select {
     --bg-dimmed-hover: #222a1f;
     --bg-accent: #b4ed9f;
     --bg-accent-hover: #95db7b;
+    --bg-checked: #343e2f;
     --fg-primary: #eaffe2;
     --fg-secondary: #1f261c;
     --fg-dimmed: #272e23;
@@ -668,6 +673,7 @@ select {
     --bg-dimmed-hover: #1f2730;
     --bg-accent: #67b5ff;
     --bg-accent-hover: #7ba7db;
+    --bg-checked: #303b4c;
     --fg-primary: #e2f1ff;
     --fg-secondary: #1a1f26;
     --fg-dimmed: #232b36;
@@ -685,6 +691,7 @@ select {
     --bg-dimmed-hover: #302b1f;
     --bg-accent: #ffe883;
     --bg-accent-hover: #dbcc7b;
+    --bg-checked: #4c4730;
     --fg-primary: #fffae2;
     --fg-secondary: #262419;
     --fg-dimmed: #363223;
@@ -777,7 +784,7 @@ input[type='checkbox'] {
   -webkit-appearance: none;
   appearance: none;
   /* Create custom checkbox */
-  border: 1px solid var(--fg-accent);
+  background-color: var(--bg-dimmed-hover);
   position: relative;
   border-radius: 99px;
   width: 16px;
@@ -785,11 +792,9 @@ input[type='checkbox'] {
   padding: 0.7rem;
   outline: none;
 }
-input[type='checkbox']:hover {
-  background-color: var(--bg-primary-hover);
-}
+
 input[type='checkbox']:checked {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-accent);
 }
 
 input[type='checkbox']:checked::after {
@@ -799,7 +804,7 @@ input[type='checkbox']:checked::after {
   top: 4px;
   width: 6px;
   height: 12px;
-  border: solid var(--fg-accent);
+  border: solid var(--fg-secondary);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }

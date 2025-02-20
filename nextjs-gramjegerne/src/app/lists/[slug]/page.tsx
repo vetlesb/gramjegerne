@@ -879,28 +879,28 @@ export default function ListPage() {
 
                     <div className="flex items-center w-full md:w-auto gap-x-2 ml-auto">
                       <div className="flex w-full">
-                        <div className="flex items-center gap-x-1 bg-dimmed-hover rounded p-1">
+                        <div className="flex items-center gap-x-1 bg-dimmed-hover rounded-full p-1">
                           <button
                             onClick={(e) => {
                               e.stopPropagation(); // Stop event from bubbling up
                               handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1);
                             }}
                             disabled={(listItem.quantity || 1) <= 1}
-                            className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
+                            className="p-1 px-4 hover:bg-dimmed rounded-full disabled:opacity-50"
                           >
                             –
                           </button>
-                          <span className="text-sm min-w-[2rem] text-center">
+                          <div className="text-md bg-secondary fg-secondary p-1 rounded-full min-w-[2rem] text-center">
                             {pendingQuantities[listItem._key] !== undefined
                               ? pendingQuantities[listItem._key]
                               : listItem.quantity || 1}
-                          </span>
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation(); // Stop event from bubbling up
                               handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1);
                             }}
-                            className="p-1 px-4 hover:bg-dimmed rounded disabled:opacity-50"
+                            className="p-1 px-4 hover:bg-dimmed rounded-full disabled:opacity-50"
                           >
                             +
                           </button>
@@ -920,14 +920,15 @@ export default function ListPage() {
                         }`}
                       >
                         {listItem.onBody ? (
-                          <Icon name="clothingfilled" width={20} height={20} />
+                          <Icon name="clothingfilled" width={24} height={24} />
                         ) : (
-                          <Icon name="clothing" width={20} height={20} />
+                          <Icon name="clothing" width={24} height={24} />
                         )}
                       </button>
 
                       {/* Existing delete button */}
                       <button
+                        title="Fjern fra liste"
                         onClick={(e) => {
                           e.stopPropagation(); // Stop event from bubbling up
                           if (listItem.item) {
@@ -936,7 +937,7 @@ export default function ListPage() {
                         }}
                         className="button-ghost flex gap-x-2 h-fit align-middle"
                       >
-                        <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
+                        <Icon name="close" width={24} height={24} fill="#EAFFE2" />
                       </button>
                     </div>
                   </div>
