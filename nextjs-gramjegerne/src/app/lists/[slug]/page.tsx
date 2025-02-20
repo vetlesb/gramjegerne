@@ -693,6 +693,22 @@ export default function ListPage() {
           )}
         </div>
         {/* Totalt for weight and calories */}
+        {selectedCategory === null && (
+          <div className="grid grid-cols-2 gap-x-3">
+            <div className="grid product">
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Sekk</p>
+              <p className="text-4xl md:text-8xl text-accent font-bold">
+                {formatWeight(grandTotal.weight)}
+              </p>
+            </div>
+            <div className="grid product">
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">På kropp</p>
+              <p className="text-4xl md:text-8xl text-accent font-bold">
+                {formatWeight(grandTotal.weightOnBody)}
+              </p>
+            </div>
+          </div>
+        )}
 
         {selectedItems.length > 0 ? (
           <ul className="totals flex flex-col w-full gap-y-4">
@@ -702,7 +718,7 @@ export default function ListPage() {
                 <div className="flex flex-col gap-y-2">
                   {/* Category totals section */}
                   <div className="product">
-                    <div className="flex flex-col gap-y-2 pt-4">
+                    <div className="flex flex-col gap-y-2 pt-2">
                       <p className="text-xl pb-8">Kategorier</p>
                       {categoryTotals.map((total) => (
                         <div
@@ -725,21 +741,12 @@ export default function ListPage() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2 mt-2">
                       <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                         På kropp
                       </p>
                       <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                         {formatWeight(grandTotal.weightOnBody)}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2">
-                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                        I sekk
-                      </p>
-                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                        {formatWeight(grandTotal.weight)}
                       </p>
                     </div>
 
