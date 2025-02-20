@@ -211,6 +211,7 @@ export default function ListPage() {
       weight: 0,
       weightOnBody: 0,
       calories: 0,
+      checkedCount: 0,
     };
 
     if (!selectedItems?.length) {
@@ -278,6 +279,7 @@ export default function ListPage() {
         weight: acc.weight + cat.weight,
         weightOnBody: acc.weightOnBody + cat.weightOnBody,
         calories: acc.calories + cat.calories,
+        checkedCount: acc.checkedCount + cat.checkedCount,
       }),
       {...emptyTotal},
     );
@@ -541,16 +543,7 @@ export default function ListPage() {
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
         <h1 className="text-4xl md:text-6xl text-accent py-4">i {list.name}</h1>
-        <div className="flex flex-wrap gap-x-1 gap-y-1 pb-12">
-          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-            <Icon name="user" width={16} height={16} />
-            {list.participants} personer
-          </p>
-          <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-            <Icon name="calendar" width={16} height={16} />
-            {list.days} dager
-          </p>
-        </div>
+
         <div className="flex gap-y-4 gap-x-2">
           {/* Button to open the Add Item Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
@@ -699,16 +692,28 @@ export default function ListPage() {
         {/* Totalt for weight and calories */}
         {selectedCategory === null && (
           <div className="grid grid-cols-2 gap-x-2">
-            <div className="grid product">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Sekk</p>
-              <p className="text-4xl md:text-8xl text-accent font-bold">
+            <div className="grid product gap-y-2">
+              <p className="text-md sm:text-xl">Sekk</p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weight)}
               </p>
             </div>
-            <div className="grid product">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">På kropp</p>
-              <p className="text-4xl md:text-8xl text-accent font-bold">
+            <div className="grid product gap-y-2">
+              <p className="text-md sm:text-xl">På kropp</p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
+              </p>
+            </div>
+            <div className="grid product gap-y-2">
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Pakket</p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
+                {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
+              </p>
+            </div>
+            <div className="grid product gap-y-2">
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Varighet</p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
+                {list.days} dager
               </p>
             </div>
           </div>
@@ -722,14 +727,18 @@ export default function ListPage() {
                   {/* Category totals section */}
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
-                      <p className="text-xl pb-8">Kategorier</p>
+                      <p className="text-md sm:text-xl pb-8">Deltajert oversikt</p>
                       {categoryTotals.map((total) => (
                         <div
                           key={total.id}
                           className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
                         >
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {total.title}
+                            {total.title}{' '}
+                            <span className="fg-accent text-sm">
+                              ({formatNumber(total.checkedCount || 0)}/
+                              {formatNumber(total.count || 0)})
+                            </span>
                           </p>
                           {/*  <p className="text-md sm:text-xl">
                           {formatNumber(total.count)} stk
@@ -853,9 +862,6 @@ export default function ListPage() {
                         {listItem.item?.name || 'Unnamed Item'}
                       </h2>
                       <div className="flex flex-wrap gap-x-1">
-                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                          {listItem.quantity || 1} stk
-                        </p>
                         {listItem.item?.size && (
                           <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
                             <Icon name="size" width={16} height={16} />
