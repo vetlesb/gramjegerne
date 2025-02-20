@@ -33,6 +33,11 @@ button {
 button:hover {
   background-color: var(--bg-primary-hover);
 }
+.button-toggle {
+  background-color: var(--bg-dimmed);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
 .button-primary {
   background-color: var(--bg-secondary);
   color: var(--fg-secondary);
@@ -249,9 +254,11 @@ li.stats {
   padding: 16px;
 }
 .icon-fill {
-  fill: var(--fg-primary);
+  color: var(--fg-primary);
 }
-
+.icon-fill-active {
+  color: var(--fg-secondary);
+}
 li.product.active {
   background-color: var(--bg-primary);
   outline: 2px solid var(--fg-accent);

@@ -806,6 +806,16 @@ export default function ListPage() {
             return (
               <li key={listItem._key} className="product py-4">
                 <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
+                  {/* Add check button */}
+                  <input
+                    type="checkbox"
+                    title="Pakket"
+                    checked={listItem.checked ?? false}
+                    onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
+                    className="h-4 w-4 rounded border-accent bg-dimmed 
+                        text-accent focus:ring-accent focus:ring-offset-background
+                        hover:border-accent/90 cursor-pointer transition-colors"
+                  />
                   <div className="aspect-square h-16 w-16">
                     {listItem.item?.image ? (
                       <Image
@@ -890,20 +900,18 @@ export default function ListPage() {
                     </div>
 
                     {/* Add check button */}
-                    <input
-                      type="checkbox"
+                    <button
+                      type="button"
                       title="På kropp"
-                      checked={listItem.onBody ?? false}
-                      onChange={(e) => handleOnBodyChange(listItem._key, e.target.checked)}
-                    />
-
-                    {/* Add check button */}
-                    <input
-                      type="checkbox"
-                      title="Pakket"
-                      checked={listItem.checked ?? false}
-                      onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
-                    />
+                      onClick={() => handleOnBodyChange(listItem._key, !(listItem.onBody ?? false))}
+                      className={`button-toggle p-2 rounded transition-colors ${
+                        listItem.onBody
+                          ? 'bg-accent fg-secondary hover:bg-secondary'
+                          : 'bg-dimmed-hover fg-primary'
+                      }`}
+                    >
+                      <Icon name="clothing" width={20} height={20} />
+                    </button>
 
                     {/* Existing delete button */}
                     <button
