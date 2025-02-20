@@ -544,11 +544,11 @@ export default function ListPage() {
         <div className="flex flex-wrap gap-x-1 gap-y-1 pb-12">
           <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
             <Icon name="user" width={16} height={16} />
-            {list.participants}
+            {list.participants} personer
           </p>
           <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
             <Icon name="calendar" width={16} height={16} />
-            {list.days}
+            {list.days} dager
           </p>
         </div>
         <div className="flex gap-y-4 gap-x-2">
@@ -776,21 +776,22 @@ export default function ListPage() {
                 </div>
               ) : (
                 // Category-specific view
-                <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <p className="text-md sm:text-xl fg-secondary font-medium font-sans tabular-nums bg-accent w-fit rounded p-1 pl-2 pr-2">
+                <div className="product items-center grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+                  <div className="flex items-center gap-x-1 text-md sm:text-xl fg-accent font-medium font-sans tabular-nums">
+                    <Icon name="backpack" width={24} height={24} />
                     {formatNumber(selectedCategoryTotals?.checkedCount || 0)} /{' '}
                     {formatNumber(selectedCategoryTotals?.count || 0)}
-                  </p>
+                  </div>
 
-                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                  <div className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {formatWeight(selectedCategoryWeight)}
-                  </p>
+                  </div>
 
-                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                  <div className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                     {(selectedCategoryTotals?.calories || 0) > 0
                       ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
                       : ''}
-                  </p>
+                  </div>
                 </div>
               )}
             </li>

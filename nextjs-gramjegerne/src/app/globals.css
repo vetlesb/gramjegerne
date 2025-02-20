@@ -241,9 +241,7 @@ li.product-search:hover {
   background-color: var(--bg-primary-hover);
 }
 li.product-search.active {
-  background-color: var(--bg-dimmed-hover);
-  outline: 1px solid var(--fg-accent);
-  outline-offset: -1px;
+  background-color: var(--bg-checked);
 }
 ul.totals {
   display: grid;
