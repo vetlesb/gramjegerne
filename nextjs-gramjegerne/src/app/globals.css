@@ -192,6 +192,9 @@ li.product {
   box-shadow: none;
   border: 0px;
 }
+li.product-checked {
+  background-color: var(--bg-dimmed-hover);
+}
 li.product-list {
   display: grid;
   gap: 4px;
@@ -772,4 +775,35 @@ select {
   padding: 1rem;
   color: var(--fg-primary);
   font-size: 0.875rem;
+}
+input[type='checkbox'] {
+  /* Remove default appearance */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Create custom checkbox */
+  border: 1px solid var(--fg-accent);
+  position: relative;
+  border-radius: 99px;
+  width: 16px;
+  height: 16px;
+  padding: 0.7rem;
+  outline: none;
+}
+input[type='checkbox']:hover {
+  background-color: var(--bg-primary-hover);
+}
+input[type='checkbox']:checked {
+  background-color: var(--bg-primary);
+}
+
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 6px;
+  height: 12px;
+  border: solid var(--fg-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }

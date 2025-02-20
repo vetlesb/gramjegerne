@@ -779,9 +779,9 @@ export default function ListPage() {
               ) : (
                 // Category-specific view
                 <div className="product grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                    {formatNumber(selectedCategoryTotals?.checkedCount || 0)}/
-                    {formatNumber(selectedCategoryTotals?.count || 0)} stk
+                  <p className="text-md sm:text-xl fg-secondary font-medium font-sans tabular-nums bg-accent w-fit rounded p-1 pl-2 pr-2">
+                    {formatNumber(selectedCategoryTotals?.checkedCount || 0)} /{' '}
+                    {formatNumber(selectedCategoryTotals?.count || 0)}
                   </p>
 
                   <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
@@ -810,7 +810,11 @@ export default function ListPage() {
           {filteredItemsForList.map((listItem) => {
             console.log('Rendering item:', listItem);
             return (
-              <li key={listItem._key} className="product py-4">
+              <li
+                key={listItem._key}
+                onClick={(e) => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
+                className={`product py-4 ${listItem.checked == true ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
+              >
                 <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
                   {/* Add check button */}
                   <input
@@ -818,9 +822,6 @@ export default function ListPage() {
                     title="Pakket"
                     checked={listItem.checked ?? false}
                     onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
-                    className="h-4 w-4 rounded border-accent bg-dimmed 
-                        text-accent focus:ring-accent focus:ring-offset-background
-                        hover:border-accent/90 cursor-pointer transition-colors"
                   />
                   <div className="aspect-square h-16 w-16">
                     {listItem.item?.image ? (
@@ -856,13 +857,13 @@ export default function ListPage() {
                         {listItem.quantity || 1} stk
                       </p>
                       {listItem.item?.size && (
-                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                        <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
                           <Icon name="size" width={16} height={16} />
                           {listItem.item.size}
                         </p>
                       )}
                       {listItem.item?.weight && (
-                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                        <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
                           <Icon name="weight" width={16} height={16} />
                           {listItem.item.weight.weight} {listItem.item.weight.unit}
                         </p>
