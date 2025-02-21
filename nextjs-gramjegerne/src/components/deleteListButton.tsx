@@ -63,8 +63,9 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
           event.preventDefault(); // Prevents any default behavior
           setIsDialogOpen(true);
         }}
+        title="Slett liste"
       >
-        <Icon name="delete" width={16} height={16} />
+        <Icon name="delete" width={24} height={24} />
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

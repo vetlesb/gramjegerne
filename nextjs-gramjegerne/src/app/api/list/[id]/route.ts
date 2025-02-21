@@ -16,6 +16,7 @@ interface UpdateData {
       _ref: string;
     };
   } | null;
+  completed: boolean;
   [key: string]: unknown;
 }
 
@@ -47,7 +48,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const updateData: UpdateData = {};
+    const updateData: UpdateData = {
+      completed: formData.get('completed') === 'true',
+    };
 
     // Handle basic fields
     const name = formData.get('name');

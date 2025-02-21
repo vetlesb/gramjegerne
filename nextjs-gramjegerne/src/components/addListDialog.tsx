@@ -44,6 +44,7 @@ export function AddListDialog({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Handle controlled/uncontrolled open state
   const isOpen = controlledOpen !== undefined ? controlledOpen : isDialogOpen;
@@ -56,7 +57,7 @@ export function AddListDialog({
         setNewListName(editList.name);
         setNewListDays(editList.days ?? null);
         setNewListParticipants(editList.participants ?? null);
-        // Handle existing image
+        setIsCompleted(editList.completed ?? false);
         if (editList.image) {
           setExistingImage(editList.image);
         }
@@ -73,6 +74,7 @@ export function AddListDialog({
     setNewListDays(null);
     setNewListWeight(null);
     setNewListParticipants(null);
+    setIsCompleted(false);
     setError(null);
     setSuccessMessage(null);
   };
@@ -84,6 +86,7 @@ export function AddListDialog({
     try {
       const formData = new FormData();
       formData.append('name', newListName);
+      formData.append('completed', isCompleted.toString());
 
       // Handle image upload
       if (newListImage) {
@@ -242,6 +245,18 @@ export function AddListDialog({
                     }
                     className="w-full max-w-full p-4"
                   />
+                </label>
+              </div>
+
+              <div className="flex items-center gap-x-2">
+                <label className="flex items-center gap-x-2 text-lg cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isCompleted}
+                    onChange={(e) => setIsCompleted(e.target.checked)}
+                    className="w-6 h-6"
+                  />
+                  Fullført tur
                 </label>
               </div>
             </div>

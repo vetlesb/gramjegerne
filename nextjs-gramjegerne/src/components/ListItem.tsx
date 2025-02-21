@@ -12,6 +12,13 @@ import {useMemo, useState} from 'react';
 import {AddListDialog} from './addListDialog'; // Import AddListDialog
 import {DeleteListButton} from './deleteListButton';
 import {Icon} from './Icon'; // Import Icon if not already imported
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ListItemProps {
   list: ListDocument;
@@ -39,7 +46,9 @@ function urlFor(source: SanityImageSource) {
 
 export function ListItem({list, onDelete}: ListItemProps) {
   const router = useRouter();
-  const [showEditDialog, setShowEditDialog] = useState(false); // Add state for edit dialog
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
 
   const handleClick = () => {
     router.push(`/lists/${list.slug?.current}`);
@@ -49,6 +58,35 @@ export function ListItem({list, onDelete}: ListItemProps) {
   const handleSuccess = async (): Promise<void> => {
     if (onDelete) {
       await onDelete();
+    }
+  };
+
+  const handleDuplicate = async () => {
+    try {
+      setIsDuplicating(true);
+      const response = await fetch('/api/duplicateList', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          listId: list._id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to duplicate list');
+      }
+
+      setShowDuplicateDialog(false);
+      if (onDelete) {
+        await onDelete(); // This will refresh the lists
+      }
+    } catch (error) {
+      console.error('Error duplicating list:', error);
+      alert('Failed to duplicate list. Please try again.');
+    } finally {
+      setIsDuplicating(false);
     }
   };
 
@@ -89,9 +127,23 @@ export function ListItem({list, onDelete}: ListItemProps) {
         <div className="flex flex-col gap-y-4">
           <div className="relative">
             <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
-              <button onClick={() => setShowEditDialog(true)} className="button-trans">
+              <button
+                onClick={() => setShowEditDialog(true)}
+                className="button-trans"
+                title="Rediger liste"
+              >
                 <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                  <Icon name="edit" width={16} height={16} />
+                  <Icon name="edit" width={24} height={24} />
+                </div>
+              </button>
+              <button
+                onClick={() => setShowDuplicateDialog(true)}
+                className="button-trans"
+                disabled={isDuplicating}
+                title="Dupliser liste"
+              >
+                <div className="flex items-center justify-center gap-x-1 w-full text-lg">
+                  <Icon name="duplicate" width={24} height={24} />
                 </div>
               </button>
               <DeleteListButton
@@ -101,6 +153,11 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onSuccess={onDelete}
               />
             </div>
+            {list.completed && (
+              <div className="absolute top-2 left-2 bg-accent pl-2 pr-2 py-1 rounded-full fg-secondary">
+                Gjennomført
+              </div>
+            )}
             {list.image ? (
               <Image
                 className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
@@ -172,6 +229,29 @@ export function ListItem({list, onDelete}: ListItemProps) {
           </div>
         </div>
       </li>
+
+      <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <DialogContent className="dialog p-4 rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-accent font-normal">Dupliser liste</DialogTitle>
+          </DialogHeader>
+
+          <p className="py-4">Er du sikker på at du vil duplisere listen?</p>
+
+          <DialogFooter>
+            <button
+              onClick={handleDuplicate}
+              className="button-primary-accent"
+              disabled={isDuplicating}
+            >
+              {isDuplicating ? 'Dupliserer...' : 'Dupliser'}
+            </button>
+            <button onClick={() => setShowDuplicateDialog(false)} className="button-secondary">
+              Avbryt
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AddListDialog
         open={showEditDialog}
