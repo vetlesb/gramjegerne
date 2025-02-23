@@ -882,7 +882,7 @@ export default function ListPage() {
                         <h2 className="text-xl text-accent truncate" title={listItem.item?.name}>
                           {listItem.item?.name || 'Unnamed Item'}
                         </h2>
-                        <div className="flex flex-wrap gap-x-1">
+                        <div className="flex flex-wrap gap-y-1 shrink-0 gap-x-1">
                           {listItem.item?.size && (
                             <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
                               <Icon name="size" width={16} height={16} />
@@ -906,8 +906,8 @@ export default function ListPage() {
                     </div>
 
                     {/* Actions container */}
-                    <div className="flex items-center gap-x-2 shrink-0 ml-auto">
-                      <div className="flex w-full">
+                    <div className="flex items-center gap-x-2 ml-auto">
+                      <div className="flex">
                         <div className="flex items-center gap-x-1 bg-dimmed-hover rounded-full p-1">
                           <button
                             onClick={(e) => {
