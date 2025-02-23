@@ -17,7 +17,25 @@ export default function Page() {
   const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _createdAt desc)`;
+    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _createdAt desc) {
+      _id,
+      name,
+      slug,
+      image,
+      days,
+      participants,
+      completed,
+      "items": items[] {
+        _key,
+        quantity,
+        "item": item->{
+          _id,
+          name,
+          weight,
+          calories
+        }
+      }
+    }`;
 
     const data = await client.fetch(query, {userId: session.user.id});
     setLists(data);

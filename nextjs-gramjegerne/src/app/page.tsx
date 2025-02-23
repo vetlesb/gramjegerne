@@ -381,7 +381,6 @@ export default function IndexPage() {
             Excel
           </button>
         </div>
-
         {/* Categories Menu */}
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto">
           {items.length > 0 && (
@@ -404,7 +403,6 @@ export default function IndexPage() {
             </button>
           ))}
         </div>
-
         {/* Add this condition before the items list */}
         {filteredItems.length === 0 ? (
           <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
@@ -565,7 +563,6 @@ export default function IndexPage() {
             ))}
           </ul>
         )}
-
         {/* Import Dialog */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent
@@ -582,7 +579,6 @@ export default function IndexPage() {
             <DialogFooter className="pt-4"></DialogFooter>
           </DialogContent>
         </Dialog>
-
         {/* Delete Category Dialog */}
         <Dialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
           <DialogContent className="dialog gap-y-8">
@@ -601,7 +597,6 @@ export default function IndexPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
         {/* Edit Item Dialog */}
         <Dialog open={!!isEditDialogOpen} onOpenChange={() => setIsEditDialogOpen(null)}>
           <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
@@ -620,7 +615,6 @@ export default function IndexPage() {
             <DialogFooter />
           </DialogContent>
         </Dialog>
-
         {/* Delete confirmation dialog - moved outside the mobile menu */}
         <Dialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
           <DialogContent className="dialog gap-y-8">

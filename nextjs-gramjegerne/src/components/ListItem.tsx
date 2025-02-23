@@ -219,7 +219,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
               </li>
               <li className="gap-x-3">
                 {totalCalories > 0 && (
-                  <p className="tag w-fit items-center gap-x-1 flex text-lg fle-wrap">
+                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                     <Icon name="calories" width={16} height={16} />
                     {formatNumber(totalCalories)} kcal
                   </p>
