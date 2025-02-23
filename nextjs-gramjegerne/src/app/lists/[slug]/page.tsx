@@ -846,14 +846,10 @@ export default function ListPage() {
                   className={`product py-4 ${listItem.checked ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
                 >
                   <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
-                    {/* Add check button */}
-                    <input
-                      type="checkbox"
-                      title="Pakket"
-                      checked={listItem.checked ?? false}
-                      onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
-                    />
-                    <div className="aspect-square h-16 w-16">
+                    {/* Checkbox */}
+
+                    {/* Image */}
+                    <div className="aspect-square h-16 w-16 shrink-0">
                       {listItem.item?.image ? (
                         <Image
                           className="rounded-md h-full w-full object-cover"
@@ -880,34 +876,37 @@ export default function ListPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-y-2">
-                      <h2 className="text-xl text-accent">
-                        {listItem.item?.name || 'Unnamed Item'}
-                      </h2>
-                      <div className="flex flex-wrap gap-x-1">
-                        {listItem.item?.size && (
-                          <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
-                            <Icon name="size" width={16} height={16} />
-                            {listItem.item.size}
-                          </p>
-                        )}
-                        {listItem.item?.weight && (
-                          <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
-                            <Icon name="weight" width={16} height={16} />
-                            {listItem.item.weight.weight} {listItem.item.weight.unit}
-                          </p>
-                        )}
-                        {listItem.item?.calories && listItem.item.calories > 0 && (
-                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                            <Icon name="calories" width={16} height={16} />
-                            {listItem.item.calories} kcal
-                          </p>
-                        )}
+                    {/* Name and tags container */}
+                    <div className="flex-1 min-w-0 w-[calc(100%-10rem)] sm:w-auto">
+                      <div className="flex flex-col gap-y-2 min-w-0">
+                        <h2 className="text-xl text-accent truncate" title={listItem.item?.name}>
+                          {listItem.item?.name || 'Unnamed Item'}
+                        </h2>
+                        <div className="flex flex-wrap gap-x-1">
+                          {listItem.item?.size && (
+                            <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
+                              <Icon name="size" width={16} height={16} />
+                              {listItem.item.size}
+                            </p>
+                          )}
+                          {listItem.item?.weight && (
+                            <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
+                              <Icon name="weight" width={16} height={16} />
+                              {listItem.item.weight.weight} {listItem.item.weight.unit}
+                            </p>
+                          )}
+                          {listItem.item?.calories && listItem.item.calories > 0 && (
+                            <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              <Icon name="calories" width={16} height={16} />
+                              {listItem.item.calories} kcal
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex ml-auto"></div>
 
-                    <div className="flex items-center w-full md:w-auto gap-x-2 ml-auto">
+                    {/* Actions container */}
+                    <div className="flex items-center gap-x-2 shrink-0 ml-auto">
                       <div className="flex w-full">
                         <div className="flex items-center gap-x-1 bg-dimmed-hover rounded-full p-1">
                           <button
@@ -969,6 +968,13 @@ export default function ListPage() {
                       >
                         <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
                       </button>
+                      <input
+                        type="checkbox"
+                        title="Pakket"
+                        checked={listItem.checked ?? false}
+                        onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
+                        className="shrink-0"
+                      />
                     </div>
                   </div>
                 </li>
