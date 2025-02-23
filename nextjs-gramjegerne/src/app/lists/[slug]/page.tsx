@@ -726,15 +726,15 @@ export default function ListPage() {
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Pakket</p>
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Kalorier</p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
-                {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
+                {formatNumber(grandTotal.calories)} kcal
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Varighet</p>
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Pakket</p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
-                {list.days} dager
+                {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
               </p>
             </div>
           </div>
@@ -756,9 +756,9 @@ export default function ListPage() {
                         >
                           <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                             {total.title}{' '}
-                            <span className="fg-accent text-sm">
-                              ({formatNumber(total.checkedCount || 0)}/
-                              {formatNumber(total.count || 0)})
+                            <span className="tag-packed w-fit">
+                              {formatNumber(total.checkedCount || 0)}/
+                              {formatNumber(total.count || 0)}
                             </span>
                           </p>
                           {/*  <p className="text-md sm:text-xl">

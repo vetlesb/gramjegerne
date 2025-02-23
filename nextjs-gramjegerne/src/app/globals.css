@@ -299,6 +299,13 @@ ul.category-list {
   background-color: var(--bg-primary);
   font-size: 16px;
 }
+.tag-packed {
+  padding: 4px 8px 4px 8px;
+  border-radius: 99px;
+  color: var(--fg-accent);
+  background-color: var(--bg-primary);
+  font-size: 16px;
+}
 .tag-list {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;
