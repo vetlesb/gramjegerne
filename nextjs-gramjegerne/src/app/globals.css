@@ -306,6 +306,13 @@ ul.category-list {
   background-color: var(--bg-primary);
   font-size: 16px;
 }
+.tag-status {
+  background-color: var(--bg-25);
+  padding: 0.5rem;
+  -webkit-backdrop-filter: blur(12.5px);
+  backdrop-filter: blur(12.5px);
+  border-radius: 4px;
+}
 .tag-list {
   padding: 4px 8px 4px 8px;
   border-radius: 4px;

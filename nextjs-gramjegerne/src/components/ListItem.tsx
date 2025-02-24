@@ -153,10 +153,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onSuccess={onDelete}
               />
             </div>
-            {list.completed && (
-              <div className="absolute top-2 left-2 bg-accent pl-2 pr-2 py-1 rounded-full fg-secondary">
-                Gjennomført
-              </div>
+            {list.completed ? (
+              <div className="absolute top-2 ml-2 tag-status">Gjennomført</div>
+            ) : (
+              <div className="absolute top-2 ml-2 tag-status">Planlagt</div>
             )}
             {list.image ? (
               <Image
