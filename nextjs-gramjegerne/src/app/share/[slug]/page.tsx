@@ -25,6 +25,8 @@ export default function SharePage() {
           "items": items[] {
             _key,
             _type,
+            onBody,
+            checked,
             quantity,
             "categoryOverride": categoryOverride->{
               _id,
