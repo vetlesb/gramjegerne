@@ -806,21 +806,25 @@ export default function ListPage() {
                 </div>
               ) : // Category-specific or "På kropp" view
               selectedCategory || showOnBodyOnly ? (
-                <div className="product items-center grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <div className="flex items-center gap-x-1 text-md sm:text-xl fg-accent font-medium font-sans tabular-nums">
-                    <Icon name="backpack" width={24} height={24} />
+                <div className="product items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+                  <div className="flex items-center gap-x-1 text-sm sm:text-lg fg-accent font-medium font-sans tabular-nums">
+                    <Icon name="backpack" width={16} height={16} />
                     {showOnBodyOnly
                       ? `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`
                       : `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`}
                   </div>
 
-                  <div className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                  <div className="flex items-center gap-x-1 text-sm sm:text-lg text-accent font-medium font-sans tabular-nums">
+                    <Icon name="weight" width={16} height={16} />
                     {showOnBodyOnly
                       ? formatWeight(grandTotal.weightOnBody)
                       : formatWeight(selectedCategoryWeight)}
                   </div>
 
-                  <div className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                  <div className="flex items-center gap-x-1 text-sm sm:text-lg text-accent font-medium font-sans tabular-nums">
+                    {(selectedCategoryTotals?.calories || 0) > 0 && (
+                      <Icon name="calories" width={16} height={16} />
+                    )}
                     {showOnBodyOnly
                       ? (selectedCategoryTotals?.calories || 0) > 0
                         ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
