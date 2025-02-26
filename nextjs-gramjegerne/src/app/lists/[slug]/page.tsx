@@ -713,7 +713,7 @@ export default function ListPage() {
         {/* Show totals only when not in "På kropp" view */}
         {selectedCategory === null && !showOnBodyOnly && (
           <div className="grid grid-cols-2 gap-x-2">
-            <div className="grid product gap-y-2">
+            <div className="grid product gap-y-4">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <Icon name="backpack" width={24} height={24} />
                 Sekk
@@ -761,7 +761,7 @@ export default function ListPage() {
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
                       <p className="text-md sm:text-xl pb-8">Deltajert oversikt</p>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-4">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-4">
                         <p className="text-md sm:text-xl text-accent">Kategori</p>
                         <p className="text-md sm:text-xl text-accent">Vekt</p>
                         <p className="text-md sm:text-xl text-accent">Kalorier</p>
@@ -769,9 +769,9 @@ export default function ListPage() {
                       {categoryTotals.map((total) => (
                         <div
                           key={total.id}
-                          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
+                          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2"
                         >
-                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                          <p className="text-md sm:text-xl">
                             {total.title}{' '}
                             <span className="tag-packed w-fit">
                               {formatNumber(total.checkedCount || 0)}/
@@ -791,10 +791,8 @@ export default function ListPage() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2 mt-2">
-                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                        På kropp
-                      </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
+                      <p className="text-md sm:text-xl">På kropp</p>
                       <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                         {formatWeight(grandTotal.weightOnBody)}
                       </p>
@@ -802,10 +800,8 @@ export default function ListPage() {
 
                     {/* Grand total section */}
                     <div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-4 border-b border-white/5  pb-4">
-                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                          Totalt
-                        </p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
+                        <p className="text-md sm:text-xl text-accent">Totalt</p>
                         {/* <p className="text-md sm:text-xl">
                         {formatNumber(grandTotal.count)} stk
                       </p> */}

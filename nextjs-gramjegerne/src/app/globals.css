@@ -317,11 +317,11 @@ ul.category-list {
   font-size: 16px;
 }
 .tag-packed {
-  padding: 4px 8px 4px 8px;
+  padding: 2px 4px 2px 4px;
   border-radius: 99px;
   color: var(--fg-accent);
   background-color: var(--bg-primary);
-  font-size: 16px;
+  font-size: 12px;
 }
 .tag-status {
   background-color: var(--bg-25);
@@ -629,6 +629,13 @@ select {
   .tag-icon {
     width: 16px;
     height: 16px;
+  }
+  .tag-packed {
+    padding: 4px 8px 4px 8px;
+    border-radius: 99px;
+    color: var(--fg-accent);
+    background-color: var(--bg-primary);
+    font-size: 16px;
   }
   .gap-y-2 {
     row-gap: 0.5rem;
