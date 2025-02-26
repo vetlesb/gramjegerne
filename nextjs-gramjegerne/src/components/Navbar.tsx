@@ -25,7 +25,7 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden menu-item p-2">
-          <Icon name="menu" width={24} height={24} />
+          <Icon name={isMenuOpen ? 'close' : 'menu'} width={24} height={24} />
         </button>
 
         {/* Right side - Desktop and Mobile Menu */}

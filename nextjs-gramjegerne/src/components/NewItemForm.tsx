@@ -370,9 +370,10 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                               handleAddCategory(categoryInput);
                               setIsOpen(false);
                             }}
-                            className="button-primary-accent text-md flex items-center gap-2 mt-2 text-accent"
+                            className="button-primary-accent text-lg flex items-center gap-1 mt-2 text-secondary"
                           >
-                            Opprett &ldquo;{categoryInput}&rdquo;
+                            <Icon name="add" width={24} height={24} /> Opprett &ldquo;
+                            {categoryInput}&rdquo;
                             {isAddingCategory && <LoadingSpinner size="sm" />}
                           </button>
                         )}

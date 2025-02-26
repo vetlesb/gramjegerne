@@ -52,12 +52,13 @@ button:hover {
 
 .button-primary-accent {
   background-color: var(--bg-accent);
-  color: #1f261c;
+  color: var(--fg-secondary);
   padding: 1rem;
   border-radius: 4px;
 }
 .button-primary-accent:hover {
   background-color: var(--bg-accent-hover);
+  color: var(--fg-secondary);
 }
 .button-secondary {
   background-color: var(--bg-primary);
@@ -114,6 +115,9 @@ button:hover {
 }
 .text-dimmed {
   color: var(--fg-dimmed);
+}
+.text-secondary {
+  color: var(--fg-secondary);
 }
 .border-accent {
   border-color: var(--fg-accent);
@@ -816,6 +820,9 @@ input[type='checkbox'] {
   height: 16px;
   padding: 0.7rem;
   outline: none;
+}
+input[type='checkbox']:hover {
+  background-color: var(--bg-primary);
 }
 
 input[type='checkbox']:checked {

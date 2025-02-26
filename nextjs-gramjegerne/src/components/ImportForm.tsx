@@ -288,16 +288,6 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
         >
           Export
         </button>
-        <button
-          onClick={() => {
-            setIsClear(true);
-            setIsImport(false);
-          }}
-          disabled
-          className={isClear ? 'tab-active' : 'tab-disabled'}
-        >
-          Slett alt
-        </button>
       </div>
       {isImport ? (
         <form onSubmit={handleImport}>
