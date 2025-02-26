@@ -112,6 +112,9 @@ button:hover {
 .text-accent {
   color: var(--fg-accent);
 }
+.text-dimmed {
+  color: var(--fg-dimmed);
+}
 .border-accent {
   border-color: var(--fg-accent);
   border: 2px solid var(--fg-accent);
@@ -218,6 +221,16 @@ li.product-list:hover {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 2rem;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
+.product-category {
+  display: grid;
+
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem 2rem 1rem 2rem;
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;

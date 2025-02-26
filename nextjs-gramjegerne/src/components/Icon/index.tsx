@@ -23,6 +23,7 @@ import {ClothingIcon} from './icons/ClothingIcon';
 import {ClothingFilledIcon} from './icons/ClothingFilledIcon';
 import {BackpackIcon} from './icons/BackpackIcon';
 import {DuplicateIcon} from './icons/DuplicateIcon';
+import {CheckmarkIcon} from './icons/CheckmarkIcon';
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -51,6 +52,7 @@ const iconMap = {
   clothingfilled: ClothingFilledIcon,
   backpack: BackpackIcon,
   duplicate: DuplicateIcon,
+  checkmark: CheckmarkIcon,
 };
 
 type IconName = keyof typeof iconMap;

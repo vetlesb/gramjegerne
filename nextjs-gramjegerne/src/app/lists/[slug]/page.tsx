@@ -714,25 +714,37 @@ export default function ListPage() {
         {selectedCategory === null && !showOnBodyOnly && (
           <div className="grid grid-cols-2 gap-x-2">
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">Sekk</p>
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <Icon name="backpack" width={24} height={24} />
+                Sekk
+              </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weight)}
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">På kropp</p>
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <Icon name="clothing" width={24} height={24} />
+                På kropp
+              </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Kalorier</p>
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <Icon name="calories" width={24} height={24} />
+                Kalorier
+              </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatNumber(grandTotal.calories)} kcal
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Pakket</p>
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <Icon name="checkmark" width={24} height={24} />
+                Pakket
+              </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
               </p>
@@ -749,6 +761,11 @@ export default function ListPage() {
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
                       <p className="text-md sm:text-xl pb-8">Deltajert oversikt</p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-4">
+                        <p className="text-md sm:text-xl text-accent">Kategori</p>
+                        <p className="text-md sm:text-xl text-accent">Vekt</p>
+                        <p className="text-md sm:text-xl text-accent">Kalorier</p>
+                      </div>
                       {categoryTotals.map((total) => (
                         <div
                           key={total.id}
@@ -785,7 +802,7 @@ export default function ListPage() {
 
                     {/* Grand total section */}
                     <div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-4 border-b border-white/5  pb-4">
                         <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                           Totalt
                         </p>
@@ -806,24 +823,24 @@ export default function ListPage() {
                 </div>
               ) : // Category-specific or "På kropp" view
               selectedCategory || showOnBodyOnly ? (
-                <div className="product items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <div className="flex items-center gap-x-1 text-sm sm:text-lg fg-accent font-medium font-sans tabular-nums">
-                    <Icon name="backpack" width={16} height={16} />
+                <div className="product-category items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+                  <div className="flex items-center gap-x-2 text-sm sm:text-lg fg-accent">
+                    <Icon name="checkmark" width={24} height={24} />
                     {showOnBodyOnly
                       ? `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`
                       : `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`}
                   </div>
 
-                  <div className="flex items-center gap-x-1 text-sm sm:text-lg text-accent font-medium font-sans tabular-nums">
-                    <Icon name="weight" width={16} height={16} />
+                  <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
+                    <Icon name="weight" width={24} height={24} />
                     {showOnBodyOnly
                       ? formatWeight(grandTotal.weightOnBody)
                       : formatWeight(selectedCategoryWeight)}
                   </div>
 
-                  <div className="flex items-center gap-x-1 text-sm sm:text-lg text-accent font-medium font-sans tabular-nums">
+                  <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
                     {(selectedCategoryTotals?.calories || 0) > 0 && (
-                      <Icon name="calories" width={16} height={16} />
+                      <Icon name="calories" width={24} height={24} />
                     )}
                     {showOnBodyOnly
                       ? (selectedCategoryTotals?.calories || 0) > 0
