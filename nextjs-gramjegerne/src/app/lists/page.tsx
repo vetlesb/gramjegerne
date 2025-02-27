@@ -102,7 +102,7 @@ export default function Page() {
                 </button>
               </div>
 
-              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-4 gap-x-4">
+              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-4 gap-x-4">
                 {filteredLists.map((list) => (
                   <ListItem key={list._id} list={list} onDelete={fetchLists} />
                 ))}

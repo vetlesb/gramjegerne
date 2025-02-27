@@ -121,7 +121,11 @@ button:hover {
 }
 .border-accent {
   border-color: var(--fg-accent);
-  border: 2px solid var(--fg-accent);
+  border-width: 1px;
+}
+.border-white {
+  border-color: var(--fg-primary);
+  border-width: 1px;
 }
 .bg-accent {
   background-color: var(--bg-accent);
@@ -199,7 +203,6 @@ li.product {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 1rem;
-
   box-shadow: none;
   border: 0px;
 }
@@ -211,17 +214,15 @@ li.product-list {
   gap: 4px;
   background-color: var(--bg-dimmed);
   border-radius: 8px;
-  padding: 0.5rem;
-
   box-shadow: none;
   border: 0px;
 }
 li.product-list:hover {
   background-color: var(--bg-dimmed-hover);
 }
+
 .product {
   display: grid;
-
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 2rem;
@@ -325,7 +326,7 @@ ul.category-list {
 }
 .tag-status {
   background-color: var(--bg-25);
-  padding: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.5rem;
   -webkit-backdrop-filter: blur(12.5px);
   backdrop-filter: blur(12.5px);
   border-radius: 4px;
@@ -827,9 +828,6 @@ input[type='checkbox'] {
   height: 16px;
   padding: 0.7rem;
   outline: none;
-}
-input[type='checkbox']:hover {
-  background-color: var(--bg-primary);
 }
 
 input[type='checkbox']:checked {

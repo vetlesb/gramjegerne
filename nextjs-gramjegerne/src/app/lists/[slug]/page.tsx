@@ -628,7 +628,7 @@ export default function ListPage() {
                             )}
                           </div>
                           <div className="flex flex-col gap-y-1">
-                            <h2 className="text-lg">{item?.name}</h2>
+                            <h2 className="text-lg text-accent">{item?.name}</h2>
                             <div className="flex flex-wrap gap-x-1">
                               {item?.size && (
                                 <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
@@ -715,7 +715,9 @@ export default function ListPage() {
           <div className="grid grid-cols-2 gap-x-2">
             <div className="grid product gap-y-4">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <Icon name="backpack" width={24} height={24} />
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="backpack" width={18} height={18} />
+                </span>
                 Sekk
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
@@ -724,7 +726,9 @@ export default function ListPage() {
             </div>
             <div className="grid product gap-y-2">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <Icon name="clothing" width={24} height={24} />
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="clothing" width={18} height={18} />
+                </span>
                 På kropp
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
@@ -733,7 +737,9 @@ export default function ListPage() {
             </div>
             <div className="grid product gap-y-2">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <Icon name="calories" width={24} height={24} />
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="calories" width={18} height={18} />
+                </span>
                 Kalorier
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
@@ -742,7 +748,9 @@ export default function ListPage() {
             </div>
             <div className="grid product gap-y-2">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <Icon name="checkmark" width={24} height={24} />
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="checkmark" width={18} height={18} />
+                </span>
                 Pakket
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
@@ -983,8 +991,9 @@ export default function ListPage() {
                         }}
                         className="button-ghost flex gap-x-2 h-fit align-middle"
                       >
-                        <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
+                        <Icon name="delete" width={24} height={24} />
                       </button>
+
                       <input
                         type="checkbox"
                         title="Pakket"
