@@ -76,11 +76,7 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
             </DialogTitle>
           </DialogHeader>
           <div className="mb-4 text-lg">
-            <p>
-              Hvis du sletter listen &quot;
-              <strong className="font-normal text-accent">{listName}</strong>
-              &quot; vil du miste alle data knyttet til den.
-            </p>
+            <span className="text-xl p-4 bg-dimmed-hover rounded-md">{listName}</span>
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <DialogFooter className="gap-y-4 gap-x-1">

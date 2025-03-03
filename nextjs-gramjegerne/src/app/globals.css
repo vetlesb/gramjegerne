@@ -216,9 +216,14 @@ li.product-list {
   border-radius: 8px;
   box-shadow: none;
   border: 0px;
+  transition: scale 0.5s ease;
 }
 li.product-list:hover {
-  background-color: var(--bg-dimmed-hover);
+  scale: 1.02;
+  z-index: 500;
+  transition: scale 0.5s ease;
+  outline: 2px solid var(--fg-accent);
+  outline-offset: 0px;
 }
 
 .product {
@@ -316,6 +321,10 @@ ul.category-list {
   color: var(--fg-primary);
   background-color: var(--bg-primary);
   font-size: 16px;
+  text-decoration: none;
+}
+.tag:hover {
+  text-decoration: none;
 }
 .tag-packed {
   padding: 2px 4px 2px 4px;
