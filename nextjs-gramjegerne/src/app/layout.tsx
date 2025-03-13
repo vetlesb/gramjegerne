@@ -3,6 +3,8 @@
 'use client';
 
 import {Navbar} from '@/components/Navbar';
+import {signOut} from 'next-auth/react';
+import {ThemeSelector} from '@/components/ThemeSelector';
 import {ThemeProvider} from '@/components/ThemeProvider';
 import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
@@ -40,15 +42,26 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <Providers>
             {!isAuthPage && <Navbar />}
             {children}
+            <div className="flex flex-col md:flex-row justify-between">
+              <div className="text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
+                Gramjegerne
+              </div>
+              <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">
+                <ThemeSelector />
+                <Link href="mailto:gramjegerne@gmail.com" className="menu-item">
+                  Kontakt oss
+                </Link>{' '}
+                <button
+                  onClick={() => signOut()}
+                  className="menu-item text-lg flex items-center w-full md:w-auto gap-x-1 justify-center"
+                >
+                  Logg ut
+                </button>
+              </div>
+            </div>
           </Providers>
         </ThemeProvider>
         <Toaster />
-        <div className="text-center text-lg pb-8 flex flex-col gap-1">
-          Har du innspill?{' '}
-          <Link href="mailto:gramjegerne@gmail.com" className="text-accent hover:underline">
-            Send oss en mail
-          </Link>{' '}
-        </div>
       </body>
     </html>
   );
