@@ -7,6 +7,7 @@ import {ThemeProvider} from '@/components/ThemeProvider';
 import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
 import {Toaster} from 'sonner';
+import Link from 'next/link';
 import './globals.css';
 import {Providers} from './providers';
 
@@ -42,6 +43,12 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           </Providers>
         </ThemeProvider>
         <Toaster />
+        <div className="text-center text-lg pb-8 flex flex-col gap-1">
+          Har du innspill?{' '}
+          <Link href="mailto:gramjegerne@gmail.com" className="text-accent hover:underline">
+            Send oss en mail
+          </Link>{' '}
+        </div>
       </body>
     </html>
   );
