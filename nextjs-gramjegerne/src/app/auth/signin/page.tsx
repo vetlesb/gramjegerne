@@ -28,6 +28,7 @@ export default function SignIn() {
     <div className="flex justify-center min-h-screen items-center">
       <div className="w-full space-y-8">
         <h2 className="signin-logo text-accent text-center">Gramjegerne</h2>
+        <h2 className="signin-logo-bot text-accent text-center">Gramjegerne</h2>
         <div className="flex flex-col justify-center items-center ingress">
           Din digitale ryggsekk for turutstyr
         </div>
