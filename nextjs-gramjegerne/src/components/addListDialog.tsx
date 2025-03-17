@@ -148,9 +148,9 @@ export function AddListDialog({
         <div>
           <button
             onClick={() => handleOpenChange(true)}
-            className="button-create text-lg flex flex-row items-center gap-x-1 text-md"
+            className="button-create flex flex-shrink-0 text-md items-center gap-x-1"
           >
-            <Icon name="add" width={24} height={24} />
+            <Icon name="add" width={16} height={16} />
             Ny liste
           </button>
         </div>

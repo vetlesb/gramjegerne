@@ -286,12 +286,12 @@ export default function IndexPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <div className="flex flex-wrap gap-y-4 gap-x-2 pb-8">
+        <div className="flex flex-row gap-y-4 gap-x-2 pb-8 overflow-y-auto no-scrollbar p-1">
           {/* New Item Dialog */}
           <Dialog>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
-                <Icon name="add" width={24} height={24} />
+              <button className="button-create text-md flex flex-shrink-0 flex-row items-center gap-x-1">
+                <Icon name="add" width={16} height={16} />
                 Legg til
               </button>
             </DialogTrigger>
@@ -323,8 +323,8 @@ export default function IndexPage() {
           {/* Add Category Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
-                <Icon name="category" width={24} height={24} />
+              <button className="button-create text-md flex flex-row items-center gap-x-1">
+                <Icon name="category" width={16} height={16} />
                 Kategorier
               </button>
             </DialogTrigger>
@@ -364,7 +364,7 @@ export default function IndexPage() {
                       className="button-link"
                       onClick={() => setCategoryToDelete(category._id)}
                     >
-                      <Icon name="delete" width={24} height={24} />
+                      <Icon name="delete" width={16} height={16} />
                     </button>
                   </li>
                 ))}
@@ -374,15 +374,15 @@ export default function IndexPage() {
 
           {/* Import Dialog Button */}
           <button
-            className="button-create text-lg flex flex-row items-center gap-x-1 text-md"
+            className="button-create text-md flex flex-row items-center"
             onClick={handleOpenImportDialog}
           >
-            <Icon name="document" width={24} height={24} />
+            <Icon name="document" width={16} height={16} />
             Excel
           </button>
         </div>
         {/* Categories Menu */}
-        <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto">
+        <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto pt-1">
           {items.length > 0 && (
             <button
               onClick={() => handleCategorySelect(null)}

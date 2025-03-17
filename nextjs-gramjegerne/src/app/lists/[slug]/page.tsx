@@ -554,12 +554,12 @@ export default function ListPage() {
       <main className="container mx-auto min-h-screen p-16">
         <h1 className="text-4xl md:text-6xl text-accent py-4">i {list.name}</h1>
 
-        <div className="flex gap-y-4 gap-x-2">
+        <div className="flex gap-y-4 gap-x-2 overflow-y-auto no-scrollbar p-1">
           {/* Button to open the Add Item Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-row items-center gap-x-1 text-md">
-                <Icon name="add" width={24} height={24} />
+              <button className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md">
+                <Icon name="add" width={16} height={16} />
                 Legg til
               </button>
             </DialogTrigger>
