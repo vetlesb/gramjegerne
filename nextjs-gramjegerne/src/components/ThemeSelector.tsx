@@ -14,9 +14,9 @@ export function ThemeSelector() {
   const {theme, setTheme} = useTheme();
 
   const themes = [
-    {value: 'green', label: 'Skog', icon: 'tree'},
-    {value: 'blue', label: 'Hav', icon: 'water'},
-    {value: 'yellow', label: 'Høst', icon: 'leaf'},
+    {value: 'green', label: 'Forrest', icon: 'tree'},
+    {value: 'blue', label: 'Ocean', icon: 'water'},
+    {value: 'yellow', label: 'Spring', icon: 'leaf'},
   ] as const;
 
   const currentTheme = themes.find((t) => t.value === theme);

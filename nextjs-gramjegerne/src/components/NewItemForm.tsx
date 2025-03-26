@@ -248,7 +248,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Name field */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Navn *
+            Name *
             <input
               className="w-full max-w-full p-4"
               type="text"
@@ -256,7 +256,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
               onChange={(e) => setName(e.target.value)}
               required
               minLength={1}
-              placeholder="Skriv inn utstyrsnavn"
             />
           </label>
         </div>
@@ -264,7 +263,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Image Upload */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Bilde
+            Image
             <input
               type="file"
               className="w-full max-w-full p-4"
@@ -285,7 +284,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                 type="button"
                 onClick={handleImageRemoval}
                 className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                title="Fjern bilde"
+                title="Remove image"
               >
                 &times;
               </button>
@@ -296,7 +295,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Category field */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Kategori *
+            Category *
             <div className="relative w-full">
               <Command
                 className="relative"
@@ -327,7 +326,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                       setIsOpen(!isOpen);
                     }}
                     readOnly={selectedCategory !== ''} // Make input readonly when category is selected
-                    placeholder="Søk eller legg til ny kategory..."
                     className="w-full p-4 border border-gray-300 rounded cursor-pointer"
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
@@ -340,7 +338,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                           setCategoryInput('');
                         }}
                         className="p-1 rounded-md"
-                        title="Fjern valgt kategori"
+                        title="Remove selected category"
                       >
                         <Icon name="close" width={16} height={16} />
                       </button>
@@ -407,13 +405,12 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Size */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Størrelse
+            Size
             <input
               type="text"
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse"
             />
           </label>
         </div>
@@ -421,7 +418,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Weight field - make sure it's properly validated */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Vekt *
+            Weight *
             <div className="flex flex-row gap-x-2">
               <input
                 type="number"
@@ -433,7 +430,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                     weight: Math.max(0, parseFloat(e.target.value) || 0),
                   })
                 }
-                placeholder="Vekt"
                 min="0"
                 step="0.1"
                 required
@@ -453,13 +449,12 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Calories */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Kalorier
+            Calories
             <input
               type="number"
               className="w-full max-w-full p-4"
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
-              placeholder="Skriv inn kalorier"
               min="0"
             />
           </label>
@@ -467,7 +462,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
 
         {/* Submit Button */}
         <button className="button-primary-accent py-2 px-4" type="submit" disabled={isLoading}>
-          {isLoading ? 'Oppretter...' : 'Opprett'}
+          {isLoading ? 'Adding...' : 'Add'}
         </button>
       </form>
     </div>

@@ -166,7 +166,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
             selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
           }`}
         >
-          Oversikt
+          Overview
         </button>
         {categoryTotals.map((category) => (
           <button
@@ -189,7 +189,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
           }}
           className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
         >
-          På kropp
+          On body
         </button>
       </div>
 
@@ -198,19 +198,19 @@ export default function SharePageClient({list}: SharePageClientProps) {
         <>
           <div className="grid grid-cols-3 gap-x-2">
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">Sekk</p>
+              <p className="text-md sm:text-xl">Backpack</p>
               <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
                 {formatWeight(grandTotal.weight)}
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">På kropp</p>
+              <p className="text-md sm:text-xl">On body</p>
               <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
               </p>
             </div>
             <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Kalorier</p>
+              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Calories</p>
               <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
                 {formatNumber(grandTotal.calories)} kcal
               </p>
@@ -222,7 +222,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
               <div className="flex flex-col">
                 <div className="product">
                   <div className="flex flex-col gap-y-2 pt-2">
-                    <p className="text-md sm:text-xl pb-8">Deltajert oversikt</p>
+                    <p className="text-md sm:text-xl pb-8">Detailed overview</p>
                     {categoryTotals.map((total) => (
                       <div
                         key={total.id}
@@ -242,9 +242,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
                   </div>
 
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2 mt-2">
-                    <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                      På kropp
-                    </p>
+                    <p className="text-md sm:text-xl font-medium font-sans tabular-nums">On body</p>
                     <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                       {formatWeight(grandTotal.weightOnBody)}
                     </p>
@@ -253,7 +251,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
                   <div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-2">
                       <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                        Totalt
+                        Total
                       </p>
                       <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                         {formatWeight(grandTotal.weight + grandTotal.weightOnBody)}
@@ -331,7 +329,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
                           {item.item.weight.weight} {item.item.weight.unit}
                         </span>
                       )}
-                      {item.onBody && <span className="tag">På kropp</span>}
+                      {item.onBody && <span className="tag">On body</span>}
                       {item.item?.calories && item.item.calories > 0 && (
                         <span className="tag">{item.item.calories} kcal</span>
                       )}

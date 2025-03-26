@@ -130,7 +130,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
               <button
                 onClick={() => setShowEditDialog(true)}
                 className="button-trans"
-                title="Rediger liste"
+                title="Edit list"
               >
                 <div className="flex items-center justify-center gap-x-1 w-full text-lg">
                   <Icon name="edit" width={24} height={24} />
@@ -140,7 +140,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onClick={() => setShowDuplicateDialog(true)}
                 className="button-trans"
                 disabled={isDuplicating}
-                title="Dupliser liste"
+                title="Duplicate list"
               >
                 <div className="flex items-center justify-center gap-x-1 w-full text-lg">
                   <Icon name="duplicate" width={24} height={24} />
@@ -154,15 +154,15 @@ export function ListItem({list, onDelete}: ListItemProps) {
               />
             </div>
             {list.completed ? (
-              <div className="absolute top-2 ml-2 tag-status">Gjennomført</div>
+              <div className="absolute top-2 ml-2 tag-status">Completed</div>
             ) : (
-              <div className="absolute top-2 ml-2 tag-status">Planlagt</div>
+              <div className="absolute top-2 ml-2 tag-status">Planned</div>
             )}
             {list.image ? (
               <Image
                 className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
                 src={urlFor(list.image).url()}
-                alt={`Bilde av ${list.name}`}
+                alt={`Image of ${list.name}`}
                 width={800}
                 height={800}
                 onClick={handleClick}
@@ -236,7 +236,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
             <DialogTitle className="text-2xl text-accent font-normal">Dupliser liste</DialogTitle>
           </DialogHeader>
 
-          <p className="py-4">Er du sikker på at du vil duplisere listen?</p>
+          <p className="py-4">Are you sure you want to duplicate the list?</p>
 
           <DialogFooter>
             <button
@@ -244,10 +244,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
               className="button-primary-accent"
               disabled={isDuplicating}
             >
-              {isDuplicating ? 'Dupliserer...' : 'Dupliser'}
+              {isDuplicating ? 'Duplicating...' : 'Duplicate'}
             </button>
             <button onClick={() => setShowDuplicateDialog(false)} className="button-secondary">
-              Avbryt
+              Cancel
             </button>
           </DialogFooter>
         </DialogContent>

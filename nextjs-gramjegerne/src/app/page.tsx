@@ -292,13 +292,13 @@ export default function IndexPage() {
             <DialogTrigger asChild>
               <button className="button-create text-md flex flex-shrink-0 flex-row items-center gap-x-1">
                 <Icon name="add" width={16} height={16} />
-                Legg til
+                Add
               </button>
             </DialogTrigger>
             <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-normal text-accent pb-8">
-                  Opprett utstyr
+                  Add gear
                 </DialogTitle>
               </DialogHeader>
               <NewItemForm
@@ -325,13 +325,13 @@ export default function IndexPage() {
             <DialogTrigger asChild>
               <button className="button-create text-md flex flex-row items-center gap-x-1">
                 <Icon name="category" width={16} height={16} />
-                Kategorier
+                Categories
               </button>
             </DialogTrigger>
             <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl text-accent font-normal pb-8">
-                  Legg til kategori
+                  Add category
                 </DialogTitle>
               </DialogHeader>
 
@@ -348,14 +348,14 @@ export default function IndexPage() {
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="p-4 rounded"
                   required
-                  placeholder="Navn på kategorien"
+                  placeholder="Category title"
                 />
                 <button type="submit" className="button-primary-accent" disabled={isLoadingDelete}>
-                  {isLoadingDelete ? 'Legger til...' : 'Legg til'}
+                  {isLoadingDelete ? 'Adding...' : 'Add'}
                 </button>
               </form>
 
-              <p className="mt-6">Kategorier</p>
+              <p className="mt-6">Categories</p>
               <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[50vh] overflow-y-auto">
                 {allCategories.map((category) => (
                   <li key={category._id} className="category p-2 flex justify-between items-center">
@@ -374,7 +374,7 @@ export default function IndexPage() {
 
           {/* Import Dialog Button */}
           <button
-            className="button-create text-md flex flex-row items-center"
+            className="button-create text-md gap-x-1 flex flex-row items-center"
             onClick={handleOpenImportDialog}
           >
             <Icon name="document" width={16} height={16} />
@@ -388,7 +388,7 @@ export default function IndexPage() {
               onClick={() => handleCategorySelect(null)}
               className={`menu-category text-md ${selectedCategory === null ? 'menu-active' : ''}`}
             >
-              Alle
+              All
             </button>
           )}
           {categories.map((category: Category) => (
@@ -407,8 +407,8 @@ export default function IndexPage() {
         {filteredItems.length === 0 ? (
           <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
             {selectedCategory
-              ? 'Ingen utstyr i denne kategorien enda. Legg til noe nytt!'
-              : 'Du har ikke lagt til noe utstyr enda. Fordelen er at det veier 0 gram!'}
+              ? 'No gear in this category yet. Add some new!'
+              : 'You have not added any gear yet. The advantage is that it weighs 0 grams!'}
           </div>
         ) : (
           <ul className="flex flex-col">
@@ -541,10 +541,10 @@ export default function IndexPage() {
                             }}
                           >
                             <Icon name="edit" width={20} height={20} fill="#EAFFE2" />
-                            <span>Rediger</span>
+                            <span>Edit</span>
                           </button>
                           <button
-                            className="flex items-center gap-x-2 w-full px-4 py-2 hover:bg-white/5 text-red-500"
+                            className="flex items-center gap-x-2 w-full px-4 py-2 hover:bg-white/5"
                             onClick={(e) => {
                               e.stopPropagation();
                               setItemToDelete(item._id);
@@ -552,7 +552,7 @@ export default function IndexPage() {
                             }}
                           >
                             <Icon name="delete" width={20} height={20} fill="currentColor" />
-                            <span>Slett</span>
+                            <span>Delete</span>
                           </button>
                         </div>
                       )}
@@ -573,7 +573,7 @@ export default function IndexPage() {
               <DialogTitle className="text-2xl text-accent font-normal">Excel</DialogTitle>
             </DialogHeader>
             <DialogDescription className="flex flex-col description text-md pb-8">
-              Importer eller eksporter utstyr som .xlsx
+              Import or export your gear as .xlsx
             </DialogDescription>
             <ImportForm onSuccess={handleImportSuccess} />
             <DialogFooter className="pt-4"></DialogFooter>
@@ -583,15 +583,15 @@ export default function IndexPage() {
         <Dialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
           <DialogContent className="dialog gap-y-8">
             <DialogHeader>
-              <DialogTitle>Er du sikker på at du vil slette denne kategorien?</DialogTitle>
+              <DialogTitle>Are you sure you want to delete this category?</DialogTitle>
             </DialogHeader>
             <DialogFooter>
               <button onClick={confirmDeleteCategory} className="button-primary-accent">
-                Ja, Slett
+                Yes, delete
               </button>
               <DialogClose asChild>
                 <button type="button" className="button-secondary">
-                  Avbryt
+                  Cancel
                 </button>
               </DialogClose>
             </DialogFooter>

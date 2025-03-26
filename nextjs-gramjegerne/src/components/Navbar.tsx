@@ -57,7 +57,7 @@ export function Navbar() {
                     href="../"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Utstyr
+                    Gear
                   </Link>
                 </li>
                 <li
@@ -72,7 +72,7 @@ export function Navbar() {
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Lister
+                    Lists
                   </Link>
                 </li>
               </ul>

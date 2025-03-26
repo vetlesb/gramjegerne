@@ -63,7 +63,7 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
           event.preventDefault(); // Prevents any default behavior
           setIsDialogOpen(true);
         }}
-        title="Slett liste"
+        title="Delete list"
       >
         <Icon name="delete" width={24} height={24} />
       </button>
@@ -72,7 +72,7 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
         <DialogContent className="dialog gap-y-8">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal">
-              Er du sikker på at du vil slette listen?
+              Are you sure you want to delete the list?
             </DialogTitle>
           </DialogHeader>
           <div className="mb-4 text-lg">
@@ -81,11 +81,11 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <DialogFooter className="gap-y-4 gap-x-1">
             <button onClick={handleDelete} className="button-primary-accent" disabled={isDeleting}>
-              {isDeleting ? 'Sletter...' : 'Slett'}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </button>
             <DialogClose asChild>
               <button type="button" className="button-secondary">
-                Avbryt
+                Cancel
               </button>
             </DialogClose>
           </DialogFooter>

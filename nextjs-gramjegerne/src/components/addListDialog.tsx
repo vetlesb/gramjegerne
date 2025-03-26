@@ -151,7 +151,7 @@ export function AddListDialog({
             className="button-create flex flex-shrink-0 text-md items-center gap-x-1"
           >
             <Icon name="add" width={16} height={16} />
-            Ny liste
+            New list
           </button>
         </div>
       )}
@@ -168,7 +168,7 @@ export function AddListDialog({
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal pb-4">
-              {editList ? 'Rediger pakkliste' : 'Ny pakkliste'}
+              {editList ? 'Edit' : 'New'}
             </DialogTitle>
           </DialogHeader>
 
@@ -181,7 +181,7 @@ export function AddListDialog({
             <div className="flex flex-col gap-y-8">
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Navn
+                  Title
                   <input
                     className="w-full max-w-full p-4"
                     type="text"
@@ -193,13 +193,13 @@ export function AddListDialog({
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Bilde
+                  Image
                   {existingImage && (
                     <div className="mb-2">
-                      <p className="text-sm mb-2">Eksisterende bilde:</p>
+                      <p className="text-sm mb-2">Existing image:</p>
                       <Image
                         src={urlFor(existingImage).url()}
-                        alt="Eksisterende bilde"
+                        alt="Existing image"
                         width={128}
                         height={128}
                         className="w-32 h-32 object-cover rounded-md"
@@ -222,7 +222,7 @@ export function AddListDialog({
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Antall dager
+                  Days
                   <input
                     type="number"
                     value={newListDays ?? ''}
@@ -236,7 +236,7 @@ export function AddListDialog({
 
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Deltakere
+                  Participants
                   <input
                     type="number"
                     value={newListParticipants ?? ''}
@@ -256,7 +256,7 @@ export function AddListDialog({
                     onChange={(e) => setIsCompleted(e.target.checked)}
                     className="w-6 h-6"
                   />
-                  Fullført tur
+                  Completed
                 </label>
               </div>
             </div>
@@ -267,11 +267,11 @@ export function AddListDialog({
               className="button-primary-accent"
               disabled={isSubmitting || !newListName.trim()}
             >
-              {isSubmitting ? 'Lagrer...' : editList ? 'Oppdater' : 'Opprett'}
+              {isSubmitting ? 'Saving...' : editList ? 'Update' : 'Create'}
             </button>
             <DialogClose asChild>
               <button type="button" className="button-secondary" onClick={resetForm}>
-                Avbryt
+                Cancel
               </button>
             </DialogClose>
           </DialogFooter>

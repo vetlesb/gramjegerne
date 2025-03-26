@@ -9,12 +9,12 @@ export function ShareButton({slug}: {slug: string}) {
     // Only copy to clipboard, no native share dialog
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Lenke kopiert til utklippstavle!', {
+      toast.success('Link copied to clipboard!', {
         duration: 3000,
         position: 'bottom-center',
       });
     } catch (err) {
-      toast.error('Kunne ikke kopiere lenke', {
+      toast.error('Could not copy link', {
         duration: 3000,
         position: 'bottom-center',
       });
@@ -28,7 +28,7 @@ export function ShareButton({slug}: {slug: string}) {
       className="button-create flex items-center gap-2 text-lg px-4 py-2"
     >
       <Icon name="link" width={16} height={16} />
-      Del
+      Share
     </button>
   );
 }

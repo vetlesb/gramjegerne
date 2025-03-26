@@ -77,7 +77,7 @@ export default function Page() {
 
           {lists.length === 0 ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
-              Opprett en pakkliste for å jakte den letteste sekken til neste tur.
+              Create a list to hunt the lightest backpack for next trip.
             </div>
           ) : (
             <>
@@ -86,19 +86,19 @@ export default function Page() {
                   onClick={() => setSelectedFilter(null)}
                   className={`menu-category text-md ${selectedFilter === null ? 'menu-active' : ''}`}
                 >
-                  Alle
+                  All
                 </button>
                 <button
                   onClick={() => setSelectedFilter('planned')}
                   className={`menu-category text-md ${selectedFilter === 'planned' ? 'menu-active' : ''}`}
                 >
-                  Planlagt
+                  Planned
                 </button>
                 <button
                   onClick={() => setSelectedFilter('completed')}
                   className={`menu-category text-md ${selectedFilter === 'completed' ? 'menu-active' : ''}`}
                 >
-                  Gjennomført
+                  Completed
                 </button>
               </div>
 

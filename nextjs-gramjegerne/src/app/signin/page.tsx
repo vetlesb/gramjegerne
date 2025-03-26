@@ -7,7 +7,7 @@ export default function SignInPage() {
         {/* Logo or App Name */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-accent">Gramjegerne</h1>
-          <p className="mt-2 text-white/80">Logg inn for å fortsette</p>
+          <p className="mt-2 text-white/80">Log in to continue</p>
         </div>
 
         {/* Sign In Component */}
@@ -15,7 +15,7 @@ export default function SignInPage() {
 
         {/* Optional: Additional Info */}
         <div className="text-center text-sm text-white/60">
-          <p>Ved å logge inn godtar du våre vilkår og betingelser</p>
+          <p>By logging in, you agree to our terms and conditions</p>
         </div>
       </div>
     </main>

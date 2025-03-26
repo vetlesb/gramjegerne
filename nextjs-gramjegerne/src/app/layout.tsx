@@ -49,13 +49,13 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">
                 <ThemeSelector />
                 <Link href="mailto:gramjegerne@gmail.com" className="menu-item">
-                  Kontakt oss
+                  Contact us
                 </Link>{' '}
                 <button
                   onClick={() => signOut()}
                   className="menu-item text-lg flex items-center w-full md:w-auto gap-x-1 justify-center"
                 >
-                  Logg ut
+                  Log out
                 </button>
               </div>
             </div>

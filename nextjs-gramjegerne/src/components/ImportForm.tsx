@@ -334,14 +334,14 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
             </div>
           )}
           <button type="submit" className="button-primary-accent text-lg mt-8">
-            Importer
+            Import
           </button>
         </form>
       ) : isClear ? (
         <div>
-          <h3>Er du sikker på at du vil slette alt ustyret fra listen?</h3>
+          <h3>Are you sure you want to delete all items?</h3>
           <button onClick={handleClearItems} className="button-primary-accent text-lg mt-8">
-            Ja, slett alt
+            Yes, delete all
           </button>
           {results.length > 0 && (
             <div className="mt-4">
@@ -362,7 +362,7 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
       ) : (
         <div>
           <button className="button-primary-accent text-lg" onClick={handleExport}>
-            Eksporter
+            Export
           </button>
         </div>
       )}

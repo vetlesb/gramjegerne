@@ -180,14 +180,13 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Item Name */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Navn
+            Name
             <input
               className="w-full max-w-full p-4"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Skriv inn utstyrsnavn"
             />
           </label>
         </div>
@@ -195,7 +194,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Image Upload */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Bilde
+            Image
             <input
               type="file"
               className="w-full max-w-full p-4"
@@ -207,7 +206,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
             <div className="mt-4 relative">
               <Image
                 src={imagePreview || item.image?.asset?.url || ''}
-                alt={`Forhåndsvisning av ${name}`}
+                alt={`Preview of ${name}`}
                 width={96}
                 height={96}
                 className="h-24 w-24 object-cover rounded-md"
@@ -219,7 +218,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Categories */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Kategori
+            Category
             <select
               className="w-full max-w-full p-4"
               value={selectedCategory}
@@ -238,13 +237,12 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Size */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Størrelse
+            Size
             <input
               type="text"
               className="w-full max-w-full p-4"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Skriv inn størrelse"
             />
           </label>
         </div>
@@ -252,14 +250,13 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Weight */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Vekt
+            Weight
             <div className="flex flex-row gap-x-2">
               <input
                 type="number"
                 className="w-full max-w-full p-4"
                 value={weight.weight}
                 onChange={(e) => setWeight({...weight, weight: parseFloat(e.target.value)})}
-                placeholder="Vekt"
                 min="0"
                 required
               />
@@ -278,13 +275,12 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Calories */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Kalorier
+            Calories
             <input
               type="number"
               className="w-full max-w-full p-4"
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
-              placeholder="Skriv inn kalorier"
               min="0"
             />
           </label>
@@ -296,7 +292,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? 'Oppdaterer...' : 'Oppdater Utstyr'}
+          {isLoading ? 'Updating...' : 'Update gear'}
         </button>
       </form>
     </div>

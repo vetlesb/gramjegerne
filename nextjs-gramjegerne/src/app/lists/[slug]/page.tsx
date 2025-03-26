@@ -552,7 +552,7 @@ export default function ListPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <h1 className="text-4xl md:text-6xl text-accent py-4">i {list.name}</h1>
+        <h1 className="text-4xl md:text-6xl text-accent py-4">in {list.name}</h1>
 
         <div className="flex gap-y-4 gap-x-2 overflow-y-auto no-scrollbar p-1">
           {/* Button to open the Add Item Dialog */}
@@ -560,34 +560,32 @@ export default function ListPage() {
             <DialogTrigger asChild>
               <button className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md">
                 <Icon name="add" width={16} height={16} />
-                Legg til
+                Add gear
               </button>
             </DialogTrigger>
             {/* Updated DialogContent */}
             <DialogContent className="dialog p-4 max-w-lg md:p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-accent font-normal">
-                  Legg til utstyr
-                </DialogTitle>
+                <DialogTitle className="text-2xl text-accent font-normal">Add gear</DialogTitle>
               </DialogHeader>
               {/* Search Bar */}
               <label className="flex flex-col pt-4 gap-y-2 text-lg">
-                Søk
+                Search
                 <input
                   type="text"
                   value={dialogSearchQuery}
                   onChange={(e) => setDialogSearchQuery(e.target.value)}
                   className="w-full max-w-full p-4 mb-2"
-                  placeholder="Søk etter utstyr"
+                  placeholder="Search for gear"
                 />
               </label>
 
               {/* Container for the list of items */}
               <div className="flex-grow overflow-y-auto max-h-[60vh] no-scrollbar">
                 {items.length === 0 ? (
-                  <p>Laster utstyr...</p>
+                  <p>Loading gear...</p>
                 ) : filteredItemsForDialog.length === 0 ? (
-                  <p>Ingen treff</p>
+                  <p>No matches</p>
                 ) : (
                   <ul className="flex flex-col">
                     {filteredItemsForDialog.map((item) => (
@@ -662,11 +660,11 @@ export default function ListPage() {
                   disabled={tempSelectedItems.length === 0}
                   className="button-primary"
                 >
-                  Lagre
+                  Save
                 </button>
                 <DialogClose asChild>
                   <button type="button" className="button-secondary">
-                    Lukk
+                    Close
                   </button>
                 </DialogClose>
               </DialogFooter>
@@ -684,7 +682,7 @@ export default function ListPage() {
               selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
             }`}
           >
-            Oversikt
+            Overview
           </button>
           {categories.map((category) => (
             <button
@@ -707,7 +705,7 @@ export default function ListPage() {
             }}
             className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
           >
-            På kropp
+            On body
           </button>
         </div>
         {/* Show totals only when not in "På kropp" view */}
@@ -718,7 +716,7 @@ export default function ListPage() {
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="backpack" width={18} height={18} />
                 </span>
-                Sekk
+                Backpack
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weight)}
@@ -729,7 +727,7 @@ export default function ListPage() {
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="clothing" width={18} height={18} />
                 </span>
-                På kropp
+                On body
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
@@ -740,7 +738,7 @@ export default function ListPage() {
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="calories" width={18} height={18} />
                 </span>
-                Kalorier
+                Calories
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatNumber(grandTotal.calories)} kcal
@@ -751,7 +749,7 @@ export default function ListPage() {
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="checkmark" width={18} height={18} />
                 </span>
-                Pakket
+                Packed
               </p>
               <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
                 {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
@@ -768,11 +766,11 @@ export default function ListPage() {
                   {/* Category totals section */}
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
-                      <p className="text-md sm:text-xl pb-8">Deltajert oversikt</p>
+                      <p className="text-md sm:text-xl pb-8">Detailed overview</p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-4">
-                        <p className="text-md sm:text-xl text-accent">Kategori</p>
-                        <p className="text-md sm:text-xl text-accent">Vekt</p>
-                        <p className="text-md sm:text-xl text-accent">Kalorier</p>
+                        <p className="text-md sm:text-xl text-accent">Category</p>
+                        <p className="text-md sm:text-xl text-accent">Weight</p>
+                        <p className="text-md sm:text-xl text-accent">Calories</p>
                       </div>
                       {categoryTotals.map((total) => (
                         <div
@@ -800,7 +798,7 @@ export default function ListPage() {
                     </div>
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
-                      <p className="text-md sm:text-xl">På kropp</p>
+                      <p className="text-md sm:text-xl">On body</p>
                       <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
                         {formatWeight(grandTotal.weightOnBody)}
                       </p>
@@ -809,7 +807,7 @@ export default function ListPage() {
                     {/* Grand total section */}
                     <div>
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
-                        <p className="text-md sm:text-xl text-accent">Totalt</p>
+                        <p className="text-md sm:text-xl text-accent">Total</p>
                         {/* <p className="text-md sm:text-xl">
                         {formatNumber(grandTotal.count)} stk
                       </p> */}
@@ -829,23 +827,18 @@ export default function ListPage() {
               selectedCategory || showOnBodyOnly ? (
                 <div className="product-category items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
                   <div className="flex items-center gap-x-2 text-sm sm:text-lg fg-accent">
-                    <Icon name="checkmark" width={24} height={24} />
                     {showOnBodyOnly
-                      ? `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`
+                      ? ``
                       : `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`}
                   </div>
 
                   <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
-                    <Icon name="weight" width={24} height={24} />
                     {showOnBodyOnly
                       ? formatWeight(grandTotal.weightOnBody)
                       : formatWeight(selectedCategoryWeight)}
                   </div>
 
                   <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
-                    {(selectedCategoryTotals?.calories || 0) > 0 && (
-                      <Icon name="calories" width={24} height={24} />
-                    )}
                     {showOnBodyOnly
                       ? (selectedCategoryTotals?.calories || 0) > 0
                         ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
@@ -871,15 +864,13 @@ export default function ListPage() {
                   className={`product py-4 ${listItem.checked ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
                 >
                   <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
-                    {/* Checkbox */}
-
                     {/* Image */}
                     <div className="aspect-square h-16 w-16 shrink-0">
                       {listItem.item?.image ? (
                         <Image
                           className="rounded-md h-full w-full object-cover"
                           src={urlFor(listItem.item.image).url()}
-                          alt={`Bilde av ${listItem.item?.name || 'item'}`}
+                          alt={`Image of ${listItem.item?.name || 'item'}`}
                           width={64}
                           height={64}
                         />
@@ -964,7 +955,7 @@ export default function ListPage() {
                       {/* Add check button */}
                       <button
                         type="button"
-                        title="På kropp"
+                        title="On body"
                         onClick={(e) => {
                           e.stopPropagation(); // Stop event from bubbling up
                           handleOnBodyChange(listItem._key, !(listItem.onBody ?? false));
@@ -996,7 +987,7 @@ export default function ListPage() {
 
                       <input
                         type="checkbox"
-                        title="Pakket"
+                        title="Packed"
                         checked={listItem.checked ?? false}
                         onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
                         className="shrink-0"
