@@ -11,8 +11,8 @@ export function DocumentIcon(props: React.SVGProps<SVGSVGElement>) {
       {...props} // Spread props to allow customization
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M18 11V20H6V4H11V10V11H12H18ZM18 9V8.82843L13.1716 4H13V9H18ZM20 8L14 2H6H4V4V20V22H6H18H20V20V8Z"
         fill="currentColor"
       />

@@ -11,8 +11,8 @@ export function DuplicateIcon(props: React.SVGProps<SVGSVGElement>) {
       {...props} // Spread props to allow customization
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M8 5H19V16H21V4V3H20H8V5ZM6 9H15V19H6V9ZM4 7H6H15H17V9V19V21H15H6H4V19V9V7Z"
         fill="currentColor"
       />
