@@ -266,7 +266,6 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
                 onChange={(e) => setWeight({...weight, unit: e.target.value})}
               >
                 <option value="g">g</option>
-                <option value="kg">kg</option>
               </select>
             </div>
           </label>
