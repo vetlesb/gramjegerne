@@ -196,7 +196,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
       setWeight({weight: 0, unit: 'g'});
       setCalories(0);
 
-      setSuccessMessage('Utstyr opprettet!');
+      setSuccessMessage('Gear created!');
 
       // Call onSuccess callback with the result
       if (onSuccess) {

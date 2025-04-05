@@ -31,7 +31,7 @@ Modifications to this file are automatically discarded.
     return {publish, subscribe, subscribers}
   })()
 
-  // NOTE: Store the error channel instance in the global scope so that the Studio application can
+  // NOTE: Store the error channel instance in the global scope so that the application can
   // access it and subscribe to errors.
   window.__sanityErrorChannel = {
     subscribe: errorChannel.subscribe,

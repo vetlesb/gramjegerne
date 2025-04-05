@@ -490,7 +490,7 @@ export default function IndexPage() {
                         <DialogContent className="dialog gap-y-8">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-normal text-accent">
-                              Er du sikker på at du vil slette &quot;{item.name}
+                              Are you sure you want to delete &quot;{item.name}
                               &quot;?
                             </DialogTitle>
                           </DialogHeader>
@@ -620,7 +620,7 @@ export default function IndexPage() {
           <DialogContent className="dialog gap-y-8">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal text-accent">
-                Er du sikker på at du vil slette &quot;
+                Are you sure you want to delete &quot;
                 {items.find((item) => item._id === itemToDelete)?.name}
                 &quot;?
               </DialogTitle>
