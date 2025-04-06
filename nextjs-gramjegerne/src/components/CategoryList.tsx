@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useMemo} from 'react';
 import {Icon} from '@/components/Icon';
 import type {Category} from '@/types';
 
@@ -11,6 +11,11 @@ interface CategoryListProps {
 export function CategoryList({categories, onUpdate, onDelete}: CategoryListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
+
+  // This sorting logic is correct and should work
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a: Category, b: Category) => a.title.localeCompare(b.title, 'nb'));
+  }, [categories]);
 
   const handleStartEdit = (category: Category) => {
     setEditingId(category._id);
@@ -32,7 +37,7 @@ export function CategoryList({categories, onUpdate, onDelete}: CategoryListProps
 
   return (
     <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[50vh] overflow-y-auto">
-      {categories.map((category) => (
+      {sortedCategories.map((category) => (
         <li key={category._id} className="category p-2 flex justify-between items-center">
           {editingId === category._id ? (
             <div className="flex-1 flex items-center gap-2">

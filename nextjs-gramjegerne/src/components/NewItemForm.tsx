@@ -36,7 +36,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [categoryInput, setCategoryInput] = useState('');
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isAddingCategory] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   // Fetch Categories from the API
@@ -96,32 +96,28 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
   );
 
   // Handle new category creation
-  async function handleAddCategory(newCategoryName: string) {
-    setIsAddingCategory(true);
+  const handleAddCategory = async (categoryTitle: string) => {
     try {
       const response = await fetch('/api/addCategory', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title: newCategoryName}),
+        body: JSON.stringify({title: categoryTitle}),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to add category');
-      }
+      if (!response.ok) throw new Error('Failed to add category');
 
       const newCategory = await response.json();
+      // Use the same sorting logic when updating categories
       setCategories((prev) =>
         [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, 'nb')),
       );
       setSelectedCategory(newCategory._id);
-      setCategoryInput(newCategory.title);
+      return newCategory;
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to add category');
-    } finally {
-      setIsAddingCategory(false);
+      console.error('Error adding category:', error);
+      throw error;
     }
-  }
+  };
 
   // Handle Form Submission
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

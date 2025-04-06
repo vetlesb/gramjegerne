@@ -58,7 +58,11 @@ export default function IndexPage() {
 
         setItems(fetchedItems);
         // Sort categories alphabetically
-        setCategories(fetchedCategories.sort((a, b) => a.title.localeCompare(b.title, 'nb')));
+        setCategories(
+          fetchedCategories.sort((a: Category, b: Category) =>
+            a.title.localeCompare(b.title, 'nb'),
+          ),
+        );
       } catch (error) {
         console.error('Error fetching data:', error);
         setErrorMessage('Failed to fetch data.');
@@ -207,7 +211,9 @@ export default function IndexPage() {
       console.log('Fetched categories:', fetchedCategories);
 
       setItems(fetchedItems);
-      setCategories(fetchedCategories); // Just set the raw categories
+      setCategories(
+        fetchedCategories.sort((a: Category, b: Category) => a.title.localeCompare(b.title, 'nb')),
+      );
     } catch (error) {
       console.error('Error refreshing data:', error);
       setErrorMessage('Failed to refresh data');
@@ -233,11 +239,16 @@ export default function IndexPage() {
       setCategories((prev) =>
         prev
           .map((cat) => (cat._id === categoryId ? {...cat, title: newTitle} : cat))
-          .sort((a, b) => a.title.localeCompare(b.title, 'nb')),
+          .sort((a: Category, b: Category) => a.title.localeCompare(b.title, 'nb')),
       );
     } catch (error) {
       console.error('Error updating category:', error);
     }
+  };
+
+  // First, let's move the sortCategories function to the top of the component to ensure it's available everywhere
+  const sortCategories = (categories: Category[]) => {
+    return [...categories].sort((a: Category, b: Category) => a.title.localeCompare(b.title, 'nb'));
   };
 
   if (loading) {
@@ -300,10 +311,8 @@ export default function IndexPage() {
               </DialogHeader>
 
               <AddCategoryForm
-                onSuccess={(newCategory: Category) => {
-                  setCategories((prev) =>
-                    [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, 'nb')),
-                  );
+                onSuccess={(newCategory) => {
+                  setCategories((prev) => sortCategories([...prev, newCategory]));
                 }}
               />
 
