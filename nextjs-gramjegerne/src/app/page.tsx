@@ -24,6 +24,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../components/ui/dialog';
+import {CategoryList} from '../components/CategoryList';
+import {AddCategoryForm} from '../components/AddCategoryForm';
 
 export default function IndexPage() {
   const {data: session} = useSession();
@@ -32,11 +34,9 @@ export default function IndexPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
-  const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<Item | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -56,31 +56,9 @@ export default function IndexPage() {
           }),
         ]);
 
-        console.log(
-          'Fetched items with categories:',
-          fetchedItems.map((item: Item) => ({
-            name: item.name,
-            categoryId: item.category?._id,
-            categoryTitle: item.category?.title,
-          })),
-        );
-
-        console.log('All categories:', fetchedCategories);
-
-        const sortedCategories = [...fetchedCategories].sort((a: Category, b: Category) =>
-          a.title.localeCompare(b.title, 'nb'),
-        );
-
-        setAllCategories(sortedCategories);
-
-        const categoriesWithEntries = sortedCategories.filter((category: Category) => {
-          const hasItems = fetchedItems.some((item: Item) => item.category?._id === category._id);
-          console.log(`Category ${category.title}: ${hasItems ? 'has items' : 'no items'}`);
-          return hasItems;
-        });
-
-        setCategories(categoriesWithEntries);
         setItems(fetchedItems);
+        // Sort categories alphabetically
+        setCategories(fetchedCategories.sort((a, b) => a.title.localeCompare(b.title, 'nb')));
       } catch (error) {
         console.error('Error fetching data:', error);
         setErrorMessage('Failed to fetch data.');
@@ -101,6 +79,13 @@ export default function IndexPage() {
     if (!selectedCategory) return sortedItems;
     return sortedItems.filter((item: Item) => item.category?._id === selectedCategory);
   }, [sortedItems, selectedCategory]);
+
+  // Add this new useMemo to filter categories that have items
+  const categoriesWithItems = useMemo(() => {
+    return categories.filter((category) =>
+      items.some((item) => item.category?._id === category._id),
+    );
+  }, [categories, items]);
 
   function handleCategorySelect(category: Category | null) {
     if (category) {
@@ -124,40 +109,6 @@ export default function IndexPage() {
       setErrorMessage('Failed to refresh items.');
     } finally {
       setLoading(false);
-    }
-  }
-  async function handleAddCategory() {
-    if (!newCategoryName || isLoadingDelete) return;
-    setIsLoadingDelete(true);
-    setErrorMessage(null);
-
-    try {
-      console.log('Current user session ID:', session?.user?.id);
-
-      const response = await fetch('/api/addCategory', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          title: newCategoryName,
-          userId: session?.user?.id,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Add category response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to add category');
-      }
-
-      await refreshData();
-      setNewCategoryName('');
-    } catch (error) {
-      console.error('Detailed error adding category:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to add category');
-      alert(`Failed to add category: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsLoadingDelete(false);
     }
   }
 
@@ -193,9 +144,6 @@ export default function IndexPage() {
         throw new Error(errorData.error || 'Failed to delete category');
       }
 
-      setAllCategories((prevCategories) =>
-        prevCategories.filter((category) => category._id !== categoryToDelete),
-      );
       setCategories((prevCategories) =>
         prevCategories.filter((category) => category._id !== categoryToDelete),
       );
@@ -258,23 +206,39 @@ export default function IndexPage() {
 
       console.log('Fetched categories:', fetchedCategories);
 
-      const sortedCategories = [...fetchedCategories].sort((a, b) =>
-        a.title.localeCompare(b.title, 'nb'),
-      );
-
-      setAllCategories(sortedCategories);
-
-      const categoriesWithEntries = sortedCategories.filter((category) =>
-        fetchedItems.some((item: Item) => item.category?._id === category._id),
-      );
-
-      setCategories(categoriesWithEntries);
       setItems(fetchedItems);
+      setCategories(fetchedCategories); // Just set the raw categories
     } catch (error) {
       console.error('Error refreshing data:', error);
       setErrorMessage('Failed to refresh data');
     }
   }
+
+  const handleUpdateCategory = async (categoryId: string, newTitle: string) => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newTitle,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update category');
+      }
+
+      setCategories((prev) =>
+        prev
+          .map((cat) => (cat._id === categoryId ? {...cat, title: newTitle} : cat))
+          .sort((a, b) => a.title.localeCompare(b.title, 'nb')),
+      );
+    } catch (error) {
+      console.error('Error updating category:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -335,40 +299,20 @@ export default function IndexPage() {
                 </DialogTitle>
               </DialogHeader>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddCategory();
+              <AddCategoryForm
+                onSuccess={(newCategory: Category) => {
+                  setCategories((prev) =>
+                    [...prev, newCategory].sort((a, b) => a.title.localeCompare(b.title, 'nb')),
+                  );
                 }}
-                className="flex flex-col gap-y-4"
-              >
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="p-4 rounded"
-                  required
-                  placeholder="Category title"
-                />
-                <button type="submit" className="button-primary-accent" disabled={isLoadingDelete}>
-                  {isLoadingDelete ? 'Adding...' : 'Add'}
-                </button>
-              </form>
+              />
 
               <p className="mt-6">Categories</p>
-              <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[50vh] overflow-y-auto">
-                {allCategories.map((category) => (
-                  <li key={category._id} className="category p-2 flex justify-between items-center">
-                    <span>{category.title}</span>
-                    <button
-                      className="button-link"
-                      onClick={() => setCategoryToDelete(category._id)}
-                    >
-                      <Icon name="delete" width={16} height={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <CategoryList
+                categories={categories}
+                onUpdate={handleUpdateCategory}
+                onDelete={setCategoryToDelete}
+              />
             </DialogContent>
           </Dialog>
 
@@ -391,7 +335,7 @@ export default function IndexPage() {
               All
             </button>
           )}
-          {categories.map((category: Category) => (
+          {categoriesWithItems.map((category: Category) => (
             <button
               key={category._id}
               onClick={() => handleCategorySelect(category)}
