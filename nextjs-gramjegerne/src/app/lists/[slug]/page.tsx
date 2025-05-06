@@ -559,8 +559,7 @@ export default function ListPage() {
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <button className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md">
-                <Icon name="add" width={16} height={16} />
-                Add gear
+                Add
               </button>
             </DialogTrigger>
             {/* Updated DialogContent */}

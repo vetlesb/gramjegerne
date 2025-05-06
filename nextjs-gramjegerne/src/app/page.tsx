@@ -266,7 +266,6 @@ export default function IndexPage() {
           <Dialog>
             <DialogTrigger asChild>
               <button className="button-create text-md flex flex-shrink-0 flex-row items-center gap-x-1">
-                <Icon name="add" width={16} height={16} />
                 Add
               </button>
             </DialogTrigger>
@@ -299,7 +298,6 @@ export default function IndexPage() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <button className="button-create text-md flex flex-row items-center gap-x-1">
-                <Icon name="category" width={16} height={16} />
                 Categories
               </button>
             </DialogTrigger>
@@ -330,7 +328,6 @@ export default function IndexPage() {
             className="button-create text-md gap-x-1 flex flex-row items-center"
             onClick={handleOpenImportDialog}
           >
-            <Icon name="document" width={16} height={16} />
             Excel
           </button>
         </div>
