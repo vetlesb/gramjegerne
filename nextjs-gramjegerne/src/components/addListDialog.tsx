@@ -1,5 +1,4 @@
 'use client';
-import {Icon} from '@/components/Icon';
 import {
   Dialog,
   DialogClose,
