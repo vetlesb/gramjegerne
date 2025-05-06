@@ -552,7 +552,7 @@ export default function ListPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <h1 className="text-4xl md:text-6xl text-accent py-4">in {list.name}</h1>
+        <h1 className="text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
 
         <div className="flex gap-y-4 gap-x-2 overflow-y-auto no-scrollbar p-1">
           {/* Button to open the Add Item Dialog */}

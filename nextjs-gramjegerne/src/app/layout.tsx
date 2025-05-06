@@ -17,15 +17,15 @@ import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 const apfel = localFont({
   src: [
     {
-      path: '../../public/fonts/ApfelGrotezk-Regular.woff2',
+      path: '../../public/fonts/Satoshi-Regular.woff2',
       weight: '400',
     },
     {
-      path: '../../public/fonts/ApfelGrotezk-Mittel.woff2',
+      path: '../../public/fonts/Satoshi-Medium.woff2',
       weight: '500',
     },
     {
-      path: '../../public/fonts/ApfelGrotezk-Fett.woff2',
+      path: '../../public/fonts/CabinetGrotesk-Bold.woff2',
       weight: '700',
     },
   ],
@@ -45,7 +45,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             {children}
             <ProtectedRoute>
               <div className="flex flex-col md:flex-row justify-between">
-                <div className="text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
+                <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
                   Gramjegerne
                 </div>
                 <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">

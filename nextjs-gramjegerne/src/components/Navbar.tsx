@@ -17,7 +17,7 @@ export function Navbar() {
       <div className="flex flex-wrap items-center justify-between mx-auto">
         <div className="flex justify-between h-16 items-center">
           <Link href="/" className="flex items-center">
-            <span className="text-3xl text-accent">Gramjegerne</span>
+            <span className="nav-logo text-3xl text-accent">Gramjegerne</span>
           </Link>
         </div>
 

@@ -188,7 +188,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
             )}
           </div>
           <div className="flex flex-col gap-y-1 gap-x-4 pb-4 pl-4 pr-4 pt-2">
-            <h2 className="text-3xl text-accent cursor-pointer" onClick={handleClick}>
+            <h2 className="nav-logo text-3xl text-accent cursor-pointer" onClick={handleClick}>
               {list.name}
             </h2>
 
