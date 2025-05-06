@@ -710,7 +710,7 @@ export default function ListPage() {
         {/* Show totals only when not in "På kropp" view */}
         {selectedCategory === null && !showOnBodyOnly && (
           <div className="grid grid-cols-2 gap-x-2">
-            <div className="grid product gap-y-4">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="backpack" width={18} height={18} />
@@ -721,7 +721,7 @@ export default function ListPage() {
                 {formatWeight(grandTotal.weight)}
               </p>
             </div>
-            <div className="grid product gap-y-2">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="clothing" width={18} height={18} />
@@ -732,7 +732,7 @@ export default function ListPage() {
                 {formatWeight(grandTotal.weightOnBody)}
               </p>
             </div>
-            <div className="grid product gap-y-2">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="calories" width={18} height={18} />
@@ -743,7 +743,7 @@ export default function ListPage() {
                 {formatNumber(grandTotal.calories)} kcal
               </p>
             </div>
-            <div className="grid product gap-y-2">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <span className="border-1 border-accent rounded-full p-1">
                   <Icon name="checkmark" width={18} height={18} />
