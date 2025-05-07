@@ -92,33 +92,47 @@ export default function ListPage() {
     async function fetchData() {
       const userId = getUserId();
       const decodedSlug = decodeURIComponent(listSlug || '');
-      console.log('Fetching list with:', {
-        encodedSlug: listSlug,
-        decodedSlug,
-        userId,
-      });
 
       if (!listSlug || !userId) return;
 
+      setIsLoading(true); // Set loading state
       try {
         const [fetchedList] = await Promise.all([client.fetch(LIST_QUERY(listSlug), {userId})]);
-
-        console.log('Fetched list:', fetchedList); // Add this debug log
 
         if (fetchedList) {
           setList(fetchedList);
           setSelectedItems(fetchedList.items);
         } else {
-          console.log('No list found with slug:', decodedSlug); // Add this debug log
+          console.log('No list found with slug:', decodedSlug);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to load data');
+      } finally {
+        setIsLoading(false); // Clear loading state
       }
     }
 
     fetchData();
   }, [listSlug, getUserId]);
+
+  // Add this useEffect after your existing useEffect for fetching the list
+  useEffect(() => {
+    async function fetchItems() {
+      const userId = getUserId();
+      if (!userId) return;
+
+      try {
+        const fetchedItems = await client.fetch(ITEMS_QUERY, {userId});
+        setItems(fetchedItems);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+        setError('Failed to load items');
+      }
+    }
+
+    fetchItems();
+  }, [getUserId]);
 
   // Update handleTempItemToggle to track existing overrides
   const handleTempItemToggle = useCallback((item: Item) => {
@@ -172,9 +186,13 @@ export default function ListPage() {
       return sortListItems(items.filter((item) => item.onBody === true));
     }
 
-    // Otherwise, apply category filter as normal
+    // Otherwise, apply category filter as normal, but exclude on-body items from their original categories
     if (selectedCategory) {
-      items = items.filter((item) => item.item?.category?._id === selectedCategory);
+      items = items.filter((item) => {
+        // If item is on body, only show it in the "On body" category
+        if (item.onBody) return false;
+        return item.item?.category?._id === selectedCategory;
+      });
     }
 
     // Existing search filter
@@ -232,7 +250,6 @@ export default function ListPage() {
       };
     }
 
-    // Create maps for both regular and override totals
     const categoryMap = new Map<string, CategoryTotal>();
 
     // Calculate totals
@@ -242,56 +259,88 @@ export default function ListPage() {
       const effectiveCategory = item.item.category;
       if (!effectiveCategory) return;
 
-      // Regular category totals calculation (unchanged)
-      const existing = categoryMap.get(effectiveCategory._id) || {
-        id: effectiveCategory._id,
+      if (item.onBody) {
+        // Only add to "On body" category
+        const onBodyCategory = categoryMap.get('on-body') || {
+          id: 'on-body',
+          count: 0,
+          weight: 0,
+          weightOnBody: 0,
+          calories: 0,
+          checkedCount: 0,
+          title: 'On body',
+        };
+
+        onBodyCategory.count += quantity;
+        if (item.checked) {
+          onBodyCategory.checkedCount += quantity;
+        }
+        if (item.item.weight) {
+          onBodyCategory.weightOnBody += item.item.weight.weight * quantity;
+        }
+        if (item.item.calories) {
+          onBodyCategory.calories += item.item.calories * quantity;
+        }
+
+        categoryMap.set('on-body', onBodyCategory);
+      } else {
+        // Regular category totals calculation (for non-on-body items)
+        const existing = categoryMap.get(effectiveCategory._id) || {
+          id: effectiveCategory._id,
+          count: 0,
+          weight: 0,
+          weightOnBody: 0,
+          calories: 0,
+          checkedCount: 0,
+          title: effectiveCategory.title,
+        };
+
+        existing.count += quantity;
+        if (item.checked) {
+          existing.checkedCount += quantity;
+        }
+        if (item.item.weight) {
+          existing.weight += item.item.weight.weight * quantity;
+        }
+        if (item.item.calories) {
+          existing.calories += item.item.calories * quantity;
+        }
+
+        categoryMap.set(effectiveCategory._id, existing);
+      }
+    });
+
+    const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, 'nb'),
+    );
+
+    // Calculate grand total (excluding on-body items)
+    const grandTotal = categoryTotals.reduce(
+      (acc, category) => {
+        // For "On body" category, add to weightOnBody
+        if (category.id === 'on-body') {
+          return {
+            ...acc,
+            weightOnBody: category.weightOnBody || 0,
+          };
+        }
+
+        // For other categories, add to regular weight
+        return {
+          count: acc.count + category.count,
+          weight: acc.weight + category.weight,
+          weightOnBody: acc.weightOnBody,
+          calories: acc.calories + category.calories,
+          checkedCount: acc.checkedCount + category.checkedCount,
+        };
+      },
+      {
         count: 0,
         weight: 0,
         weightOnBody: 0,
         calories: 0,
         checkedCount: 0,
-        title: effectiveCategory.title,
-      };
-
-      existing.count += quantity;
-
-      if (item.checked) {
-        existing.checkedCount += quantity;
-      }
-
-      if (item.item.weight) {
-        let packedQuantity = quantity;
-
-        if (item.onBody) {
-          // If one of the items is on body, we need to subtract one from the count.
-          packedQuantity = Math.max(packedQuantity - 1, 0);
-          existing.weightOnBody += item.item.weight.weight;
-        }
-        existing.weight += item.item.weight.weight * packedQuantity;
-      }
-
-      if (item.item.calories) {
-        existing.calories += item.item.calories * quantity;
-      }
-
-      categoryMap.set(effectiveCategory._id, existing);
-    });
-
-    /** Sorted array for overview. */
-    const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, 'nb'),
-    );
-
-    // Calculate grand total
-    const grandTotal = categoryTotals.reduce(
-      (acc, cat) => ({
-        count: acc.count + cat.count,
-        weight: acc.weight + cat.weight,
-        weightOnBody: acc.weightOnBody + cat.weightOnBody,
-        calories: acc.calories + cat.calories,
-        checkedCount: acc.checkedCount + cat.checkedCount,
-      }),
-      {...emptyTotal},
+      },
     );
 
     return {
@@ -305,215 +354,6 @@ export default function ListPage() {
   const selectedCategoryWeight = selectedCategoryTotals
     ? selectedCategoryTotals.weight + selectedCategoryTotals.weightOnBody
     : 0;
-
-  // Update the handleSaveChanges function
-  async function handleSaveChanges() {
-    try {
-      setIsLoading(true);
-      const userId = getUserId();
-
-      if (!list || !listSlug || !userId) {
-        throw new Error('Missing required data');
-      }
-
-      // Keep existing items with their current quantities AND category overrides
-      const existingItems = prepareItems(selectedItems);
-
-      // Add only truly new items
-      const newItems = tempSelectedItems
-        .filter((newItem) => !selectedItems.some((existing) => existing.item?._id === newItem._id))
-        .map((item) => ({
-          _key: nanoid(),
-          _type: 'listItem',
-          item: {
-            _type: 'reference',
-            _ref: item._id,
-          },
-          quantity: 1,
-        }));
-
-      console.log('Saving items with overrides:', existingItems);
-
-      // Update in Sanity
-      const response = await fetch('/api/updateList', {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          listId: list._id,
-          items: [...existingItems, ...newItems],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update list');
-      }
-
-      // Fetch fresh data
-      const fetchedList = await client.fetch(LIST_QUERY(listSlug), {
-        userId,
-      });
-
-      if (fetchedList) {
-        setList(fetchedList);
-        setSelectedItems(fetchedList.items);
-      }
-
-      // Close the dialog after saving
-      setIsDialogOpen(false); // Close the dialog here
-    } catch (err) {
-      console.error('Error saving changes:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleQuantityChange(itemKey: string, newQuantity: number) {
-    if (!list || !session?.user?.id || newQuantity < 1) return;
-
-    // Update pending quantities immediately for optimistic UI
-    setPendingQuantities((prev) => ({
-      ...prev,
-      [itemKey]: newQuantity,
-    }));
-
-    // Update selectedItems to reflect the new quantity.
-    setSelectedItems((prev) => {
-      const updatedItems = prev.map((item) => {
-        if (item._key !== itemKey) return item;
-
-        return {
-          ...item,
-          quantity: newQuantity,
-        };
-      });
-
-      console.log('Updated selectedItems:', updatedItems); // Log updated items
-      return updatedItems;
-    });
-
-    try {
-      // Prepare items for server update.
-      const itemsForUpdate = prepareItems(selectedItems);
-
-      console.log('Items for update:', itemsForUpdate); // Log items being sent to the API
-
-      const response = await fetch('/api/updateList', {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          listId: list._id,
-          items: itemsForUpdate,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update quantity');
-      }
-
-      // Clear pending after successful update
-      setPendingQuantities((prev) => {
-        const newPending = {...prev};
-        delete newPending[itemKey];
-        return newPending;
-      });
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      // Revert both optimistic updates on error
-      setPendingQuantities((prev) => {
-        const newPending = {...prev};
-        delete newPending[itemKey];
-        return newPending;
-      });
-      setSelectedItems((prev) =>
-        prev.map((item) =>
-          item._key === itemKey ? {...item, quantity: item.quantity || 1} : item,
-        ),
-      );
-    }
-  }
-
-  // Update the useEffect for dialog items
-  useEffect(() => {
-    async function fetchItems() {
-      if (isDialogOpen && session?.user?.id) {
-        // Add session check
-        try {
-          console.log('Fetching items...');
-          const fetchedItems = await client.fetch(ITEMS_QUERY, {
-            userId: session.user.id, // Add userId parameter
-          });
-          console.log('Fetched items:', fetchedItems);
-          setItems(fetchedItems);
-        } catch (error) {
-          console.error('Error fetching items:', error);
-        }
-      }
-    }
-
-    fetchItems();
-  }, [isDialogOpen, session?.user?.id]); // Add session?.user?.id to dependencies
-
-  async function handleOnBodyChange(itemKey: string, checked: boolean) {
-    if (!list) return;
-
-    const updatedItems = selectedItems.map((item) => {
-      if (item._key !== itemKey) return item;
-      return {
-        ...item,
-        onBody: checked,
-      };
-    });
-
-    // Optimistically update the UI.
-    setSelectedItems(updatedItems);
-
-    try {
-      await fetch('/api/updateList', {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          listId: list._id,
-          items: prepareItems(updatedItems),
-        }),
-      });
-    } catch {
-      // Revert the checkbox state on error.
-      setSelectedItems((prev) =>
-        prev.map((item) => (item._key === itemKey ? {...item, onBody: !checked} : item)),
-      );
-    }
-  }
-
-  async function handleCheckboxChange(itemKey: string, checked: boolean) {
-    if (!list) return;
-
-    const updatedItems = selectedItems.map((item) => {
-      if (item._key !== itemKey) return item;
-      return {
-        ...item,
-        checked: checked,
-      };
-    });
-
-    // Optimistically update the UI.
-    setSelectedItems(updatedItems);
-
-    try {
-      await fetch('/api/updateList', {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          listId: list._id,
-          items: prepareItems(updatedItems),
-        }),
-      });
-    } catch {
-      // Revert the checkbox state on error.
-      setSelectedItems((prev) =>
-        prev.map((item) => (item._key === itemKey ? {...item, checked: !checked} : item)),
-      );
-    }
-  }
 
   // First, let's add a loading and error state check at the start of the component render
   if (error) {
@@ -548,6 +388,142 @@ export default function ListPage() {
       </ProtectedRoute>
     );
   }
+
+  // Add these handler functions
+  const handleSaveChanges = async () => {
+    if (!list) return;
+    try {
+      // Create a Map to store unique items by their item._id
+      const uniqueItems = new Map();
+
+      // First add all existing items to the Map
+      selectedItems.forEach((listItem) => {
+        if (listItem.item?._id) {
+          uniqueItems.set(listItem.item._id, listItem);
+        }
+      });
+
+      // Then add new items, but only if they don't already exist
+      tempSelectedItems.forEach((item) => {
+        if (!uniqueItems.has(item._id)) {
+          uniqueItems.set(item._id, {
+            _key: nanoid(),
+            _type: 'listItem',
+            item,
+            quantity: 1,
+            checked: false,
+            onBody: false,
+          });
+        }
+      });
+
+      // Convert Map back to array
+      const cleanedItems = Array.from(uniqueItems.values());
+
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: prepareItems(cleanedItems),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update list');
+
+      setSelectedItems(cleanedItems);
+      setTempSelectedItems([]);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to save changes:', error);
+      alert('Failed to save changes. Please try again.');
+    }
+  };
+
+  const handleCheckboxChange = async (itemKey: string, checked: boolean) => {
+    if (!list) return;
+    try {
+      const updatedItems = selectedItems.map((item) =>
+        item._key === itemKey ? {...item, checked} : item,
+      );
+
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: prepareItems(updatedItems),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update list');
+      setSelectedItems(updatedItems);
+    } catch (error) {
+      console.error('Failed to update item:', error);
+      alert('Failed to update item. Please try again.');
+    }
+  };
+
+  const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
+    if (!list || newQuantity < 1) return;
+
+    // Set pending quantity immediately for optimistic update
+    setPendingQuantities((prev) => ({
+      ...prev,
+      [itemKey]: newQuantity,
+    }));
+
+    try {
+      const updatedItems = selectedItems.map((item) =>
+        item._key === itemKey ? {...item, quantity: newQuantity} : item,
+      );
+
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: prepareItems(updatedItems),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update list');
+      setSelectedItems(updatedItems);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+      alert('Failed to update quantity. Please try again.');
+      // Revert pending quantity on error
+      setPendingQuantities((prev) => {
+        const newPending = {...prev};
+        delete newPending[itemKey];
+        return newPending;
+      });
+    }
+  };
+
+  const handleOnBodyChange = async (itemKey: string, onBody: boolean) => {
+    if (!list) return;
+    try {
+      const updatedItems = selectedItems.map((item) =>
+        item._key === itemKey ? {...item, onBody} : item,
+      );
+
+      const response = await fetch('/api/updateList', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          listId: list._id,
+          items: prepareItems(updatedItems),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update list');
+      setSelectedItems(updatedItems);
+    } catch (error) {
+      console.error('Failed to update on body status:', error);
+      alert('Failed to update on body status. Please try again.');
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -728,7 +704,7 @@ export default function ListPage() {
                 </span>
                 On body
               </p>
-              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
               </p>
             </div>
@@ -771,53 +747,63 @@ export default function ListPage() {
                         <p className="text-md sm:text-xl text-accent">Weight</p>
                         <p className="text-md sm:text-xl text-accent">Calories</p>
                       </div>
-                      {categoryTotals.map((total) => (
-                        <div
-                          key={total.id}
-                          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2"
-                        >
-                          <p className="text-md sm:text-xl">
-                            {total.title}{' '}
-                            <span className="tag-packed w-fit">
-                              {formatNumber(total.checkedCount || 0)}/
-                              {formatNumber(total.count || 0)}
-                            </span>
+                      {categoryTotals.map(
+                        (total) =>
+                          total.id !== 'on-body' && (
+                            <div
+                              key={total.id}
+                              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2"
+                            >
+                              <p className="text-md sm:text-xl">
+                                {total.title}{' '}
+                                <span className="tag-packed w-fit">
+                                  {formatNumber(total.checkedCount || 0)}/
+                                  {formatNumber(total.count || 0)}
+                                </span>
+                              </p>
+                              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                                {formatWeight(total.weight)}
+                              </p>
+                              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                                {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
+                              </p>
+                            </div>
+                          ),
+                      )}
+
+                      {/* Add the "On body" section with correct weight */}
+                      {(() => {
+                        const onBodyCategory = categoryTotals.find(
+                          (total) => total.id === 'on-body',
+                        );
+                        return (
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
+                            <p className="text-md sm:text-xl">On body</p>
+                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                              {formatWeight(onBodyCategory?.weightOnBody || 0)}
+                            </p>
+                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                              {onBodyCategory?.calories && onBodyCategory.calories > 0
+                                ? `${formatNumber(onBodyCategory.calories)} kcal`
+                                : ''}
+                            </p>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Grand total section */}
+                      <div>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
+                          <p className="text-md sm:text-xl text-accent">Total</p>
+                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                            {formatWeight(grandTotal.weight)}
                           </p>
-                          {/*  <p className="text-md sm:text-xl">
-                          {formatNumber(total.count)} stk
-                        </p>*/}
-                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {formatWeight(total.weight + total.weightOnBody)}
-                          </p>
-                          <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                            {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
+                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                            {grandTotal.calories > 0
+                              ? `${formatNumber(grandTotal.calories)} kcal`
+                              : ''}
                           </p>
                         </div>
-                      ))}
-                    </div>
-
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
-                      <p className="text-md sm:text-xl">On body</p>
-                      <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                        {formatWeight(grandTotal.weightOnBody)}
-                      </p>
-                    </div>
-
-                    {/* Grand total section */}
-                    <div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
-                        <p className="text-md sm:text-xl text-accent">Total</p>
-                        {/* <p className="text-md sm:text-xl">
-                        {formatNumber(grandTotal.count)} stk
-                      </p> */}
-                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                          {formatWeight(grandTotal.weight + grandTotal.weightOnBody)}
-                        </p>
-                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                          {grandTotal.calories > 0
-                            ? `${formatNumber(grandTotal.calories)} kcal`
-                            : ''}
-                        </p>
                       </div>
                     </div>
                   </div>
@@ -833,7 +819,9 @@ export default function ListPage() {
 
                   <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
                     {showOnBodyOnly
-                      ? formatWeight(grandTotal.weightOnBody)
+                      ? formatWeight(
+                          categoryTotals.find((total) => total.id === 'on-body')?.weightOnBody || 0,
+                        )
                       : formatWeight(selectedCategoryWeight)}
                   </div>
 
