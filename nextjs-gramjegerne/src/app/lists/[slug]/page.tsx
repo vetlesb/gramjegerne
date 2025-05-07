@@ -465,7 +465,7 @@ export default function ListPage() {
   };
 
   const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
-    if (!list || newQuantity < 1) return;
+    if (!list || newQuantity < 0.1) return;
 
     // Set pending quantity immediately for optimistic update
     setPendingQuantities((prev) => ({
@@ -501,6 +501,7 @@ export default function ListPage() {
     }
   };
 
+  // First, add back the handleOnBodyChange function
   const handleOnBodyChange = async (itemKey: string, onBody: boolean) => {
     if (!list) return;
     try {
@@ -520,8 +521,8 @@ export default function ListPage() {
       if (!response.ok) throw new Error('Failed to update list');
       setSelectedItems(updatedItems);
     } catch (error) {
-      console.error('Failed to update on body status:', error);
-      alert('Failed to update on body status. Please try again.');
+      console.error('Failed to update onBody status:', error);
+      alert('Failed to update onBody status. Please try again.');
     }
   };
 
@@ -911,54 +912,46 @@ export default function ListPage() {
                     {/* Actions container */}
                     <div className="flex items-center gap-x-2 ml-auto">
                       <div className="flex">
-                        <div className="flex items-center gap-x-1 bg-dimmed-hover rounded-full p-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation(); // Stop event from bubbling up
-                              handleQuantityChange(listItem._key, (listItem.quantity || 1) - 1);
+                        <div className="flex items-center gap-x-1 bg-secondary rounded-full p-1">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value={
+                              pendingQuantities[listItem._key] !== undefined
+                                ? pendingQuantities[listItem._key]
+                                : listItem.quantity || 1
+                            }
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              const newValue = parseFloat(e.target.value);
+                              if (!isNaN(newValue)) {
+                                handleQuantityChange(listItem._key, newValue);
+                              }
                             }}
-                            disabled={(listItem.quantity || 1) <= 1}
-                            className="p-1 px-4 hover:bg-dimmed rounded-full disabled:opacity-50"
-                          >
-                            –
-                          </button>
-                          <div className="text-md bg-secondary fg-secondary p-1 rounded-full min-w-[2rem] text-center">
-                            {pendingQuantities[listItem._key] !== undefined
-                              ? pendingQuantities[listItem._key]
-                              : listItem.quantity || 1}
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation(); // Stop event from bubbling up
-                              handleQuantityChange(listItem._key, (listItem.quantity || 1) + 1);
-                            }}
-                            className="p-1 px-4 hover:bg-dimmed rounded-full disabled:opacity-50"
-                          >
-                            +
-                          </button>
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-16 text-center bg-secondary fg-secondary hover:bg-secondary hover:fg-secondary p-1 rounded-full"
+                          />
                         </div>
                       </div>
 
-                      {/* Add check button */}
+                      {/* Add the On body toggle button */}
                       <button
-                        type="button"
-                        title="On body"
                         onClick={(e) => {
-                          e.stopPropagation(); // Stop event from bubbling up
-                          handleOnBodyChange(listItem._key, !(listItem.onBody ?? false));
+                          e.stopPropagation();
+                          handleOnBodyChange(listItem._key, !listItem.onBody);
                         }}
-                        className={`button-toggle p-2 rounded transition-colors ${
-                          listItem.onBody ? 'fg-accent' : 'fg-primary'
+                        className={`button-ghost flex gap-x-2 h-fit align-middle ${
+                          listItem.onBody ? 'text-accent' : ''
                         }`}
+                        title={listItem.onBody ? 'Remove from body' : 'Add to body'}
                       >
-                        {listItem.onBody ? (
-                          <Icon name="clothingfilled" width={24} height={24} />
-                        ) : (
-                          <Icon name="clothing" width={24} height={24} />
-                        )}
+                        <Icon
+                          name={listItem.onBody ? 'clothingfilled' : 'clothing'}
+                          width={24}
+                          height={24}
+                        />
                       </button>
-
-                      {/* Existing delete button */}
 
                       <button
                         onClick={(e) => {
@@ -976,7 +969,10 @@ export default function ListPage() {
                         type="checkbox"
                         title="Packed"
                         checked={listItem.checked ?? false}
-                        onChange={(e) => handleCheckboxChange(listItem._key, e.target.checked)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleCheckboxChange(listItem._key, e.target.checked);
+                        }}
                         className="shrink-0"
                       />
                     </div>
