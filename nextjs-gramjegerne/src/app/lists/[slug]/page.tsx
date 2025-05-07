@@ -65,6 +65,9 @@ export default function ListPage() {
   // Add new state for onBody filter
   const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
 
+  // Add a new state for optimistic checkbox updates
+  const [pendingChecks, setPendingChecks] = useState<{[key: string]: boolean}>({});
+
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
     if (!selectedItems?.length) return [];
@@ -440,8 +443,16 @@ export default function ListPage() {
     }
   };
 
+  // Update the handleCheckboxChange function to use optimistic updates
   const handleCheckboxChange = async (itemKey: string, checked: boolean) => {
     if (!list) return;
+
+    // Set optimistic update immediately
+    setPendingChecks((prev) => ({
+      ...prev,
+      [itemKey]: checked,
+    }));
+
     try {
       const updatedItems = selectedItems.map((item) =>
         item._key === itemKey ? {...item, checked} : item,
@@ -461,6 +472,12 @@ export default function ListPage() {
     } catch (error) {
       console.error('Failed to update item:', error);
       alert('Failed to update item. Please try again.');
+      // Revert optimistic update on error
+      setPendingChecks((prev) => {
+        const newPending = {...prev};
+        delete newPending[itemKey];
+        return newPending;
+      });
     }
   };
 
@@ -849,7 +866,15 @@ export default function ListPage() {
                 <li
                   key={listItem._key}
                   onClick={() => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
-                  className={`product py-4 ${listItem.checked ? 'product-checked cursor-pointer' : 'product cursor-pointer'}`}
+                  className={`product py-4 ${
+                    pendingChecks[listItem._key] !== undefined
+                      ? pendingChecks[listItem._key]
+                        ? 'product-checked cursor-pointer'
+                        : 'product cursor-pointer'
+                      : listItem.checked
+                        ? 'product-checked cursor-pointer'
+                        : 'product cursor-pointer'
+                  }`}
                 >
                   <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
                     {/* Image */}
@@ -881,7 +906,7 @@ export default function ListPage() {
                     </div>
 
                     {/* Name and tags container */}
-                    <div className="flex-1 min-w-0 w-[calc(100%-10rem)] sm:w-auto">
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <div className="flex flex-col gap-y-2 min-w-0">
                         <h2 className="text-xl text-accent truncate" title={listItem.item?.name}>
                           {listItem.item?.name || 'Unnamed Item'}
@@ -910,9 +935,9 @@ export default function ListPage() {
                     </div>
 
                     {/* Actions container */}
-                    <div className="flex items-center gap-x-2 ml-auto">
+                    <div className="flex items-center gap-x-2 w-full sm:w-auto sm:ml-auto mt-4 sm:mt-0">
                       <div className="flex">
-                        <div className="flex items-center gap-x-1 bg-secondary rounded-full p-1">
+                        <div className="flex items-center gap-x-1 font-medium rounded-md p-1">
                           <input
                             type="number"
                             min="0.1"
@@ -930,7 +955,7 @@ export default function ListPage() {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-16 text-center bg-secondary fg-secondary hover:bg-secondary hover:fg-secondary p-1 rounded-full"
+                            className="w-16 text-center hover:bg-dimmed-hover p-1 rounded-md"
                           />
                         </div>
                       </div>
@@ -968,7 +993,11 @@ export default function ListPage() {
                       <input
                         type="checkbox"
                         title="Packed"
-                        checked={listItem.checked ?? false}
+                        checked={
+                          pendingChecks[listItem._key] !== undefined
+                            ? pendingChecks[listItem._key]
+                            : (listItem.checked ?? false)
+                        }
                         onChange={(e) => {
                           e.stopPropagation();
                           handleCheckboxChange(listItem._key, e.target.checked);
