@@ -796,11 +796,11 @@ export default function ListPage() {
                         );
                         return (
                           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
-                            <p className="text-md sm:text-xl">On body</p>
-                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                            <p className="text-md sm:text-xl text-accent">On body</p>
+                            <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                               {formatWeight(onBodyCategory?.weightOnBody || 0)}
                             </p>
-                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                            <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                               {onBodyCategory?.calories && onBodyCategory.calories > 0
                                 ? `${formatNumber(onBodyCategory.calories)} kcal`
                                 : ''}
@@ -812,7 +812,7 @@ export default function ListPage() {
                       {/* Grand total section */}
                       <div>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
-                          <p className="text-md sm:text-xl text-accent">Total</p>
+                          <p className="text-md sm:text-xl text-accent">Backpack</p>
                           <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                             {formatWeight(grandTotal.weight)}
                           </p>
@@ -937,7 +937,7 @@ export default function ListPage() {
                     {/* Actions container */}
                     <div className="flex items-center gap-x-2 w-full sm:w-auto sm:ml-auto mt-4 sm:mt-0">
                       <div className="flex">
-                        <div className="flex items-center gap-x-1 font-medium rounded-md p-1">
+                        <div className="flex items-center bg-accent gap-x-1 font-medium rounded-md p-1">
                           <input
                             type="number"
                             min="0.1"
@@ -955,7 +955,7 @@ export default function ListPage() {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-16 text-center hover:bg-dimmed-hover p-1 rounded-md"
+                            className="w-12 text-center bg-accent fg-secondary hover:bg-accent hover:fg-secondary p-1 rounded-md"
                           />
                         </div>
                       </div>
