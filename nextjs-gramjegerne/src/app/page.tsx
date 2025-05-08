@@ -551,7 +551,7 @@ export default function IndexPage() {
         <Dialog open={!!isEditDialogOpen} onOpenChange={() => setIsEditDialogOpen(null)}>
           <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal text-accent">Rediger utstyr</DialogTitle>
+              <DialogTitle className="text-xl font-normal text-accent">Edit gear</DialogTitle>
             </DialogHeader>
             {isEditDialogOpen && (
               <EditItemForm

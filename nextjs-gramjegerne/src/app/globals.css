@@ -474,7 +474,15 @@ select:active {
   border: 0px solid var(--fg-accent);
   outline: 2px solid var(--fg-accent);
 }
-
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.number-input {
+  border-radius: 99px;
+}
 input:hover,
 select:hover {
   background-color: var(--bg-primary-hover);

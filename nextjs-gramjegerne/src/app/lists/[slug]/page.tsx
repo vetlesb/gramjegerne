@@ -937,7 +937,7 @@ export default function ListPage() {
                     {/* Actions container */}
                     <div className="flex items-center gap-x-2 w-full sm:w-auto sm:ml-auto mt-4 sm:mt-0">
                       <div className="flex">
-                        <div className="flex items-center bg-accent gap-x-1 font-medium rounded-md p-1">
+                        <div className="flex items-center gap-x-1 font-medium rounded-full p-1">
                           <input
                             type="number"
                             min="0.1"
@@ -955,7 +955,7 @@ export default function ListPage() {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-12 text-center bg-accent fg-secondary hover:bg-accent hover:fg-secondary p-1 rounded-md"
+                            className="number-input w-12 text-center p-1 rounded-full"
                           />
                         </div>
                       </div>
