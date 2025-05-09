@@ -1,11 +1,11 @@
 'use client';
 import {Icon} from '@/components/Icon';
-import type {ListItem} from '@/types/list';
+import {client} from '@/sanity/client';
+import type {Item} from '@/types/list';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
 import {useMemo, useState} from 'react';
-import {client} from '@/sanity/client';
 
 const builder = imageUrlBuilder(client);
 
@@ -25,20 +25,6 @@ function formatWeight(weight: number): string {
   return `${weight} g`;
 }
 
-// Update ListItem type to include the missing properties
-interface ExtendedListItem extends ListItem {
-  checked?: boolean;
-  onBody?: boolean;
-  quantity?: number;
-}
-
-interface SharePageClientProps {
-  list: {
-    name: string;
-    items: ExtendedListItem[];
-  };
-}
-
 // Add interface for category totals
 interface CategoryTotal {
   id: string;
@@ -48,6 +34,25 @@ interface CategoryTotal {
   weightOnBody: number;
   calories: number;
   checkedCount: number;
+}
+
+interface SharePageClientProps {
+  list: {
+    _id: string;
+    name: string;
+    days?: number;
+    weight?: number;
+    participants?: number;
+    image?: SanityImageSource;
+    items: Array<{
+      _key: string;
+      _type: string;
+      onBody?: boolean;
+      checked?: boolean;
+      quantity?: number;
+      item: Item | null;
+    }>;
+  };
 }
 
 export default function SharePageClient({list}: SharePageClientProps) {

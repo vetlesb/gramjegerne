@@ -1,12 +1,11 @@
 'use client';
-
-import {notFound} from 'next/navigation';
-import SharePageClient from './SharePageClient';
-import {useParams} from 'next/navigation';
-import {useState, useEffect} from 'react';
 import {client} from '@/sanity/client';
-import {Item} from '@/types/list';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import {notFound} from 'next/navigation';
+import {useParams} from 'next/navigation';
+import {useEffect, useState} from 'react';
+import {Item} from '@/types/list';
+import SharePageClient from './SharePageClient';
 
 // Define the type for the fetched list
 interface FetchedList {
@@ -24,30 +23,6 @@ interface FetchedList {
     quantity?: number;
     item: Item | null;
   }>;
-}
-
-// Define the type for a fetched item
-interface FetchedItem {
-  _key: string;
-  _type: string;
-  onBody?: boolean;
-  checked?: boolean;
-  quantity?: number;
-  item?: {
-    _id: string;
-    name: string;
-    weight?: {
-      weight: number;
-      unit: string;
-    };
-    image?: SanityImageSource;
-    calories?: number;
-    size?: string;
-    category?: {
-      _id: string;
-      title: string;
-    };
-  };
 }
 
 export default function SharePage() {
@@ -97,16 +72,7 @@ export default function SharePage() {
           notFound();
         }
 
-        // Transform the data to match the expected types
-        const transformedList = {
-          ...fetchedList,
-          items: fetchedList.items.map((item: FetchedItem) => ({
-            ...item,
-            item: item.item || null,
-          })),
-        };
-
-        setList(transformedList);
+        setList(fetchedList);
       } catch (err) {
         console.error('Error fetching list:', err);
       }
