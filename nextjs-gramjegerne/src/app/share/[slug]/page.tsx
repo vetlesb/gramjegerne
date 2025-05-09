@@ -15,6 +15,7 @@ const publicClient = createClient({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   apiVersion: '2024-03-19',
   useCdn: true,
+  token: undefined, // Explicitly set no token
 });
 
 const builder = imageUrlBuilder(publicClient);
@@ -76,72 +77,82 @@ export default function SharePage() {
   const params = useParams();
   const slug = params.slug as string;
   const [list, setList] = useState<TransformedList | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchList() {
-      const fetchedList = await publicClient.fetch(
-        `*[_type == "list" && slug.current == $slug][0]{
-          _id,
-          name,
-          days,
-          weight,
-          participants,
-          image,
-          "items": items[] {
-            _key,
-            _type,
-            onBody,
-            checked,
-            quantity,
-            "categoryOverride": categoryOverride->{
-              _id,
-              title
-            },
-            "item": item->{
-              _id,
-              name,
-              weight,
-              image,
-              calories,
-              size,
-              "category": category->{
+      try {
+        const fetchedList = await publicClient.fetch(
+          `*[_type == "list" && slug.current == $slug][0]{
+            _id,
+            name,
+            days,
+            weight,
+            participants,
+            image,
+            "items": items[] {
+              _key,
+              _type,
+              onBody,
+              checked,
+              quantity,
+              "categoryOverride": categoryOverride->{
                 _id,
                 title
+              },
+              "item": item->{
+                _id,
+                name,
+                weight,
+                image,
+                calories,
+                size,
+                "category": category->{
+                  _id,
+                  title
+                }
               }
             }
-          }
-        }`,
-        {slug},
-      );
+          }`,
+          {slug},
+        );
 
-      if (!fetchedList) {
-        notFound();
+        if (!fetchedList) {
+          notFound();
+        }
+
+        // Transform the image URLs before setting the state
+        const transformedList: TransformedList = {
+          ...fetchedList,
+          items: fetchedList.items.map((item: FetchedItem) => ({
+            ...item,
+            item: item.item
+              ? {
+                  ...item.item,
+                  image: item.item.image
+                    ? {
+                        asset: item.item.image,
+                        url: urlFor(item.item.image).url(),
+                      }
+                    : null,
+                }
+              : null,
+          })),
+        };
+
+        setList(transformedList);
+      } catch (err) {
+        console.error('Error fetching list:', err);
+        setError('Failed to load list');
       }
-
-      // Transform the image URLs before setting the state
-      const transformedList: TransformedList = {
-        ...fetchedList,
-        items: fetchedList.items.map((item: FetchedItem) => ({
-          ...item,
-          item: item.item
-            ? {
-                ...item.item,
-                image: item.item.image
-                  ? {
-                      asset: item.item.image,
-                      url: urlFor(item.item.image).url(),
-                    }
-                  : null,
-              }
-            : null,
-        })),
-      };
-
-      setList(transformedList);
     }
 
     fetchList();
   }, [slug]);
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   if (!list) {
     return <div>Loading...</div>;
