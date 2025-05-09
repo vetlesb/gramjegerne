@@ -5,12 +5,69 @@ import {notFound} from 'next/navigation';
 import SharePageClient from './SharePageClient';
 import {useParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
-import {List} from '@/types/list';
+import {Item} from '@/types/list';
+import imageUrlBuilder from '@sanity/image-url';
+import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+
+const builder = imageUrlBuilder(client);
+
+function urlFor(source: SanityImageSource) {
+  return builder.image(source);
+}
+
+// Add type for transformed list
+type TransformedList = {
+  _id: string;
+  name: string;
+  days?: number;
+  weight?: number;
+  participants?: number;
+  image?: SanityImageSource;
+  items: Array<{
+    _key: string;
+    _type: string;
+    onBody?: boolean;
+    checked?: boolean;
+    quantity?: number;
+    item:
+      | (Item & {
+          image?: {
+            url: string;
+            asset: SanityImageSource;
+          };
+        })
+      | null;
+  }>;
+};
+
+// Add type for the fetched item
+type FetchedItem = {
+  _key: string;
+  _type: string;
+  onBody?: boolean;
+  checked?: boolean;
+  quantity?: number;
+  item?: {
+    _id: string;
+    name: string;
+    weight?: {
+      weight: number;
+      unit: string;
+    };
+    image?: SanityImageSource;
+    calories?: number;
+    size?: string;
+    category?: {
+      _id: string;
+      title: string;
+    };
+  };
+};
 
 export default function SharePage() {
   const params = useParams();
   const slug = params.slug as string;
-  const [list, setList] = useState<List | null>(null);
+  const [list, setList] = useState<TransformedList | null>(null);
 
   useEffect(() => {
     async function fetchList() {
@@ -53,7 +110,26 @@ export default function SharePage() {
         notFound();
       }
 
-      setList(fetchedList);
+      // Transform the image URLs before setting the state
+      const transformedList: TransformedList = {
+        ...fetchedList,
+        items: fetchedList.items.map((item: FetchedItem) => ({
+          ...item,
+          item: item.item
+            ? {
+                ...item.item,
+                image: item.item.image
+                  ? {
+                      asset: item.item.image,
+                      url: urlFor(item.item.image).url(),
+                    }
+                  : null,
+              }
+            : null,
+        })),
+      };
+
+      setList(transformedList);
     }
 
     fetchList();
