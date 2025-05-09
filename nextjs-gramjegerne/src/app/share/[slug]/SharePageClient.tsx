@@ -1,9 +1,17 @@
 'use client';
 import {Icon} from '@/components/Icon';
-import type {ListItem, Item} from '@/types/list';
+import type {ListItem} from '@/types/list';
+import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
 import {useMemo, useState} from 'react';
+import {client} from '@/sanity/client';
+
+const builder = imageUrlBuilder(client);
+
+function urlFor(source: SanityImageSource) {
+  return builder.image(source);
+}
 
 // Add utility functions since they're not exported from utils
 function formatNumber(num: number): string {
@@ -17,30 +25,16 @@ function formatWeight(weight: number): string {
   return `${weight} g`;
 }
 
-// Update the ExtendedListItem interface to use SanityImageSource
-interface ExtendedListItem extends Omit<ListItem, 'item'> {
+// Update ListItem type to include the missing properties
+interface ExtendedListItem extends ListItem {
   checked?: boolean;
   onBody?: boolean;
   quantity?: number;
-  item:
-    | (Item & {
-        image?: {
-          url: string;
-          asset: SanityImageSource;
-        };
-      })
-    | null;
 }
 
-// Update the SharePageClientProps interface
 interface SharePageClientProps {
   list: {
-    _id: string;
     name: string;
-    days?: number;
-    weight?: number;
-    participants?: number;
-    image?: SanityImageSource;
     items: ExtendedListItem[];
   };
 }
@@ -311,7 +305,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
                     {item.item?.image ? (
                       <Image
                         className="rounded-md h-full w-full object-cover"
-                        src={item.item?.image?.url || ''}
+                        src={urlFor(item.item.image).url()}
                         alt={`Bilde av ${item.item?.name || 'item'}`}
                         width={64}
                         height={64}

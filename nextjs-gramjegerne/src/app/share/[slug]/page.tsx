@@ -4,28 +4,12 @@ import {notFound} from 'next/navigation';
 import SharePageClient from './SharePageClient';
 import {useParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
+import {client} from '@/sanity/client';
 import {Item} from '@/types/list';
-import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
-import {createClient} from 'next-sanity';
 
-// Create a public client without authentication
-const publicClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: '2024-03-19',
-  useCdn: true,
-  token: undefined, // Explicitly set no token
-});
-
-const builder = imageUrlBuilder(publicClient);
-
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
-
-// Add type for transformed list
-type TransformedList = {
+// Define the type for the fetched list
+interface FetchedList {
   _id: string;
   name: string;
   days?: number;
@@ -38,19 +22,12 @@ type TransformedList = {
     onBody?: boolean;
     checked?: boolean;
     quantity?: number;
-    item:
-      | (Item & {
-          image?: {
-            url: string;
-            asset: SanityImageSource;
-          };
-        })
-      | null;
+    item: Item | null;
   }>;
-};
+}
 
-// Add type for the fetched item
-type FetchedItem = {
+// Define the type for a fetched item
+interface FetchedItem {
   _key: string;
   _type: string;
   onBody?: boolean;
@@ -71,18 +48,17 @@ type FetchedItem = {
       title: string;
     };
   };
-};
+}
 
 export default function SharePage() {
   const params = useParams();
   const slug = params.slug as string;
-  const [list, setList] = useState<TransformedList | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [list, setList] = useState<FetchedList | null>(null);
 
   useEffect(() => {
     async function fetchList() {
       try {
-        const fetchedList = await publicClient.fetch(
+        const fetchedList = await client.fetch(
           `*[_type == "list" && slug.current == $slug][0]{
             _id,
             name,
@@ -121,38 +97,23 @@ export default function SharePage() {
           notFound();
         }
 
-        // Transform the image URLs before setting the state
-        const transformedList: TransformedList = {
+        // Transform the data to match the expected types
+        const transformedList = {
           ...fetchedList,
           items: fetchedList.items.map((item: FetchedItem) => ({
             ...item,
-            item: item.item
-              ? {
-                  ...item.item,
-                  image: item.item.image
-                    ? {
-                        asset: item.item.image,
-                        url: urlFor(item.item.image).url(),
-                      }
-                    : null,
-                }
-              : null,
+            item: item.item || null,
           })),
         };
 
         setList(transformedList);
       } catch (err) {
         console.error('Error fetching list:', err);
-        setError('Failed to load list');
       }
     }
 
     fetchList();
   }, [slug]);
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   if (!list) {
     return <div>Loading...</div>;
