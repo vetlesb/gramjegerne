@@ -1,6 +1,5 @@
 'use client';
 
-import {client} from '@/sanity/client';
 import {notFound} from 'next/navigation';
 import SharePageClient from './SharePageClient';
 import {useParams} from 'next/navigation';
@@ -8,8 +7,17 @@ import {useState, useEffect} from 'react';
 import {Item} from '@/types/list';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import {createClient} from 'next-sanity';
 
-const builder = imageUrlBuilder(client);
+// Create a public client without authentication
+const publicClient = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  apiVersion: '2024-03-19',
+  useCdn: true,
+});
+
+const builder = imageUrlBuilder(publicClient);
 
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
@@ -71,7 +79,7 @@ export default function SharePage() {
 
   useEffect(() => {
     async function fetchList() {
-      const fetchedList = await client.fetch(
+      const fetchedList = await publicClient.fetch(
         `*[_type == "list" && slug.current == $slug][0]{
           _id,
           name,
