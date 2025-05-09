@@ -18,17 +18,17 @@
   ],
   "dependencies": {
     "@sanity/icons": "^3.7.0",
-    "@sanity/types": "^3.88.1",
-    "@sanity/vision": "^3.88.1",
+    "@sanity/types": "^3.88.2",
+    "@sanity/vision": "^3.88.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sanity": "^3.88.1",
+    "sanity": "^3.88.2",
     "styled-components": "^6.1.18",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",
-    "@types/node": "^22.15.16",
+    "@types/node": "^22.15.17",
     "@types/react": "^18.3.21",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",

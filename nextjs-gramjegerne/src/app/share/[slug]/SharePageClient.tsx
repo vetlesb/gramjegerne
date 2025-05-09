@@ -32,9 +32,15 @@ interface ExtendedListItem extends ListItem {
   quantity?: number;
 }
 
+// Update the interface to use proper typing for image
 interface SharePageClientProps {
   list: {
+    _id: string;
     name: string;
+    days?: number;
+    weight?: number;
+    participants?: number;
+    image?: SanityImageSource;
     items: ExtendedListItem[];
   };
 }
