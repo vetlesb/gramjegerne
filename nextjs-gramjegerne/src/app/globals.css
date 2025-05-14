@@ -431,7 +431,7 @@ ul.category-list {
   border-radius: 48px;
   background-color: var(--bg-accent);
   color: #1f261c;
-  border: 1px solid var(--fg-accent);
+  border: 1px solid var(--fg-accent) 0%;
   white-space: nowrap;
 }
 .menu-active:hover {
@@ -732,6 +732,24 @@ select {
     --fg-secondary: #1f261c;
     --fg-dimmed: #272e23;
     --fg-accent: #b4ed9f;
+    --bg-25: rgba(23, 38, 28, 0.25);
+    --bg-50: rgba(23, 38, 28, 0.5);
+    --radius: 8px;
+  }
+  /* Default theme (light green) */
+  :root[data-theme='light-green'] {
+    --bg-primary: #e6f1e4;
+    --bg-primary-hover: #dbe6d9;
+    --bg-secondary: #001f08;
+    --bg-dimmed: #dbe6d9;
+    --bg-dimmed-hover: #cfdacd;
+    --bg-accent: #b1b9af;
+    --bg-accent-hover: #001f08;
+    --bg-checked: #343e2f;
+    --fg-primary: #111;
+    --fg-secondary: #fff;
+    --fg-dimmed: #dbe6d9;
+    --fg-accent: #111;
     --bg-25: rgba(23, 38, 28, 0.25);
     --bg-50: rgba(23, 38, 28, 0.5);
     --radius: 8px;
