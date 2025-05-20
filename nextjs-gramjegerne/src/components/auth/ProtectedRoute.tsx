@@ -2,7 +2,7 @@
 
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
 import {useSession} from 'next-auth/react';
-import {useRouter} from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import {useEffect, useState} from 'react';
 
 interface ProtectedRouteProps {
@@ -14,12 +14,14 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   const router = useRouter();
   const [hasRedirected, setHasRedirected] = useState(false);
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    if (status === 'unauthenticated' && !hasRedirected) {
+    if (!pathname.startsWith('/share') && status === 'unauthenticated' && !hasRedirected) {
       setHasRedirected(true);
       router.replace('/auth/signin');
     }
-  }, [status, router, hasRedirected]);
+  }, [status, router, hasRedirected, pathname]);
 
   if (status === 'loading') {
     return (
