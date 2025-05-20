@@ -13,6 +13,7 @@ import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
 import {useEffect, useState} from 'react';
+import {compressImage} from '@/utils/imageCompression';
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -89,7 +90,8 @@ export function AddListDialog({
 
       // Handle image upload
       if (newListImage) {
-        formData.append('image', newListImage);
+        const compressedFile = await compressImage(newListImage);
+        formData.append('image', compressedFile);
         formData.append('keepExistingImage', 'false');
       } else if (existingImage) {
         formData.append('keepExistingImage', 'true');
@@ -138,6 +140,23 @@ export function AddListDialog({
       setError(error instanceof Error ? error.message : 'Failed to save list');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Compress the image before uploading
+      const compressedFile = await compressImage(file);
+
+      // Now use the compressed file for your upload
+      setNewListImage(compressedFile);
+      setExistingImage(null);
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      // Handle error appropriately
     }
   };
 
@@ -207,13 +226,7 @@ export function AddListDialog({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files ? e.target.files[0] : null;
-                      setNewListImage(file);
-                      if (file) {
-                        setExistingImage(null);
-                      }
-                    }}
+                    onChange={handleImageChange}
                     className="w-full max-w-full p-4"
                   />
                 </label>
@@ -259,7 +272,7 @@ export function AddListDialog({
               </div>
             </div>
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-4 gap-y-2">
             <button
               onClick={handleSaveList}
               className="button-primary-accent"
