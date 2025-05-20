@@ -821,7 +821,7 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: 501;
 }
 
 [cmdk-overlay] {
@@ -835,7 +835,7 @@ select {
 
 [cmdk-content] {
   position: relative;
-  z-index: 51;
+  z-index: 501;
 }
 
 [cmdk-input] {

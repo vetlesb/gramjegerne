@@ -272,7 +272,12 @@ export function AddListDialog({
               </div>
             </div>
           </div>
-          <DialogFooter className="mt-4 gap-y-2">
+          <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">
+            <DialogClose asChild>
+              <button type="button" className="button-secondary" onClick={resetForm}>
+                Cancel
+              </button>
+            </DialogClose>
             <button
               onClick={handleSaveList}
               className="button-primary-accent"
@@ -280,11 +285,6 @@ export function AddListDialog({
             >
               {isSubmitting ? 'Saving...' : editList ? 'Update' : 'Create'}
             </button>
-            <DialogClose asChild>
-              <button type="button" className="button-secondary" onClick={resetForm}>
-                Cancel
-              </button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
