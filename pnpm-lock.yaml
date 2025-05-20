@@ -2245,8 +2245,8 @@ packages:
       react: '>=16.8'
       react-dom: '>=16.8'
 
-  '@tanstack/react-virtual@3.13.8':
-    resolution: {integrity: sha512-meS2AanUg50f3FBSNoAdBSRAh8uS0ue01qm7zrw65KGJtiXB9QXfybqZwkh4uFpRv2iX/eu5tjcH5wqUpwYLPg==}
+  '@tanstack/react-virtual@3.13.9':
+    resolution: {integrity: sha512-SPWC8kwG/dWBf7Py7cfheAPOxuvIv4fFQ54PdmYbg7CpXfsKxkucak43Q0qKsxVthhUJQ1A7CIMAIplq4BjVwA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -2255,8 +2255,8 @@ packages:
     resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
     engines: {node: '>=12'}
 
-  '@tanstack/virtual-core@3.13.8':
-    resolution: {integrity: sha512-BT6w89Hqy7YKaWewYzmecXQzcJh6HTBbKYJIIkMaNU49DZ06LoTV3z32DWWEdUsgW6n1xTmwTLs4GtWrZC261w==}
+  '@tanstack/virtual-core@3.13.9':
+    resolution: {integrity: sha512-3jztt0jpaoJO5TARe2WIHC1UQC3VMLAFUW5mmMo0yrkwtDB2AQP0+sh10BVUpWrnvHjSLvzFizydtEGLCJKFoQ==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -8941,7 +8941,7 @@ snapshots:
     dependencies:
       '@sanity/client': 7.2.2(debug@4.4.1)
       '@sanity/comlink': 3.0.3
-      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))
+      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))
       dequal: 2.0.3
       next: 15.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
@@ -8958,11 +8958,11 @@ snapshots:
     transitivePeerDependencies:
       - '@sanity/types'
 
-  '@sanity/presentation-comlink@1.0.19(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))':
+  '@sanity/presentation-comlink@1.0.19(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))':
     dependencies:
       '@sanity/client': 7.2.2(debug@4.4.1)
       '@sanity/comlink': 3.0.3
-      '@sanity/visual-editing-types': 1.0.18(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))
+      '@sanity/visual-editing-types': 1.0.18(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))
     transitivePeerDependencies:
       - '@sanity/types'
 
@@ -8970,7 +8970,7 @@ snapshots:
     dependencies:
       '@sanity/client': 7.2.2(debug@4.4.1)
       '@sanity/comlink': 3.0.3
-      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))
+      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))
       use-sync-external-store: 1.5.0(react@18.3.1)
     optionalDependencies:
       react: 18.3.1
@@ -9207,7 +9207,7 @@ snapshots:
     optionalDependencies:
       '@sanity/types': 3.88.3(@types/react@18.3.21)(debug@4.4.1)
 
-  '@sanity/visual-editing-types@1.0.18(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))':
+  '@sanity/visual-editing-types@1.0.18(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))':
     dependencies:
       '@sanity/client': 7.2.2(debug@4.4.1)
     optionalDependencies:
@@ -9290,15 +9290,15 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@tanstack/react-virtual@3.13.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-virtual@3.13.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/virtual-core': 3.13.8
+      '@tanstack/virtual-core': 3.13.9
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
   '@tanstack/table-core@8.21.3': {}
 
-  '@tanstack/virtual-core@3.13.8': {}
+  '@tanstack/virtual-core@3.13.9': {}
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -13040,7 +13040,7 @@ snapshots:
       '@sanity/message-protocol': 0.13.2
       '@sanity/migrate': 3.88.3(@types/react@18.3.21)
       '@sanity/mutator': 3.88.3(@types/react@18.3.21)
-      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))
+      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))
       '@sanity/preview-url-secret': 2.1.11(@sanity/client@7.2.2(debug@4.4.1))
       '@sanity/schema': 3.88.3(@types/react@18.3.21)(debug@4.4.1)
       '@sanity/sdk': 0.0.0-alpha.25(@types/react@18.3.21)(debug@4.4.1)(immer@10.1.1)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
@@ -13051,7 +13051,7 @@ snapshots:
       '@sanity/uuid': 3.0.2
       '@sentry/react': 8.55.0(react@18.3.1)
       '@tanstack/react-table': 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tanstack/react-virtual': 3.13.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-virtual': 3.13.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react-is': 19.0.0
       '@types/shallow-equals': 1.0.3
       '@types/speakingurl': 13.0.6
@@ -13204,7 +13204,7 @@ snapshots:
       '@sanity/message-protocol': 0.13.2
       '@sanity/migrate': 3.88.3(@types/react@18.3.21)
       '@sanity/mutator': 3.88.3(@types/react@18.3.21)
-      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2)(@sanity/types@3.88.3(@types/react@18.3.21))
+      '@sanity/presentation-comlink': 1.0.19(@sanity/client@7.2.2(debug@4.4.1))(@sanity/types@3.88.3(@types/react@18.3.21))
       '@sanity/preview-url-secret': 2.1.11(@sanity/client@7.2.2(debug@4.4.1))
       '@sanity/schema': 3.88.3(@types/react@18.3.21)(debug@4.4.1)
       '@sanity/sdk': 0.0.0-alpha.25(@types/react@18.3.21)(debug@4.4.1)(immer@10.1.1)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
@@ -13215,7 +13215,7 @@ snapshots:
       '@sanity/uuid': 3.0.2
       '@sentry/react': 8.55.0(react@18.3.1)
       '@tanstack/react-table': 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tanstack/react-virtual': 3.13.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-virtual': 3.13.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react-is': 19.0.0
       '@types/shallow-equals': 1.0.3
       '@types/speakingurl': 13.0.6
