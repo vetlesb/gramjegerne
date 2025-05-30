@@ -239,7 +239,6 @@ li.product-list {
 }
 li.product-list:hover {
   scale: 1.02;
-
   transition: scale 0.5s ease;
   outline: 2px solid var(--fg-accent);
   outline-offset: 0px;
@@ -431,7 +430,7 @@ ul.category-list {
   border-radius: 48px;
   background-color: var(--bg-accent);
   color: #1f261c;
-  border: 1px solid var(--fg-accent) 0%;
+  border: 1px solid var(--fg-accent);
   white-space: nowrap;
 }
 .menu-active:hover {
