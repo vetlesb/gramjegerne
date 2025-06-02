@@ -21,8 +21,12 @@ interface UpdateData {
 }
 
 export async function PATCH(request: NextRequest) {
+  let listId: string | undefined;
+  let userId: string | undefined;
+
   try {
     const session = await getUserSession();
+    userId = session?.user?.id;
 
     if (!session || !session.user) {
       return new Response(JSON.stringify({message: 'Unauthorized'}), {
@@ -31,17 +35,33 @@ export async function PATCH(request: NextRequest) {
     }
 
     const {pathname} = request.nextUrl;
-    const id = pathname.split('/').pop();
+    listId = pathname.split('/').pop();
 
-    if (!id) {
+    if (!listId) {
       return NextResponse.json({message: 'Invalid or missing list ID.'}, {status: 400});
     }
 
-    // Verify list belongs to user
-    const list = await client.fetch(`*[_type == "list" && _id == $id && user._ref == $userId][0]`, {
-      id,
-      userId: session.user.id,
-    });
+    // Use a transaction for better performance
+    const transaction = client.transaction();
+
+    // Verify list belongs to user and get current state
+    const list = await client.fetch(
+      `*[_type == "list" && _id == $id && user._ref == $userId][0]{
+        _id,
+        _type,
+        name,
+        days,
+        participants,
+        weight,
+        image,
+        completed,
+        items
+      }`,
+      {
+        id: listId,
+        userId: userId,
+      },
+    );
 
     if (!list) {
       return NextResponse.json({message: 'List not found or unauthorized'}, {status: 404});
@@ -69,31 +89,36 @@ export async function PATCH(request: NextRequest) {
     const image = formData.get('image');
     const keepExistingImage = formData.get('keepExistingImage') === 'true';
 
-    if (image instanceof File) {
-      try {
-        const imageBuffer = Buffer.from(await image.arrayBuffer());
-        const imageAsset = await client.assets.upload('image', imageBuffer, {
-          filename: image.name,
-          contentType: image.type,
-        });
+    if (image && !keepExistingImage) {
+      const arrayBuffer = await (image as File).arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-        updateData.image = {
-          _type: 'image',
-          asset: {
-            _type: 'reference',
-            _ref: imageAsset._id,
-          },
-        };
-      } catch (imageError) {
-        console.error('Error uploading image:', imageError);
-      }
-    } else if (!keepExistingImage) {
-      updateData.image = null;
+      const imageData = await client.assets.upload('image', buffer, {
+        filename: (image as File).name,
+        contentType: (image as File).type,
+      });
+
+      updateData.image = {
+        _type: 'image',
+        asset: {
+          _type: 'reference',
+          _ref: imageData._id,
+        },
+      };
+    } else if (keepExistingImage) {
+      updateData.image = list.image;
     }
 
-    const updatedList = await client.patch(id).set(updateData).commit();
-    return NextResponse.json(updatedList, {status: 200});
-  } catch (error: unknown) {
-    return handleApiError(error, 'Error updating list:', 'Kunne ikke oppdatere listen.');
+    // Update the document using the transaction
+    transaction.patch(listId, {
+      set: updateData,
+    });
+
+    // Commit the transaction
+    await transaction.commit();
+
+    return NextResponse.json({message: 'List updated successfully'});
+  } catch (error) {
+    return handleApiError(error, 'Error updating list', `List ID: ${listId}, User ID: ${userId}`);
   }
 }

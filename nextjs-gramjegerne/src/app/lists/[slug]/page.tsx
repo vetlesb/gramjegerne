@@ -65,9 +65,6 @@ export default function ListPage() {
   // Add new state for onBody filter
   const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
 
-  // Add a new state for optimistic checkbox updates
-  const [pendingChecks, setPendingChecks] = useState<{[key: string]: boolean}>({});
-
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
     if (!selectedItems?.length) return [];
@@ -443,21 +440,19 @@ export default function ListPage() {
     }
   };
 
-  // Update the handleCheckboxChange function to use optimistic updates
+  // Update the handleCheckboxChange function
   const handleCheckboxChange = async (itemKey: string, checked: boolean) => {
     if (!list) return;
 
-    // Set optimistic update immediately
-    setPendingChecks((prev) => ({
-      ...prev,
-      [itemKey]: checked,
-    }));
+    // Create a new array with the updated item
+    const updatedItems = selectedItems.map((item) =>
+      item._key === itemKey ? {...item, checked} : item,
+    );
+
+    // Update the state immediately for optimistic UI
+    setSelectedItems(updatedItems);
 
     try {
-      const updatedItems = selectedItems.map((item) =>
-        item._key === itemKey ? {...item, checked} : item,
-      );
-
       const response = await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -467,17 +462,16 @@ export default function ListPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update list');
-      setSelectedItems(updatedItems);
+      if (!response.ok) {
+        throw new Error('Failed to update list');
+      }
+
+      // No need to update state again since we did it optimistically
     } catch (error) {
       console.error('Failed to update item:', error);
+      // Revert the optimistic update on error
+      setSelectedItems(selectedItems);
       alert('Failed to update item. Please try again.');
-      // Revert optimistic update on error
-      setPendingChecks((prev) => {
-        const newPending = {...prev};
-        delete newPending[itemKey];
-        return newPending;
-      });
     }
   };
 
@@ -811,7 +805,7 @@ export default function ListPage() {
 
                       {/* Grand total section */}
                       <div>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-4 border-b border-white/5  pb-4">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-2 pb-4">
                           <p className="text-md sm:text-xl text-accent">Backpack</p>
                           <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                             {formatWeight(grandTotal.weight)}
@@ -867,13 +861,7 @@ export default function ListPage() {
                   key={listItem._key}
                   onClick={() => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))}
                   className={`product py-4 ${
-                    pendingChecks[listItem._key] !== undefined
-                      ? pendingChecks[listItem._key]
-                        ? 'product-checked cursor-pointer'
-                        : 'product cursor-pointer'
-                      : listItem.checked
-                        ? 'product-checked cursor-pointer'
-                        : 'product cursor-pointer'
+                    listItem.checked ? 'product-checked cursor-pointer' : 'product cursor-pointer'
                   }`}
                 >
                   <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
@@ -993,11 +981,7 @@ export default function ListPage() {
                       <input
                         type="checkbox"
                         title="Packed"
-                        checked={
-                          pendingChecks[listItem._key] !== undefined
-                            ? pendingChecks[listItem._key]
-                            : (listItem.checked ?? false)
-                        }
+                        checked={listItem.checked ?? false}
                         onChange={(e) => {
                           e.stopPropagation();
                           handleCheckboxChange(listItem._key, e.target.checked);
