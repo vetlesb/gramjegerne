@@ -557,13 +557,12 @@ export default function ListPage() {
               </DialogHeader>
               {/* Search Bar */}
               <label className="flex flex-col pt-4 gap-y-2 text-lg">
-                Search
                 <input
                   type="text"
                   value={dialogSearchQuery}
                   onChange={(e) => setDialogSearchQuery(e.target.value)}
                   className="w-full max-w-full p-4 mb-2"
-                  placeholder="Search for gear"
+                  placeholder="Search for gear or category"
                 />
               </label>
 
@@ -586,14 +585,14 @@ export default function ListPage() {
                         onClick={() => handleTempItemToggle(item)}
                       >
                         <div className="flex flex-grow items-center gap-x-4">
-                          <div className="h-16 w-16">
+                          <div className="h-12 w-12">
                             {item?.image ? (
                               <Image
                                 className="rounded-md h-full w-full object-cover"
                                 src={urlFor(item.image).url()}
                                 alt={`Bilde av ${item?.name || 'item'}`}
-                                width={64}
-                                height={64}
+                                width={16}
+                                height={16}
                               />
                             ) : (
                               <div className="h-16 w-16 flex items-center placeholder_image">
@@ -613,7 +612,7 @@ export default function ListPage() {
                             )}
                           </div>
                           <div className="flex flex-col gap-y-1">
-                            <h2 className="text-lg text-accent">{item?.name}</h2>
+                            <h2 className="text-md text-accent">{item?.name}</h2>
                             <div className="flex flex-wrap gap-x-1">
                               {item?.size && (
                                 <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
@@ -647,7 +646,7 @@ export default function ListPage() {
                   disabled={tempSelectedItems.length === 0}
                   className="button-primary"
                 >
-                  Save
+                  Add to list
                 </button>
                 <DialogClose asChild>
                   <button type="button" className="button-secondary">
@@ -789,7 +788,7 @@ export default function ListPage() {
                           (total) => total.id === 'on-body',
                         );
                         return (
-                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2 mt-2">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2">
                             <p className="text-md sm:text-xl text-accent">On body</p>
                             <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                               {formatWeight(onBodyCategory?.weightOnBody || 0)}
@@ -805,7 +804,7 @@ export default function ListPage() {
 
                       {/* Grand total section */}
                       <div>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 mt-2 pb-4">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 pb-2">
                           <p className="text-md sm:text-xl text-accent">Backpack</p>
                           <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                             {formatWeight(grandTotal.weight)}
