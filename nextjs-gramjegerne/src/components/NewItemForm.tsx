@@ -27,11 +27,11 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [size, setSize] = useState<string>('');
-  const [weight, setWeight] = useState<{weight: number; unit: string}>({
-    weight: 0,
+  const [weight, setWeight] = useState<{weight: string; unit: string}>({
+    weight: '',
     unit: 'g',
   });
-  const [calories, setCalories] = useState<number>(0);
+  const [calories, setCalories] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -143,18 +143,18 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
       }
 
       // Weight handling
-      if (weight.weight > 0) {
+      if (weight.weight) {
         formData.append(
           'weight',
           JSON.stringify({
-            weight: weight.weight,
+            weight: parseFloat(weight.weight) || 0,
             unit: weight.unit,
           }),
         );
       }
 
-      if (calories > 0) {
-        formData.append('calories', calories.toString());
+      if (calories && parseInt(calories, 10) > 0) {
+        formData.append('calories', calories);
       } else {
         // Don't append calories at all if it's 0 or less
         console.log("Skipping calories as it's 0 or less");
@@ -166,8 +166,8 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         slug,
         category: selectedCategory,
         size: size.trim(),
-        weight: weight.weight > 0 ? weight : null,
-        calories: calories > 0 ? calories : null,
+        weight: weight.weight ? weight : null,
+        calories: calories && parseInt(calories, 10) > 0 ? calories : null,
       });
 
       const response = await fetch('/api/createItem', {
@@ -189,8 +189,8 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
       setImagePreview(null);
       setSelectedCategory(categories[0]?._id || '');
       setSize('');
-      setWeight({weight: 0, unit: 'g'});
-      setCalories(0);
+      setWeight({weight: '', unit: 'g'});
+      setCalories('');
 
       setSuccessMessage('Gear created!');
 
@@ -423,7 +423,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                 onChange={(e) =>
                   setWeight({
                     ...weight,
-                    weight: Math.max(0, parseFloat(e.target.value) || 0),
+                    weight: e.target.value,
                   })
                 }
                 min="0"
@@ -449,7 +449,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
               type="number"
               className="w-full max-w-full p-4"
               value={calories}
-              onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
+              onChange={(e) => setCalories(e.target.value)}
               min="0"
             />
           </label>
