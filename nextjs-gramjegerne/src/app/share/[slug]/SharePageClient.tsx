@@ -121,46 +121,86 @@ export default function SharePageClient({list}: SharePageClientProps) {
     );
 
     const grandTotal = categoryTotals.reduce(
-      (acc, cat) => ({
-        count: acc.count + cat.count,
-        weight: acc.weight + cat.weight,
-        weightOnBody: acc.weightOnBody + cat.weightOnBody,
-        calories: acc.calories + cat.calories,
-        checkedCount: acc.checkedCount + cat.checkedCount,
+      (acc, total) => ({
+        count: acc.count + total.count,
+        weight: acc.weight + total.weight,
+        weightOnBody: acc.weightOnBody + total.weightOnBody,
+        calories: acc.calories + total.calories,
+        checkedCount: acc.checkedCount + total.checkedCount,
       }),
-      {...emptyTotal},
+      emptyTotal,
     );
 
     return {categoryTotals, grandTotal};
   }, [list.items]);
 
-  // Add onBody items calculation
+  // Filter items based on category selection and onBody filter
+  const filteredItemsForList = useMemo(() => {
+    if (!list.items) return [];
+
+    return list.items.filter((item) => {
+      if (!item.item) return false;
+
+      if (showOnBodyOnly) {
+        return item.onBody;
+      }
+
+      if (selectedCategory) {
+        return item.item.category?._id === selectedCategory;
+      }
+
+      return true;
+    });
+  }, [list.items, selectedCategory, showOnBodyOnly]);
+
+  // Get onBody items for the onBody filter
   const onBodyItems = useMemo(() => {
-    return list.items.filter((item) => item.onBody === true);
+    if (!list.items) return [];
+    return list.items.filter((item) => item.onBody);
   }, [list.items]);
 
-  // Add filtered items calculation
-  const filteredItemsForList = useMemo(() => {
-    let items = list.items;
+  // Get categories that have items
+  const categories = useMemo(() => {
+    if (!list.items?.length) return [];
 
-    // If showOnBodyOnly is true, show all onBody items regardless of category
-    if (showOnBodyOnly) {
-      return items.filter((item) => item.onBody === true);
-    }
+    const activeCategories = new Map<string, {_id: string; title: string}>();
 
-    // Otherwise, apply category filter as normal
-    if (selectedCategory) {
-      items = items.filter((item) => item.item?.category?._id === selectedCategory);
-    }
+    list.items.forEach((item) => {
+      if (!item.item) return;
 
-    return items;
-  }, [list.items, selectedCategory, showOnBodyOnly]);
+      const effectiveCategory = item.item.category;
+      if (effectiveCategory) {
+        activeCategories.set(effectiveCategory._id, effectiveCategory);
+      }
+    });
+
+    return Array.from(activeCategories.values()).sort((a, b) =>
+      a.title.localeCompare(b.title, 'nb'),
+    );
+  }, [list.items]);
 
   return (
     <main className="container mx-auto min-h-screen p-16">
-      <h1 className="text-4xl md:text-6xl text-accent py-4">i {list.name}</h1>
+      {/* Header */}
+      <div className="flex flex-col gap-y-4 mb-8">
+        <div className="flex flex-col gap-y-2">
+          <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
+          <div className="flex flex-wrap gap-x-1">
+            {list.days && (
+              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                {list.days} {list.days === 1 ? 'day' : 'days'}
+              </p>
+            )}
+            {list.participants && list.participants > 1 && (
+              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                {list.participants} participants
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
-      {/* Category filters */}
+      {/* Category Menu */}
       <div className="flex gap-x-2 no-scrollbar my-8 p-2">
         <button
           onClick={() => {
@@ -173,15 +213,15 @@ export default function SharePageClient({list}: SharePageClientProps) {
         >
           Overview
         </button>
-        {categoryTotals.map((category) => (
+        {categories.map((category) => (
           <button
-            key={category.id}
+            key={category._id}
             onClick={() => {
-              setSelectedCategory(category.id);
+              setSelectedCategory(category._id);
               setShowOnBodyOnly(false);
             }}
             className={`menu-category text-md ${
-              selectedCategory === category.id ? 'menu-active' : ''
+              selectedCategory === category._id ? 'menu-active' : ''
             }`}
           >
             {category.title}
@@ -189,8 +229,8 @@ export default function SharePageClient({list}: SharePageClientProps) {
         ))}
         <button
           onClick={() => {
-            setShowOnBodyOnly(!showOnBodyOnly);
             setSelectedCategory(null);
+            setShowOnBodyOnly(true);
           }}
           className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
         >
@@ -198,25 +238,40 @@ export default function SharePageClient({list}: SharePageClientProps) {
         </button>
       </div>
 
-      {/* Show totals and detailed overview in overview */}
+      {/* Overview Section */}
       {selectedCategory === null && !showOnBodyOnly && (
         <>
           <div className="grid grid-cols-3 gap-x-2">
-            <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">Backpack</p>
-              <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="backpack" width={18} height={18} />
+                </span>
+                Backpack
+              </p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weight)}
               </p>
             </div>
-            <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl">On body</p>
-              <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="clothing" width={18} height={18} />
+                </span>
+                On body
+              </p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatWeight(grandTotal.weightOnBody)}
               </p>
             </div>
-            <div className="grid product gap-y-2">
-              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">Calories</p>
-              <p className="lg:text-6xl md:text-4xl sm:text-4xl text-lg text-accent font-bold">
+            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
+              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
+                <span className="border-1 border-accent rounded-full p-1">
+                  <Icon name="calories" width={18} height={18} />
+                </span>
+                Calories
+              </p>
+              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
                 {formatNumber(grandTotal.calories)} kcal
               </p>
             </div>
@@ -273,12 +328,11 @@ export default function SharePageClient({list}: SharePageClientProps) {
         </>
       )}
 
-      {/* Show filtered items when category or onBody is selected */}
+      {/* Items List */}
       {(selectedCategory || showOnBodyOnly) && (
         <>
-          <div className="product items-center grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
+          <div className="product-category items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
             <div className="flex items-center gap-x-1 text-md sm:text-xl fg-accent font-medium font-sans tabular-nums">
-              <Icon name="backpack" width={24} height={24} />
               {showOnBodyOnly
                 ? `${formatNumber(onBodyItems.length)}`
                 : `${formatNumber(filteredItemsForList.length)}`}
@@ -302,42 +356,69 @@ export default function SharePageClient({list}: SharePageClientProps) {
           </div>
 
           <ul className="flex flex-col divide-y divide-white/5 mt-4">
-            {filteredItemsForList.map((item) => (
-              <li key={item._key} className="product py-4">
+            {filteredItemsForList.map((listItem) => (
+              <li key={listItem._key} className="product py-4">
                 <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
                   {/* Image */}
                   <div className="aspect-square h-16 w-16 shrink-0">
-                    {item.item?.image ? (
+                    {listItem.item?.image ? (
                       <Image
                         className="rounded-md h-full w-full object-cover"
-                        src={urlFor(item.item.image).url()}
-                        alt={`Bilde av ${item.item?.name || 'item'}`}
+                        src={urlFor(listItem.item.image).url()}
+                        alt={`Image of ${listItem.item?.name || 'item'}`}
                         width={64}
                         height={64}
                       />
                     ) : (
                       <div className="h-16 w-16 flex items-center justify-center placeholder_image">
-                        <Icon name="document" width={16} height={16} />
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 29 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
+                            fill="#EAFFE2"
+                          />
+                        </svg>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-y-2">
-                    <h3 className="text-xl text-accent">{item.item?.name}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(item.quantity ?? 1) > 1 && (
-                        <span className="tag">{item.quantity ?? 1} stk</span>
-                      )}
-                      {item.item?.size && <span className="tag">{item.item.size}</span>}
-                      {item.item?.weight && (
-                        <span className="tag">
-                          {item.item.weight.weight} {item.item.weight.unit}
-                        </span>
-                      )}
-                      {item.onBody && <span className="tag">On body</span>}
-                      {item.item?.calories && item.item.calories > 0 && (
-                        <span className="tag">{item.item.calories} kcal</span>
-                      )}
+                  {/* Name and tags container */}
+                  <div className="flex-1 min-w-0 w-full sm:w-auto">
+                    <div className="flex flex-col gap-y-2 min-w-0">
+                      <h2 className="text-xl text-accent truncate" title={listItem.item?.name}>
+                        {listItem.item?.name || 'Unnamed Item'}
+                      </h2>
+                      <div className="flex flex-wrap gap-y-1 shrink-0 gap-x-1">
+                        {/* Quantity tag */}
+                        {(listItem.quantity ?? 1) > 1 && (
+                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                            {listItem.quantity} stk
+                          </p>
+                        )}
+                        {listItem.item?.size && (
+                          <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
+                            <Icon name="size" width={16} height={16} />
+                            {listItem.item.size}
+                          </p>
+                        )}
+                        {listItem.item?.weight && (
+                          <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
+                            <Icon name="weight" width={16} height={16} />
+                            {listItem.item.weight.weight} {listItem.item.weight.unit}
+                          </p>
+                        )}
+                        {listItem.item?.calories && listItem.item.calories > 0 && (
+                          <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                            <Icon name="calories" width={16} height={16} />
+                            {listItem.item.calories} kcal
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

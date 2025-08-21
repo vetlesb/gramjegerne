@@ -17,7 +17,7 @@ export default function Page() {
   const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _createdAt desc) {
+    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _updatedAt desc, _createdAt desc) {
       _id,
       name,
       slug,
@@ -25,6 +25,8 @@ export default function Page() {
       days,
       participants,
       completed,
+      _updatedAt,
+      _createdAt,
       "items": items[] {
         _key,
         quantity,
@@ -38,6 +40,15 @@ export default function Page() {
     }`;
 
     const data = await client.fetch(query, {userId: session.user.id});
+    console.log(
+      'Fetched lists with sorting:',
+      data.map((list: ListDocument) => ({
+        name: list.name,
+        completed: list.completed,
+        updatedAt: list._updatedAt,
+        createdAt: list._createdAt,
+      })),
+    );
     setLists(data);
   }, [session?.user?.id]);
 
@@ -47,7 +58,7 @@ export default function Page() {
     // Subscribe to real-time updates
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "list" && user._ref == $userId]`;
+    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _updatedAt desc, _createdAt desc)`;
     const subscription = client.listen(query, {userId: session.user.id}).subscribe({
       next: fetchLists,
       error: (error) => {
@@ -60,13 +71,34 @@ export default function Page() {
 
   // Filter lists based on selection
   const filteredLists = useMemo(() => {
+    let result = lists;
+
+    // Apply client-side sorting as backup to ensure proper order
+    result = [...result].sort((a, b) => {
+      // First priority: planned (completed = false) before completed (completed = true)
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+
+      // Second priority: most recently updated first
+      const aDate = a._updatedAt || a._createdAt;
+      const bDate = b._updatedAt || b._createdAt;
+
+      if (aDate && bDate) {
+        return new Date(bDate).getTime() - new Date(aDate).getTime();
+      }
+
+      return 0;
+    });
+
+    // Apply filters
     if (selectedFilter === 'planned') {
-      return lists.filter((list) => !list.completed);
+      return result.filter((list) => !list.completed);
     }
     if (selectedFilter === 'completed') {
-      return lists.filter((list) => list.completed);
+      return result.filter((list) => list.completed);
     }
-    return lists;
+    return result;
   }, [lists, selectedFilter]);
 
   return (
