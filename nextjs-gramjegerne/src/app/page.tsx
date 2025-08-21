@@ -6,6 +6,7 @@ import {client} from '@/sanity/client';
 import {Icon} from '@/components/Icon';
 import {ImportForm} from '@/components/ImportForm';
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
+import {GearStats} from '@/components/GearStats';
 import {urlFor} from '@/sanity/images';
 import {Query} from '@/sanity/queries';
 import type {Category, Item} from '@/types';
@@ -353,6 +354,9 @@ export default function IndexPage() {
             </button>
           ))}
         </div>
+
+        {/* Gear Stats */}
+        {items.length > 0 && <GearStats items={filteredItems} />}
         {/* Add this condition before the items list */}
         {filteredItems.length === 0 ? (
           <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
@@ -411,6 +415,14 @@ export default function IndexPage() {
                         <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                           <Icon name="calories" width={16} height={16} />
                           {item.calories} kcal
+                        </p>
+                      )}
+                      {typeof item.price !== 'undefined' && item.price > 0 && (
+                        <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                          {new Intl.NumberFormat('nb-NO', {
+                            style: 'currency',
+                            currency: 'NOK',
+                          }).format(item.price)}
                         </p>
                       )}
                     </div>

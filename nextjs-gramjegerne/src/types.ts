@@ -27,6 +27,7 @@ export interface Item {
   weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
+  price?: number;
 }
 
 export interface ImageAsset {

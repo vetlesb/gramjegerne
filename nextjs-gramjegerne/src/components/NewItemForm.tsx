@@ -32,6 +32,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
     unit: 'g',
   });
   const [calories, setCalories] = useState<string>('');
+  const [price, setPrice] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -160,6 +161,10 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         console.log("Skipping calories as it's 0 or less");
       }
 
+      if (price && parseFloat(price) > 0) {
+        formData.append('price', price);
+      }
+
       // Debug log
       console.log('Sending form data:', {
         name: name.trim(),
@@ -168,6 +173,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         size: size.trim(),
         weight: weight.weight ? weight : null,
         calories: calories && parseInt(calories, 10) > 0 ? calories : null,
+        price: price && parseFloat(price) > 0 ? price : null,
       });
 
       const response = await fetch('/api/createItem', {
@@ -191,6 +197,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
       setSize('');
       setWeight({weight: '', unit: 'g'});
       setCalories('');
+      setPrice('');
 
       setSuccessMessage('Gear created!');
 
@@ -427,7 +434,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
                   })
                 }
                 min="0"
-                step="0.1"
+                step="1"
                 required
               />
               <select
@@ -451,6 +458,22 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(e.target.value)}
               min="0"
+            />
+          </label>
+        </div>
+
+        {/* Price */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Price (NOK)
+            <input
+              type="number"
+              className="w-full max-w-full p-4"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              min="0"
+              step="0.01"
+              placeholder="0.00"
             />
           </label>
         </div>

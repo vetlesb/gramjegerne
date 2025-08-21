@@ -46,6 +46,12 @@ export const itemType = defineType({
       name: 'calories',
       type: 'number',
     }),
+    defineField({
+      name: 'price',
+      title: 'Price',
+      type: 'number',
+      description: 'Price in your local currency',
+    }),
 
     defineField({
       name: 'user',

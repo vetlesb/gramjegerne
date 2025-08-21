@@ -15,6 +15,7 @@ interface ExcelRow {
   weight?: string;
   unit?: string;
   calories?: string;
+  price?: string;
   category?: string;
   image_url?: string;
   [key: string]: string | undefined;
@@ -98,6 +99,7 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
         weight: item.weight ? Number(item.weight) : undefined,
         weight_unit: item.unit || 'g',
         calories: item.calories ? Number(item.calories) : undefined,
+        price: item.price ? Number(item.price) : undefined,
         categoryId: item.category ? categoryMap[item.category] : null,
         imageAssetId: null,
         image_url: item.image_url,
@@ -128,6 +130,7 @@ export function ImportForm({onSuccess}: {onSuccess: () => void}) {
                   weight: itemData.weight,
                   weight_unit: itemData.weight_unit,
                   calories: itemData.calories,
+                  price: itemData.price,
                   categoryId: itemData.categoryId,
                   imageAssetId,
                 },

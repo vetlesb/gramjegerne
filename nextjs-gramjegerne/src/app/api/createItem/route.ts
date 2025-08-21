@@ -26,6 +26,7 @@ interface SanityDocument {
     unit: string;
   };
   calories?: number;
+  price?: number;
   image?: {
     _type: string;
     asset: {
@@ -120,6 +121,12 @@ export async function POST(request: Request) {
     const calories = formData.get('calories');
     if (calories && parseInt(calories.toString(), 10) > 0) {
       document.calories = parseInt(calories.toString(), 10);
+    }
+
+    // Handle price
+    const price = formData.get('price');
+    if (price && parseFloat(price.toString()) > 0) {
+      document.price = parseFloat(price.toString());
     }
 
     // Handle image if present

@@ -18,6 +18,7 @@ interface UpdateData {
     unit: string;
   };
   calories?: number;
+  price?: number;
   image?: {
     _type: 'image';
     asset: {
@@ -87,6 +88,9 @@ export async function PUT(request: NextRequest) {
 
     const calories = formData.get('calories');
     if (calories) updateData.calories = parseInt(calories.toString(), 10);
+
+    const price = formData.get('price');
+    if (price) updateData.price = parseFloat(price.toString());
 
     // Handle image upload
     const image = formData.get('image');

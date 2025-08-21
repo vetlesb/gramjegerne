@@ -12,6 +12,7 @@ interface Item {
   weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
+  price?: number;
 }
 
 interface Category {
@@ -34,7 +35,7 @@ export default async function CategoryPage({params}: CategoryPageProps) {
       _id,
       title,
       "items": *[_type == "item" && category._ref == ^._id]{
-        _id, name, image, size, weight, quantity, calories
+        _id, name, image, size, weight, quantity, calories, price
       }
     }`,
     {slug},

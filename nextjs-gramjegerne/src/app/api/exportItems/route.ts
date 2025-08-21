@@ -11,6 +11,7 @@ interface ImportItem {
     unit: string;
   };
   calories?: string | number;
+  price?: string | number;
   category?: {
     _ref: string;
     title: string; // Assuming you have a title field for the category
@@ -40,6 +41,7 @@ export async function GET() {
         size,
         weight,
         calories,
+        price,
         category-> { _id, title }, // Fetch category title
         image { asset->{ _id, url } } // Fetch image asset URL
       }`,
@@ -53,6 +55,7 @@ export async function GET() {
       weight: item.weight?.weight || '',
       unit: item.weight?.unit || 'g',
       calories: item.calories || '',
+      price: item.price || '',
       category: item.category?.title || '', // Use category title instead of ID
       image_url: item.image?.asset?.url || '', // Get the image URL from the asset reference
     }));

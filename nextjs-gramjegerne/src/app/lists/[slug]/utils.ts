@@ -103,6 +103,7 @@ export interface Item {
     unit: string;
   };
   calories?: number;
+  price?: number;
 }
 
 export interface ListItem {

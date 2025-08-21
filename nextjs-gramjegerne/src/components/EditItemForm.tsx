@@ -24,6 +24,7 @@ interface EditItemFormProps {
     weight?: {weight: number; unit: string};
     quantity?: number;
     calories?: number;
+    price?: number;
   };
   onSuccess: () => void;
 }
@@ -41,6 +42,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
     unit: item.weight?.unit || 'g',
   });
   const [calories, setCalories] = useState<number>(item.calories || 0);
+  const [price, setPrice] = useState<number>(item.price || 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -128,6 +130,10 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
 
     if (calories > 0) {
       formData.append('calories', calories.toString());
+    }
+
+    if (price > 0) {
+      formData.append('price', price.toString());
     }
 
     try {
@@ -258,6 +264,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
                 value={weight.weight}
                 onChange={(e) => setWeight({...weight, weight: parseFloat(e.target.value)})}
                 min="0"
+                step="1"
                 required
               />
               <select
@@ -281,6 +288,22 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               min="0"
+            />
+          </label>
+        </div>
+
+        {/* Price */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Price (NOK)
+            <input
+              type="number"
+              className="w-full max-w-full p-4"
+              value={price}
+              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+              min="0"
+              step="0.01"
+              placeholder="0.00"
             />
           </label>
         </div>
