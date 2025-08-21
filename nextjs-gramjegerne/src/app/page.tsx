@@ -100,10 +100,9 @@ export default function IndexPage() {
     }
   }
 
-  async function refreshItems() {
+  async function refreshItemsWithoutLoading() {
     if (!session?.user?.id) return;
 
-    setLoading(true);
     try {
       const fetchedItems: Item[] = await client.fetch(Query.ITEMS, {
         userId: session.user.id,
@@ -112,8 +111,6 @@ export default function IndexPage() {
     } catch (error) {
       console.error('Error refreshing items:', error);
       setErrorMessage('Failed to refresh items.');
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -569,7 +566,7 @@ export default function IndexPage() {
               <EditItemForm
                 item={isEditDialogOpen}
                 onSuccess={async () => {
-                  await refreshItems();
+                  await refreshItemsWithoutLoading();
                   setIsEditDialogOpen(null);
                 }}
               />
