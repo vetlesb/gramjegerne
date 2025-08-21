@@ -2,17 +2,21 @@
 
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {client} from '@/sanity/client';
-import {ListDocument} from '@/types';
+import {ListDocument, SharedListReference} from '@/types';
 import {useSession} from 'next-auth/react';
 import {groq} from 'next-sanity';
 import {useCallback, useEffect, useState, useMemo} from 'react';
 import {AddListDialog} from '../../components/addListDialog';
 import {ListItem} from '../../components/ListItem';
+import {SharedListItem} from '../../components/SharedListItem';
 
 export default function Page() {
   const {data: session} = useSession();
   const [lists, setLists] = useState<ListDocument[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<'planned' | 'completed' | null>(null);
+  const [sharedLists, setSharedLists] = useState<SharedListReference[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<'planned' | 'completed' | 'shared' | null>(
+    null,
+  );
 
   const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -52,8 +56,37 @@ export default function Page() {
     setLists(data);
   }, [session?.user?.id]);
 
+  const fetchSharedLists = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    // Extract the raw Google ID from session (remove "google_" prefix)
+    const rawGoogleId = session.user.id.replace('google_', '');
+
+    const query = groq`*[_type == "user" && googleId == $googleId][0] {
+      sharedLists[] {
+        _key,
+        addedAt,
+        "list": list->{
+          _id,
+          name,
+          slug,
+          image,
+          "user": user->{
+            _id,
+            name,
+            email
+          }
+        }
+      }
+    }`;
+
+    const user = await client.fetch(query, {googleId: rawGoogleId});
+    setSharedLists(user?.sharedLists || []);
+  }, [session?.user?.id]);
+
   useEffect(() => {
     fetchLists();
+    fetchSharedLists();
 
     // Subscribe to real-time updates
     if (!session?.user?.id) return;
@@ -67,7 +100,28 @@ export default function Page() {
     });
 
     return () => subscription.unsubscribe();
-  }, [session?.user?.id, fetchLists]);
+  }, [session?.user?.id, fetchLists, fetchSharedLists]);
+
+  const handleRemoveSharedList = async (listId: string) => {
+    try {
+      const response = await fetch('/api/removeSharedList', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({listId}),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove shared list');
+      }
+
+      await fetchSharedLists();
+    } catch (error) {
+      console.error('Error removing shared list:', error);
+      alert('Failed to remove shared list. Please try again.');
+    }
+  };
 
   // Filter lists based on selection
   const filteredLists = useMemo(() => {
@@ -107,7 +161,7 @@ export default function Page() {
         <div className="flex flex-col gap-y-4">
           <AddListDialog onSuccess={fetchLists} />
 
-          {lists.length === 0 ? (
+          {lists.length === 0 && sharedLists.length === 0 ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
               Create a list to hunt the lightest backpack for next trip.
             </div>
@@ -132,13 +186,33 @@ export default function Page() {
                 >
                   Completed
                 </button>
+                <button
+                  onClick={() => setSelectedFilter('shared')}
+                  className={`menu-category text-md ${selectedFilter === 'shared' ? 'menu-active' : ''}`}
+                >
+                  Shared with me
+                </button>
               </div>
 
-              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
-                {filteredLists.map((list) => (
-                  <ListItem key={list._id} list={list} onDelete={fetchLists} />
-                ))}
-              </ul>
+              {selectedFilter === 'shared' ? (
+                // Show shared lists
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
+                  {sharedLists.map((sharedList, index) => (
+                    <SharedListItem
+                      key={sharedList._key || `shared_${sharedList.list._id}_${index}`}
+                      sharedList={sharedList}
+                      onRemove={handleRemoveSharedList}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                // Show regular lists
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
+                  {filteredLists.map((list) => (
+                    <ListItem key={list._id} list={list} onDelete={fetchLists} />
+                  ))}
+                </ul>
+              )}
             </>
           )}
         </div>

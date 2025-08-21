@@ -32,6 +32,36 @@ export const userType = defineType({
       type: 'string',
       description: "The URL of the user's Google profile image",
     }),
+    defineField({
+      name: 'sharedLists',
+      title: 'Shared Lists',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'list',
+              type: 'reference',
+              to: [{type: 'list'}],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'addedAt',
+              type: 'datetime',
+              initialValue: () => new Date().toISOString(),
+            },
+          ],
+          preview: {
+            select: {
+              title: 'list.name',
+              subtitle: 'list.user.name',
+            },
+          },
+        },
+      ],
+      description: 'Lists shared with this user that they have saved',
+    }),
   ],
   preview: {
     select: {

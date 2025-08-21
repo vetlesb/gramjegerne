@@ -25,6 +25,31 @@ export interface Item {
   price?: number;
   categories?: Category[]; // Populated categories
 }
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  googleId: string;
+  image?: string;
+  sharedLists?: SharedListReference[];
+}
+
+export interface SharedListReference {
+  _key: string;
+  list: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+  addedAt: string;
+}
+
 export interface ListDocument {
   _id: string;
   slug: {current: string};

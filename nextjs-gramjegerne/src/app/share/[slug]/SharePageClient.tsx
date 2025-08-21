@@ -5,7 +5,8 @@ import type {Item} from '@/types/list';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
-import {useMemo, useState} from 'react';
+import {useMemo, useState, useEffect, useCallback} from 'react';
+import {useSession} from 'next-auth/react';
 
 const builder = imageUrlBuilder(client);
 
@@ -44,6 +45,11 @@ interface SharePageClientProps {
     weight?: number;
     participants?: number;
     image?: SanityImageSource;
+    user?: {
+      _id: string;
+      name: string;
+      email: string;
+    };
     items: Array<{
       _key: string;
       _type: string;
@@ -56,8 +62,76 @@ interface SharePageClientProps {
 }
 
 export default function SharePageClient({list}: SharePageClientProps) {
+  const {data: session} = useSession();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Check if the list is already saved
+  const checkIfSaved = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      // Extract the raw Google ID from session (remove "google_" prefix)
+      const rawGoogleId = session.user.id.replace('google_', '');
+
+      const user = await client.fetch(
+        `*[_type == "user" && googleId == $googleId][0] {
+          sharedLists[] {
+            list {
+              _ref
+            }
+          }
+        }`,
+        {googleId: rawGoogleId},
+      );
+
+      const isAlreadySaved = user?.sharedLists?.some(
+        (shared: {list: {_ref: string}}) => shared.list._ref === list._id,
+      );
+
+      setIsSaved(isAlreadySaved);
+    } catch (error) {
+      console.error('Error checking if list is saved:', error);
+    }
+  }, [session?.user?.id, list._id]);
+
+  // Save list to shared lists
+  const handleSaveToList = async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      setIsSaving(true);
+      const response = await fetch('/api/addSharedList', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({listId: list._id}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`Failed to save list: ${errorData.error || response.statusText}`);
+      }
+
+      setIsSaved(true);
+    } catch (error) {
+      console.error('Error saving list:', error);
+      alert(
+        `Failed to save list: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Check if saved on mount
+  useEffect(() => {
+    checkIfSaved();
+  }, [session?.user?.id, list._id, checkIfSaved]);
 
   // Update the type in useMemo
   const {categoryTotals, grandTotal} = useMemo(() => {
@@ -186,6 +260,12 @@ export default function SharePageClient({list}: SharePageClientProps) {
         <div className="flex flex-col gap-y-2">
           <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
           <div className="flex flex-wrap gap-x-1">
+            {list.user?.name && (
+              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                <Icon name="user" width={16} height={16} />
+                {list.user.name}
+              </p>
+            )}
             {list.days && (
               <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                 {list.days} {list.days === 1 ? 'day' : 'days'}
@@ -198,6 +278,27 @@ export default function SharePageClient({list}: SharePageClientProps) {
             )}
           </div>
         </div>
+
+        {/* Save to My Shared Lists Button */}
+        {session?.user?.id && (
+          <div className="flex justify-start mt-4">
+            {isSaved ? (
+              <div className="flex items-center gap-x-2 text-green-400">
+                <Icon name="checkmark" width={20} height={20} />
+                <span>Saved to My Shared Lists</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleSaveToList}
+                disabled={isSaving}
+                className="button-primary-accent flex items-center gap-x-2"
+              >
+                <Icon name="link" width={20} height={20} />
+                {isSaving ? 'Saving...' : 'Save to My Shared Lists'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Category Menu */}

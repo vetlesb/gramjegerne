@@ -15,6 +15,11 @@ interface FetchedList {
   weight?: number;
   participants?: number;
   image?: SanityImageSource;
+  user?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   items: Array<{
     _key: string;
     _type: string;
@@ -41,6 +46,11 @@ export default function SharePage() {
             weight,
             participants,
             image,
+            "user": user->{
+              _id,
+              name,
+              email
+            },
             "items": items[] {
               _key,
               _type,

@@ -34,8 +34,34 @@ export interface ImageAsset {
   _ref: string;
   url?: string;
 }
+
 export interface Category {
   _id: string;
   title: string;
   slug: {current: string};
+}
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  googleId: string;
+  image?: string;
+  sharedLists?: SharedListReference[];
+}
+
+export interface SharedListReference {
+  _key: string;
+  list: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+    image?: ImageAsset;
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+  addedAt: string;
 }
