@@ -42,6 +42,7 @@ export default function IndexPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [expandedImage, setExpandedImage] = useState<{src: string; alt: string} | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -373,7 +374,14 @@ export default function IndexPage() {
                         alt={item.name}
                         width={64}
                         height={64}
-                        className="rounded-md h-full w-full object-cover"
+                        className="rounded-md h-full w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() =>
+                          item.image?.asset &&
+                          setExpandedImage({
+                            src: urlFor(item.image.asset),
+                            alt: item.name,
+                          })
+                        }
                       />
                     ) : (
                       <div className="h-16 w-16 flex items-center justify-center placeholder_image">
@@ -605,6 +613,35 @@ export default function IndexPage() {
                   }}
                 >
                   Avbryt
+                </button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Expansion Modal */}
+        <Dialog open={!!expandedImage} onOpenChange={() => setExpandedImage(null)}>
+          <DialogContent className="dialog p-4 max-w-4xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-normal text-accent">
+                {expandedImage?.alt}
+              </DialogTitle>
+            </DialogHeader>
+            {expandedImage && (
+              <div className="flex justify-center">
+                <Image
+                  src={expandedImage.src}
+                  alt={expandedImage.alt}
+                  width={800}
+                  height={800}
+                  className="max-w-full max-h-[70vh] object-contain rounded-md"
+                />
+              </div>
+            )}
+            <DialogFooter>
+              <DialogClose asChild>
+                <button type="button" className="button-secondary">
+                  Close
                 </button>
               </DialogClose>
             </DialogFooter>
