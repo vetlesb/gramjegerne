@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",
-    "@types/node": "^22.17.2",
-    "@types/react": "^18.3.23",
+    "@types/node": "^22.18.0",
+    "@types/react": "^18.3.24",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",
     "ts-node": "^10.9.2",

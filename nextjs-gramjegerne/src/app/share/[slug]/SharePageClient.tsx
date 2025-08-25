@@ -20,10 +20,9 @@ function formatNumber(num: number): string {
 }
 
 function formatWeight(weight: number): string {
-  if (weight >= 1000) {
-    return `${(weight / 1000).toFixed(3)} kg`;
-  }
-  return `${weight} g`;
+  const weightInKg = weight / 1000;
+  // Always use 3 decimals for precision, matching private list
+  return `${weightInKg.toFixed(3)} kg`;
 }
 
 // Add interface for category totals
@@ -159,50 +158,88 @@ export default function SharePageClient({list}: SharePageClientProps) {
       const effectiveCategory = item.item.category;
       if (!effectiveCategory) return;
 
-      const existing = categoryMap.get(effectiveCategory._id) || {
-        id: effectiveCategory._id,
-        count: 0,
-        weight: 0,
-        weightOnBody: 0,
-        calories: 0,
-        checkedCount: 0,
-        title: effectiveCategory.title,
-      };
+      if (item.onBody) {
+        // Only add to "On body" category
+        const onBodyCategory = categoryMap.get('on-body') || {
+          id: 'on-body',
+          count: 0,
+          weight: 0,
+          weightOnBody: 0,
+          calories: 0,
+          checkedCount: 0,
+          title: 'On body',
+        };
 
-      existing.count += quantity;
-      if (item.checked) {
-        existing.checkedCount += quantity;
-      }
-
-      if (item.item.weight) {
-        let packedQuantity = quantity;
-        if (item.onBody) {
-          packedQuantity = Math.max(packedQuantity - 1, 0);
-          existing.weightOnBody += item.item.weight.weight;
+        onBodyCategory.count += quantity;
+        if (item.checked) {
+          onBodyCategory.checkedCount += quantity;
         }
-        existing.weight += item.item.weight.weight * packedQuantity;
-      }
+        if (item.item.weight) {
+          onBodyCategory.weightOnBody += item.item.weight.weight * quantity;
+        }
+        if (item.item.calories) {
+          onBodyCategory.calories += item.item.calories * quantity;
+        }
 
-      if (item.item.calories) {
-        existing.calories += item.item.calories * quantity;
-      }
+        categoryMap.set('on-body', onBodyCategory);
+      } else {
+        // Regular category totals calculation (for non-on-body items)
+        const existing = categoryMap.get(effectiveCategory._id) || {
+          id: effectiveCategory._id,
+          count: 0,
+          weight: 0,
+          weightOnBody: 0,
+          calories: 0,
+          checkedCount: 0,
+          title: effectiveCategory.title,
+        };
 
-      categoryMap.set(effectiveCategory._id, existing);
+        existing.count += quantity;
+        if (item.checked) {
+          existing.checkedCount += quantity;
+        }
+        if (item.item.weight) {
+          existing.weight += item.item.weight.weight * quantity;
+        }
+        if (item.item.calories) {
+          existing.calories += item.item.calories * quantity;
+        }
+
+        categoryMap.set(effectiveCategory._id, existing);
+      }
     });
 
     const categoryTotals = Array.from(categoryMap.values()).sort((a, b) =>
       a.title.localeCompare(b.title, 'nb'),
     );
 
+    // Calculate grand total (excluding on-body items)
     const grandTotal = categoryTotals.reduce(
-      (acc, total) => ({
-        count: acc.count + total.count,
-        weight: acc.weight + total.weight,
-        weightOnBody: acc.weightOnBody + total.weightOnBody,
-        calories: acc.calories + total.calories,
-        checkedCount: acc.checkedCount + total.checkedCount,
-      }),
-      emptyTotal,
+      (acc, category) => {
+        // For "On body" category, add to weightOnBody
+        if (category.id === 'on-body') {
+          return {
+            ...acc,
+            weightOnBody: category.weightOnBody || 0,
+          };
+        }
+
+        // For other categories, add to regular weight
+        return {
+          count: acc.count + category.count,
+          weight: acc.weight + category.weight,
+          weightOnBody: acc.weightOnBody,
+          calories: acc.calories + category.calories,
+          checkedCount: acc.checkedCount + category.checkedCount,
+        };
+      },
+      {
+        count: 0,
+        weight: 0,
+        weightOnBody: 0,
+        calories: 0,
+        checkedCount: 0,
+      },
     );
 
     return {categoryTotals, grandTotal};
@@ -261,44 +298,45 @@ export default function SharePageClient({list}: SharePageClientProps) {
           <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
           <div className="flex flex-wrap gap-x-1">
             {list.user?.name && (
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+              <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
                 <Icon name="user" width={16} height={16} />
                 {list.user.name}
               </p>
             )}
             {list.days && (
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+              <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
+                <Icon name="calendar" width={16} height={16} />
                 {list.days} {list.days === 1 ? 'day' : 'days'}
               </p>
             )}
             {list.participants && list.participants > 1 && (
-              <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
+              <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
+                <Icon name="user" width={16} height={16} />
                 {list.participants} participants
               </p>
             )}
-          </div>
-        </div>
-
-        {/* Save to My Shared Lists Button */}
-        {session?.user?.id && (
-          <div className="flex justify-start mt-4">
-            {isSaved ? (
-              <div className="flex items-center gap-x-2 text-green-400">
-                <Icon name="checkmark" width={20} height={20} />
-                <span>Saved to My Shared Lists</span>
+            {/* Save to My Shared Lists Button */}
+            {session?.user?.id && (
+              <div className="flex flex-wrap">
+                {isSaved ? (
+                  <div className="tag-list w-fit flex items-center gap-x-2">
+                    <Icon name="checkmark" width={16} height={16} />
+                    <span>Saved</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSaveToList}
+                    disabled={isSaving}
+                    className="tag-list w-fit flex items-center gap-x-2"
+                  >
+                    <Icon name="link" width={16} height={16} />
+                    {isSaving ? 'Saving...' : 'Save list'}
+                  </button>
+                )}
               </div>
-            ) : (
-              <button
-                onClick={handleSaveToList}
-                disabled={isSaving}
-                className="button-primary-accent flex items-center gap-x-2"
-              >
-                <Icon name="link" width={20} height={20} />
-                {isSaving ? 'Saving...' : 'Save to My Shared Lists'}
-              </button>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Category Menu */}
@@ -384,42 +422,60 @@ export default function SharePageClient({list}: SharePageClientProps) {
                 <div className="product">
                   <div className="flex flex-col gap-y-2 pt-2">
                     <p className="text-md sm:text-xl pb-8">Detailed overview</p>
-                    {categoryTotals.map((total) => (
-                      <div
-                        key={total.id}
-                        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2"
-                      >
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {total.title}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-4">
+                      <p className="text-md sm:text-xl text-accent">Category</p>
+                      <p className="text-md sm:text-xl text-accent">Weight</p>
+                      <p className="text-md sm:text-xl text-accent">Calories</p>
+                    </div>
+                    {categoryTotals.map(
+                      (total) =>
+                        total.id !== 'on-body' && (
+                          <div
+                            key={total.id}
+                            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2"
+                          >
+                            <p className="text-md sm:text-xl">{total.title}</p>
+                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                              {formatWeight(total.weight)}
+                            </p>
+                            <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
+                              {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
+                            </p>
+                          </div>
+                        ),
+                    )}
+
+                    {/* Add the "On body" section with correct weight */}
+                    {(() => {
+                      const onBodyCategory = categoryTotals.find((total) => total.id === 'on-body');
+                      return (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2">
+                          <p className="text-md sm:text-xl text-accent">On body</p>
+                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                            {formatWeight(onBodyCategory?.weightOnBody || 0)}
+                          </p>
+                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                            {onBodyCategory?.calories && onBodyCategory.calories > 0
+                              ? `${formatNumber(onBodyCategory.calories)} kcal`
+                              : ''}
+                          </p>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Grand total section */}
+                    <div>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 pb-2">
+                        <p className="text-md sm:text-xl text-accent">Backpack</p>
+                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                          {formatWeight(grandTotal.weight)}
                         </p>
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {formatWeight(total.weight + total.weightOnBody)}
-                        </p>
-                        <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                          {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
+                        <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
+                          {grandTotal.calories > 0
+                            ? `${formatNumber(grandTotal.calories)} kcal`
+                            : ''}
                         </p>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 border-b border-white/5 pb-2 mt-2">
-                    <p className="text-md sm:text-xl font-medium font-sans tabular-nums">On body</p>
-                    <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                      {formatWeight(grandTotal.weightOnBody)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-3 mt-2">
-                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                        Total
-                      </p>
-                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                        {formatWeight(grandTotal.weight + grandTotal.weightOnBody)}
-                      </p>
-                      <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                        {grandTotal.calories > 0 ? `${formatNumber(grandTotal.calories)} kcal` : ''}
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -436,7 +492,8 @@ export default function SharePageClient({list}: SharePageClientProps) {
             <div className="flex items-center gap-x-1 text-md sm:text-xl fg-accent font-medium font-sans tabular-nums">
               {showOnBodyOnly
                 ? `${formatNumber(onBodyItems.length)}`
-                : `${formatNumber(filteredItemsForList.length)}`}
+                : `${formatNumber(filteredItemsForList.length)}`}{' '}
+              items
             </div>
 
             <div className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
