@@ -5,18 +5,40 @@ import {client} from '@/sanity/client';
 import {ListDocument, SharedListReference} from '@/types';
 import {useSession} from 'next-auth/react';
 import {groq} from 'next-sanity';
-import {useCallback, useEffect, useState, useMemo} from 'react';
+import {useCallback, useEffect, useState, useMemo, useRef, Suspense} from 'react';
+import {useSearchParams, useRouter} from 'next/navigation';
 import {AddListDialog} from '../../components/addListDialog';
 import {ListItem} from '../../components/ListItem';
 import {SharedListItem} from '../../components/SharedListItem';
 
-export default function Page() {
+function ListsPageContent() {
   const {data: session} = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [lists, setLists] = useState<ListDocument[]>([]);
   const [sharedLists, setSharedLists] = useState<SharedListReference[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<'planned' | 'completed' | 'shared' | null>(
-    null,
+    () => {
+      // Initialize from URL or localStorage fallback
+      const urlFilter = searchParams.get('filter');
+      if (urlFilter) {
+        // Validate the filter value
+        if (['planned', 'completed', 'shared'].includes(urlFilter)) {
+          return urlFilter as 'planned' | 'completed' | 'shared';
+        }
+      }
+
+      // Fallback to localStorage if no URL param
+      if (typeof window !== 'undefined') {
+        return (
+          (localStorage.getItem('listsLastFilter') as 'planned' | 'completed' | 'shared' | null) ||
+          null
+        );
+      }
+      return null;
+    },
   );
+  const isUpdatingURL = useRef(false);
 
   const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -102,6 +124,58 @@ export default function Page() {
     return () => subscription.unsubscribe();
   }, [session?.user?.id, fetchLists, fetchSharedLists]);
 
+  // Sync URL state with component state (only when URL changes externally)
+  useEffect(() => {
+    // Skip if we're making our own URL update
+    if (isUpdatingURL.current) {
+      isUpdatingURL.current = false;
+      return;
+    }
+
+    const urlFilter = searchParams.get('filter');
+
+    if (urlFilter) {
+      // Validate the filter value
+      if (['planned', 'completed', 'shared'].includes(urlFilter)) {
+        const newFilter = urlFilter as 'planned' | 'completed' | 'shared';
+        if (newFilter !== selectedFilter) {
+          setSelectedFilter(newFilter);
+          // Update localStorage fallback
+          localStorage.setItem('listsLastFilter', newFilter);
+        }
+      }
+    } else if (selectedFilter !== null) {
+      // URL has no filter, clear selection
+      setSelectedFilter(null);
+      localStorage.removeItem('listsLastFilter');
+    }
+  }, [searchParams, selectedFilter]);
+
+  const handleFilterChange = (filter: 'planned' | 'completed' | 'shared' | null) => {
+    setSelectedFilter(filter);
+
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+
+    if (filter) {
+      // Update URL with filter parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('filter', filter);
+      router.push(`?${newSearchParams.toString()}`);
+
+      // Save to localStorage as fallback
+      localStorage.setItem('listsLastFilter', filter);
+    } else {
+      // Remove filter from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('filter');
+      router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : '/lists');
+
+      // Remove from localStorage
+      localStorage.removeItem('listsLastFilter');
+    }
+  };
+
   const handleRemoveSharedList = async (listId: string) => {
     try {
       const response = await fetch('/api/removeSharedList', {
@@ -169,25 +243,25 @@ export default function Page() {
             <>
               <div className="flex gap-x-2 no-scrollbar my-1 p-2">
                 <button
-                  onClick={() => setSelectedFilter(null)}
+                  onClick={() => handleFilterChange(null)}
                   className={`menu-category text-md ${selectedFilter === null ? 'menu-active' : ''}`}
                 >
                   All
                 </button>
                 <button
-                  onClick={() => setSelectedFilter('planned')}
+                  onClick={() => handleFilterChange('planned')}
                   className={`menu-category text-md ${selectedFilter === 'planned' ? 'menu-active' : ''}`}
                 >
                   Planned
                 </button>
                 <button
-                  onClick={() => setSelectedFilter('completed')}
+                  onClick={() => handleFilterChange('completed')}
                   className={`menu-category text-md ${selectedFilter === 'completed' ? 'menu-active' : ''}`}
                 >
                   Completed
                 </button>
                 <button
-                  onClick={() => setSelectedFilter('shared')}
+                  onClick={() => handleFilterChange('shared')}
                   className={`menu-category text-md ${selectedFilter === 'shared' ? 'menu-active' : ''}`}
                 >
                   Shared
@@ -218,5 +292,13 @@ export default function Page() {
         </div>
       </main>
     </ProtectedRoute>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ListsPageContent />
+    </Suspense>
   );
 }
