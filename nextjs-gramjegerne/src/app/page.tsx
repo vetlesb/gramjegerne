@@ -12,7 +12,8 @@ import {Query} from '@/sanity/queries';
 import type {Category, Item} from '@/types';
 import {useSession} from 'next-auth/react';
 import Image from 'next/image';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo, useState, Suspense, useRef} from 'react';
+import {useSearchParams, useRouter} from 'next/navigation';
 import {EditItemForm} from '../components/EditItemForm';
 import NewItemForm from '../components/NewItemForm';
 import {
@@ -28,11 +29,37 @@ import {
 import {CategoryList} from '../components/CategoryList';
 import {AddCategoryForm} from '../components/AddCategoryForm';
 
-export default function IndexPage() {
+// Convert category name to URL-safe slug
+function categoryToSlug(categoryName: string): string {
+  return categoryName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim();
+}
+
+function IndexPageContent() {
   const {data: session} = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlCategory = searchParams.get('category');
+    if (urlCategory) {
+      // Find category by slug from URL
+      const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === urlCategory);
+      return foundCategory?._id || null;
+    }
+
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('gearLastCategory') || null;
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,6 +70,36 @@ export default function IndexPage() {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [expandedImage, setExpandedImage] = useState<{src: string; alt: string} | null>(null);
+  const isUpdatingURL = useRef(false);
+
+  // Sync URL state with component state (only when URL changes externally)
+  useEffect(() => {
+    // Skip if we're making our own URL update
+    if (isUpdatingURL.current) {
+      isUpdatingURL.current = false;
+      return;
+    }
+
+    const urlCategory = searchParams.get('category');
+
+    if (urlCategory) {
+      // Find category by slug from URL
+      const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === urlCategory);
+      const categoryId = foundCategory?._id || null;
+
+      if (categoryId !== selectedCategory) {
+        setSelectedCategory(categoryId);
+        // Update localStorage fallback with ID
+        if (categoryId) {
+          localStorage.setItem('gearLastCategory', categoryId);
+        }
+      }
+    } else if (selectedCategory !== null) {
+      // URL has no category, clear selection
+      setSelectedCategory(null);
+      localStorage.removeItem('gearLastCategory');
+    }
+  }, [searchParams, categories, selectedCategory]);
 
   useEffect(() => {
     async function fetchData() {
@@ -96,8 +153,30 @@ export default function IndexPage() {
   function handleCategorySelect(category: Category | null) {
     if (category) {
       setSelectedCategory(category._id);
+
+      // Mark that we're updating the URL ourselves
+      isUpdatingURL.current = true;
+
+      // Update URL with category slug (URL-safe)
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('category', categoryToSlug(category.title));
+      router.push(`?${newSearchParams.toString()}`);
+
+      // Save to localStorage as fallback
+      localStorage.setItem('gearLastCategory', category._id);
     } else {
       setSelectedCategory(null);
+
+      // Mark that we're updating the URL ourselves
+      isUpdatingURL.current = true;
+
+      // Remove category from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('category');
+      router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : '/');
+
+      // Remove from localStorage
+      localStorage.removeItem('gearLastCategory');
     }
   }
 
@@ -649,5 +728,13 @@ export default function IndexPage() {
         </Dialog>
       </main>
     </ProtectedRoute>
+  );
+}
+
+export default function IndexPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <IndexPageContent />
+    </Suspense>
   );
 }
