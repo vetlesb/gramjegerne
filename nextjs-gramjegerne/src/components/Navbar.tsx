@@ -9,7 +9,6 @@ import {useState} from 'react';
 export function Navbar() {
   const {data: session} = useSession();
   const pathname = usePathname();
-  const isSharePage = pathname?.startsWith('/share/');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
