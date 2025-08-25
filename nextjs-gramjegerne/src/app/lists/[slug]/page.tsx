@@ -6,8 +6,8 @@ import {client} from '@/sanity/client';
 import {nanoid} from 'nanoid';
 import {useSession} from 'next-auth/react';
 import Image from 'next/image';
-import {usePathname} from 'next/navigation';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {usePathname, useSearchParams, useRouter} from 'next/navigation';
+import {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {
   Dialog,
   DialogClose,
@@ -34,6 +34,8 @@ import {
 
 export default function ListPage() {
   const {data: session} = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Move getUserId into useCallback
   const getUserId = useCallback(() => {
@@ -44,7 +46,26 @@ export default function ListPage() {
   // State variables and Hooks
   const [items, setItems] = useState<Item[]>([]);
   const [list, setList] = useState<List | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlCategory = searchParams.get('category');
+    if (urlCategory) {
+      // Convert slug back to category ID
+      if (typeof window !== 'undefined') {
+        const storedCategoryId = localStorage.getItem('packingListLastCategory');
+        if (storedCategoryId) {
+          return storedCategoryId;
+        }
+      }
+      return null; // Will be set properly once categories are loaded
+    }
+    
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('packingListLastCategory') || null;
+    }
+    return null;
+  });
   const [selectedItems, setSelectedItems] = useState<ListItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery] = useState('');
@@ -63,7 +84,30 @@ export default function ListPage() {
   const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
   // Add new state for onBody filter
-  const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
+  const [showOnBodyOnly, setShowOnBodyOnly] = useState<boolean>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlOnBody = searchParams.get('onBody');
+    if (urlOnBody === 'true') {
+      return true;
+    }
+
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('packingListLastOnBody') === 'true' || false;
+    }
+    return false;
+  });
+  const isUpdatingURL = useRef(false);
+
+  // Utility function to convert category title to URL-safe slug
+  function categoryToSlug(categoryName: string): string {
+    return categoryName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }
 
   // Keep this as our single source of truth for categories
   const categories = useMemo((): Category[] => {
@@ -86,6 +130,12 @@ export default function ListPage() {
       a.title.localeCompare(b.title, 'nb'),
     );
   }, [selectedItems]);
+
+  // Utility function to convert slug back to category ID
+  const slugToCategoryId = useCallback((slug: string): string | null => {
+    const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === slug);
+    return foundCategory?._id || null;
+  }, [categories]);
 
   // Add initial data fetch useEffect
   useEffect(() => {
@@ -133,6 +183,109 @@ export default function ListPage() {
 
     fetchItems();
   }, [getUserId]);
+
+  // Handle category filter changes
+  const handleCategoryChange = (categoryId: string | null) => {
+    setSelectedCategory(categoryId);
+    setShowOnBodyOnly(false); // Disable onBody filter when selecting category
+    
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+    
+    if (categoryId) {
+      // Find the category and convert to slug for URL
+      const category = categories.find((cat) => cat._id === categoryId);
+      if (category) {
+        const categorySlug = categoryToSlug(category.title);
+        
+        // Update URL with category slug parameter
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('category', categorySlug);
+        newSearchParams.delete('onBody'); // Remove onBody when selecting category
+        router.push(`?${newSearchParams.toString()}`);
+        
+        // Save to localStorage as fallback
+        localStorage.setItem('packingListLastCategory', categoryId);
+        localStorage.removeItem('packingListLastOnBody');
+      }
+    } else {
+      // Remove category from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('category');
+      router.push(
+        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
+      );
+      
+      // Remove from localStorage
+      localStorage.removeItem('packingListLastCategory');
+    }
+  };
+
+  // Handle onBody filter changes
+  const handleOnBodyChange = (onBody: boolean) => {
+    setShowOnBodyOnly(onBody);
+    setSelectedCategory(null); // Disable category filter when selecting onBody
+
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+
+    if (onBody) {
+      // Update URL with onBody parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('onBody', 'true');
+      newSearchParams.delete('category'); // Remove category when selecting onBody
+      router.push(`?${newSearchParams.toString()}`);
+
+      // Save to localStorage as fallback
+      localStorage.setItem('packingListLastOnBody', 'true');
+      localStorage.removeItem('packingListLastCategory');
+    } else {
+      // Remove onBody from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('onBody');
+      router.push(
+        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
+      );
+
+      // Remove from localStorage
+      localStorage.removeItem('packingListLastOnBody');
+    }
+  };
+
+  // Sync URL state with component state (only when URL changes externally)
+  useEffect(() => {
+    // Skip if we're making our own URL update
+    if (isUpdatingURL.current) {
+      isUpdatingURL.current = false;
+      return;
+    }
+    
+    const urlCategory = searchParams.get('category');
+    const urlOnBody = searchParams.get('onBody');
+    
+    // Handle category changes - convert slug to category ID
+    if (urlCategory && categories.length > 0) {
+      const categoryId = slugToCategoryId(urlCategory);
+      if (categoryId && categoryId !== selectedCategory) {
+        setSelectedCategory(categoryId);
+        localStorage.setItem('packingListLastCategory', categoryId);
+      }
+    } else if (!urlCategory && selectedCategory !== null) {
+      setSelectedCategory(null);
+      localStorage.removeItem('packingListLastCategory');
+    }
+    
+    // Handle onBody changes
+    const newOnBodyValue = urlOnBody === 'true';
+    if (newOnBodyValue !== showOnBodyOnly) {
+      setShowOnBodyOnly(newOnBodyValue);
+      if (newOnBodyValue) {
+        localStorage.setItem('packingListLastOnBody', 'true');
+      } else {
+        localStorage.removeItem('packingListLastOnBody');
+      }
+    }
+  }, [searchParams, categories, selectedCategory, showOnBodyOnly, slugToCategoryId]);
 
   // Update handleTempItemToggle to track existing overrides
   const handleTempItemToggle = useCallback((item: Item) => {
@@ -512,8 +665,8 @@ export default function ListPage() {
     }
   };
 
-  // First, add back the handleOnBodyChange function
-  const handleOnBodyChange = async (itemKey: string, onBody: boolean) => {
+  // Handle updating item onBody status
+  const handleItemOnBodyChange = async (itemKey: string, onBody: boolean) => {
     if (!list) return;
     try {
       const updatedItems = selectedItems.map((item) =>
@@ -660,10 +813,7 @@ export default function ListPage() {
         </div>
         <div className="flex gap-x-2 no-scrollbar my-8 p-2">
           <button
-            onClick={() => {
-              setSelectedCategory(null);
-              setShowOnBodyOnly(false);
-            }}
+            onClick={() => handleCategoryChange(null)}
             className={`menu-category text-md ${
               selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
             }`}
@@ -673,10 +823,7 @@ export default function ListPage() {
           {categories.map((category) => (
             <button
               key={category._id}
-              onClick={() => {
-                setSelectedCategory(category._id);
-                setShowOnBodyOnly(false); // Disable onBody filter when selecting category
-              }}
+              onClick={() => handleCategoryChange(category._id)}
               className={`menu-category text-md ${
                 selectedCategory === category._id && !showOnBodyOnly ? 'menu-active' : ''
               }`}
@@ -685,10 +832,7 @@ export default function ListPage() {
             </button>
           ))}
           <button
-            onClick={() => {
-              setShowOnBodyOnly(!showOnBodyOnly);
-              setSelectedCategory(null);
-            }}
+            onClick={() => handleOnBodyChange(!showOnBodyOnly)}
             className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
           >
             On body
@@ -951,7 +1095,7 @@ export default function ListPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOnBodyChange(listItem._key, !listItem.onBody);
+                          handleItemOnBodyChange(listItem._key, !listItem.onBody);
                         }}
                         className={`button-ghost flex gap-x-2 h-fit align-middle ${
                           listItem.onBody ? 'text-accent' : ''
