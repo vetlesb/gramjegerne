@@ -46,7 +46,7 @@ export default function ListPage() {
   // State variables and Hooks
   const [items, setItems] = useState<Item[]>([]);
   const [list, setList] = useState<List | null>(null);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
     // Initialize from URL or localStorage fallback
     const urlCategory = searchParams.get('category');
     if (urlCategory) {
@@ -59,7 +59,7 @@ export default function ListPage() {
       }
       return null; // Will be set properly once categories are loaded
     }
-    
+
     // Fallback to localStorage if no URL param
     if (typeof window !== 'undefined') {
       return localStorage.getItem('packingListLastCategory') || null;
@@ -132,10 +132,13 @@ export default function ListPage() {
   }, [selectedItems]);
 
   // Utility function to convert slug back to category ID
-  const slugToCategoryId = useCallback((slug: string): string | null => {
-    const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === slug);
-    return foundCategory?._id || null;
-  }, [categories]);
+  const slugToCategoryId = useCallback(
+    (slug: string): string | null => {
+      const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === slug);
+      return foundCategory?._id || null;
+    },
+    [categories],
+  );
 
   // Add initial data fetch useEffect
   useEffect(() => {
@@ -188,22 +191,22 @@ export default function ListPage() {
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
     setShowOnBodyOnly(false); // Disable onBody filter when selecting category
-    
+
     // Mark that we're updating the URL ourselves
     isUpdatingURL.current = true;
-    
+
     if (categoryId) {
       // Find the category and convert to slug for URL
       const category = categories.find((cat) => cat._id === categoryId);
       if (category) {
         const categorySlug = categoryToSlug(category.title);
-        
+
         // Update URL with category slug parameter
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('category', categorySlug);
         newSearchParams.delete('onBody'); // Remove onBody when selecting category
         router.push(`?${newSearchParams.toString()}`);
-        
+
         // Save to localStorage as fallback
         localStorage.setItem('packingListLastCategory', categoryId);
         localStorage.removeItem('packingListLastOnBody');
@@ -215,7 +218,7 @@ export default function ListPage() {
       router.push(
         newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
       );
-      
+
       // Remove from localStorage
       localStorage.removeItem('packingListLastCategory');
     }
@@ -259,10 +262,10 @@ export default function ListPage() {
       isUpdatingURL.current = false;
       return;
     }
-    
+
     const urlCategory = searchParams.get('category');
     const urlOnBody = searchParams.get('onBody');
-    
+
     // Handle category changes - convert slug to category ID
     if (urlCategory && categories.length > 0) {
       const categoryId = slugToCategoryId(urlCategory);
@@ -274,7 +277,7 @@ export default function ListPage() {
       setSelectedCategory(null);
       localStorage.removeItem('packingListLastCategory');
     }
-    
+
     // Handle onBody changes
     const newOnBodyValue = urlOnBody === 'true';
     if (newOnBodyValue !== showOnBodyOnly) {

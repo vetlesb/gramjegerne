@@ -5,8 +5,9 @@ import type {Item} from '@/types/list';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
-import {useMemo, useState, useEffect, useCallback} from 'react';
+import {useMemo, useState, useEffect, useCallback, useRef} from 'react';
 import {useSession} from 'next-auth/react';
+import {useSearchParams, useRouter} from 'next/navigation';
 
 const builder = imageUrlBuilder(client);
 
@@ -62,10 +63,44 @@ interface SharePageClientProps {
 
 export default function SharePageClient({list}: SharePageClientProps) {
   const {data: session} = useSession();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showOnBodyOnly, setShowOnBodyOnly] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlCategory = searchParams.get('category');
+    if (urlCategory) {
+      // Convert slug back to category ID
+      if (typeof window !== 'undefined') {
+        const storedCategoryId = localStorage.getItem('sharedListLastCategory');
+        if (storedCategoryId) {
+          return storedCategoryId;
+        }
+      }
+      return null; // Will be set properly once categories are loaded
+    }
+
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sharedListLastCategory') || null;
+    }
+    return null;
+  });
+  const [showOnBodyOnly, setShowOnBodyOnly] = useState<boolean>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlOnBody = searchParams.get('onBody');
+    if (urlOnBody === 'true') {
+      return true;
+    }
+
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sharedListLastOnBody') === 'true' || false;
+    }
+    return false;
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const isUpdatingURL = useRef(false);
 
   // Check if the list is already saved
   const checkIfSaved = useCallback(async () => {
@@ -245,6 +280,16 @@ export default function SharePageClient({list}: SharePageClientProps) {
     return {categoryTotals, grandTotal};
   }, [list.items]);
 
+  // Utility function to convert category title to URL-safe slug
+  function categoryToSlug(categoryName: string): string {
+    return categoryName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }
+
   // Filter items based on category selection and onBody filter
   const filteredItemsForList = useMemo(() => {
     if (!list.items) return [];
@@ -289,6 +334,118 @@ export default function SharePageClient({list}: SharePageClientProps) {
       a.title.localeCompare(b.title, 'nb'),
     );
   }, [list.items]);
+
+  // Utility function to convert slug back to category ID
+  const slugToCategoryId = useCallback(
+    (slug: string): string | null => {
+      const foundCategory = categories.find((cat) => categoryToSlug(cat.title) === slug);
+      return foundCategory?._id || null;
+    },
+    [categories],
+  );
+
+  // Sync URL state with component state (only when URL changes externally)
+  useEffect(() => {
+    // Skip if we're making our own URL update
+    if (isUpdatingURL.current) {
+      isUpdatingURL.current = false;
+      return;
+    }
+
+    const urlCategory = searchParams.get('category');
+    const urlOnBody = searchParams.get('onBody');
+
+    // Handle category changes - convert slug to category ID
+    if (urlCategory && categories.length > 0) {
+      const categoryId = slugToCategoryId(urlCategory);
+      if (categoryId && categoryId !== selectedCategory) {
+        setSelectedCategory(categoryId);
+        localStorage.setItem('sharedListLastCategory', categoryId);
+      }
+    } else if (!urlCategory && selectedCategory !== null) {
+      setSelectedCategory(null);
+      localStorage.removeItem('sharedListLastCategory');
+    }
+
+    // Handle onBody changes
+    const newOnBodyValue = urlOnBody === 'true';
+    if (newOnBodyValue !== showOnBodyOnly) {
+      setShowOnBodyOnly(newOnBodyValue);
+      if (newOnBodyValue) {
+        localStorage.setItem('sharedListLastOnBody', 'true');
+      } else {
+        localStorage.removeItem('sharedListLastOnBody');
+      }
+    }
+  }, [searchParams, categories, selectedCategory, showOnBodyOnly, slugToCategoryId]);
+
+  // Handle category filter changes
+  const handleCategoryChange = (categoryId: string | null) => {
+    setSelectedCategory(categoryId);
+    setShowOnBodyOnly(false); // Disable onBody filter when selecting category
+
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+
+    if (categoryId) {
+      // Find the category and convert to slug for URL
+      const category = categories.find((cat) => cat._id === categoryId);
+      if (category) {
+        const categorySlug = categoryToSlug(category.title);
+
+        // Update URL with category slug parameter
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('category', categorySlug);
+        newSearchParams.delete('onBody'); // Remove onBody when selecting category
+        router.push(`?${newSearchParams.toString()}`);
+
+        // Save to localStorage as fallback
+        localStorage.setItem('sharedListLastCategory', categoryId);
+        localStorage.removeItem('sharedListLastOnBody');
+      }
+    } else {
+      // Remove category from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('category');
+      router.push(
+        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
+      );
+
+      // Remove from localStorage
+      localStorage.removeItem('sharedListLastCategory');
+    }
+  };
+
+  // Handle onBody filter changes
+  const handleOnBodyChange = (onBody: boolean) => {
+    setShowOnBodyOnly(onBody);
+    setSelectedCategory(null); // Disable category filter when selecting onBody
+
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+
+    if (onBody) {
+      // Update URL with onBody parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('onBody', 'true');
+      newSearchParams.delete('category'); // Remove category when selecting onBody
+      router.push(`?${newSearchParams.toString()}`);
+
+      // Save to localStorage as fallback
+      localStorage.setItem('sharedListLastOnBody', 'true');
+      localStorage.removeItem('sharedListLastCategory');
+    } else {
+      // Remove onBody from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('onBody');
+      router.push(
+        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
+      );
+
+      // Remove from localStorage
+      localStorage.removeItem('sharedListLastOnBody');
+    }
+  };
 
   return (
     <main className="container mx-auto min-h-screen p-16">
@@ -342,10 +499,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
       {/* Category Menu */}
       <div className="flex gap-x-2 no-scrollbar my-8 p-2">
         <button
-          onClick={() => {
-            setSelectedCategory(null);
-            setShowOnBodyOnly(false);
-          }}
+          onClick={() => handleCategoryChange(null)}
           className={`menu-category text-md ${
             selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
           }`}
@@ -355,10 +509,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
         {categories.map((category) => (
           <button
             key={category._id}
-            onClick={() => {
-              setSelectedCategory(category._id);
-              setShowOnBodyOnly(false);
-            }}
+            onClick={() => handleCategoryChange(category._id)}
             className={`menu-category text-md ${
               selectedCategory === category._id ? 'menu-active' : ''
             }`}
@@ -367,10 +518,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
           </button>
         ))}
         <button
-          onClick={() => {
-            setSelectedCategory(null);
-            setShowOnBodyOnly(true);
-          }}
+          onClick={() => handleOnBodyChange(true)}
           className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
         >
           On body

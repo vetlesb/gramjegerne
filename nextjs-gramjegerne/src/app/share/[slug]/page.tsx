@@ -3,7 +3,7 @@ import {client} from '@/sanity/client';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import {notFound} from 'next/navigation';
 import {useParams} from 'next/navigation';
-import {useEffect, useState} from 'react';
+import {useEffect, useState, Suspense} from 'react';
 import {Item} from '@/types/list';
 import SharePageClient from './SharePageClient';
 
@@ -95,5 +95,9 @@ export default function SharePage() {
     return <div>Loading...</div>;
   }
 
-  return <SharePageClient list={list} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SharePageClient list={list} />
+    </Suspense>
+  );
 }
