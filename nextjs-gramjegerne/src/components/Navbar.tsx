@@ -45,7 +45,7 @@ export function Navbar() {
           {/* Menu items and auth buttons together */}
 
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto menu-collapse">
-            {session && !isSharePage && (
+            {session && (
               <ul className="text-xl flex flex-col md:flex-row gap-4 md:gap-x-2 w-full md:w-auto pt-8 md:pt-0 min-h-screen md:min-h-0">
                 <li
                   className={
@@ -54,7 +54,7 @@ export function Navbar() {
                 >
                   <Link
                     className="text-lg block w-full"
-                    href="../"
+                    href="/"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Gear

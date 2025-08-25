@@ -190,7 +190,7 @@ export default function Page() {
                   onClick={() => setSelectedFilter('shared')}
                   className={`menu-category text-md ${selectedFilter === 'shared' ? 'menu-active' : ''}`}
                 >
-                  Shared with me
+                  Shared
                 </button>
               </div>
 
