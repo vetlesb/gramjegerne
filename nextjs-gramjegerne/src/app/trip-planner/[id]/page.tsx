@@ -43,8 +43,6 @@ export default function TripViewPage() {
   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
   const [isEditingRoute, setIsEditingRoute] = useState<boolean>(false);
   const [editingSpot, setEditingSpot] = useState<CampingSpot | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<TripMapRef>(null);
   const router = useRouter();
   const params = useParams();
@@ -55,9 +53,6 @@ export default function TripViewPage() {
   useEffect(() => {
     const fetchTrip = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
         const response = await fetch(`/api/trips/${tripId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch trip');
@@ -71,10 +66,7 @@ export default function TripViewPage() {
         }
       } catch (error) {
         console.error('Failed to fetch trip:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch trip');
         router.push('/trip-planner');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -112,7 +104,6 @@ export default function TripViewPage() {
         }
       } catch (error) {
         console.error('Failed to save trip plan:', error);
-        setError(error instanceof Error ? error.message : 'Failed to save trip');
       }
     },
     [tripPlan?._id],
@@ -463,7 +454,7 @@ export default function TripViewPage() {
                   <p className="text-white/50 text-sm">No camping spots added yet.</p>
                 ) : (
                   <div className="space-y-3">
-                    {tripPlan.campingSpots.map((spot, index) => (
+                    {tripPlan.campingSpots.map((spot) => (
                       <div key={spot._key} className="map-card p-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
@@ -515,7 +506,7 @@ export default function TripViewPage() {
                   <p className="text-white/50 text-sm">No routes added yet.</p>
                 ) : (
                   <div className="space-y-3">
-                    {tripPlan.routes.map((route, index) => (
+                    {tripPlan.routes.map((route) => (
                       <div key={route._key} className="map-card p-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">

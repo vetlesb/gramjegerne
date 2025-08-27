@@ -1,7 +1,6 @@
 'use client';
 import {useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback} from 'react';
 import * as L from 'leaflet';
-import {Icon} from '@/components/Icon';
 import {CampingSpot, Route} from '@/types';
 
 // Fix for default markers in Leaflet
@@ -15,6 +14,13 @@ L.Icon.Default.mergeOptions({
 interface Coordinates {
   lat: number;
   lng: number;
+}
+
+interface SearchResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+  place_id: string;
 }
 
 interface TripMapProps {
@@ -48,10 +54,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const [isMapReady, setIsMapReady] = useState(false);
-    const [mapError, setMapError] = useState<string | null>(null);
+    const [mapError] = useState<string | null>(null);
     const [showLayerInfo, setShowLayerInfo] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
 
@@ -79,7 +85,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     }, []);
 
     // Zoom to search result
-    const zoomToSearchResult = useCallback((result: any) => {
+    const zoomToSearchResult = useCallback((result: SearchResult) => {
       if (mapInstanceRef.current) {
         const lat = parseFloat(result.lat);
         const lon = parseFloat(result.lon);
@@ -105,23 +111,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       },
       [searchPlaces],
     );
-
-    // Function to get current map view state
-    const getCurrentMapView = () => {
-      if (!mapInstanceRef.current) return null;
-      const map = mapInstanceRef.current;
-      return {
-        center: map.getCenter(),
-        zoom: map.getZoom(),
-      };
-    };
-
-    // Function to restore map view state
-    const restoreMapView = (view: {center: L.LatLng; zoom: number}) => {
-      if (!mapInstanceRef.current) return;
-      const map = mapInstanceRef.current;
-      map.setView(view.center, view.zoom);
-    };
 
     // Expose map functions to parent component
     useImperativeHandle(
@@ -501,5 +490,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     );
   },
 );
+
+TripMap.displayName = 'TripMap';
 
 export default TripMap;

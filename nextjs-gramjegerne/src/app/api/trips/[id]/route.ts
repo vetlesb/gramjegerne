@@ -3,7 +3,7 @@ import {getServerSession} from 'next-auth';
 import {authOptions} from '../../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
 
-export async function GET(request: NextRequest, {params}: {params: {id: string}}) {
+export async function GET(request: NextRequest, {params}: {params: Promise<{id: string}>}) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, {params}: {params: {id: string}}
       return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
-    const {id} = params;
+    const {id} = await params;
 
     // Get user reference from Sanity
     const userQuery = `*[_type == "user" && email == $email][0]`;
