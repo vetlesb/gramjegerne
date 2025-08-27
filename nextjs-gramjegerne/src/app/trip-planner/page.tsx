@@ -3,12 +3,12 @@ import {useState, useCallback, useEffect} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
 import {useRouter} from 'next/navigation';
-import {TripDocument} from '@/types';
+import {TripListItem} from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 export default function TripPlannerPage() {
-  const [tripPlans, setTripPlans] = useState<TripDocument[]>([]);
+  const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -198,13 +198,13 @@ export default function TripPlannerPage() {
                         <li className="gap-x-3">
                           <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                             <Icon name="category" width={16} height={16} />
-                            {plan.campingSpots?.length || 0} spots
+                            {plan.campingSpotsCount || 0} spots
                           </p>
                         </li>
                         <li className="gap-x-3">
                           <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                             <Icon name="tree" width={16} height={16} />
-                            {plan.routes?.length || 0} routes
+                            {plan.routesCount || 0} routes
                           </p>
                         </li>
                       </ul>

@@ -434,7 +434,7 @@ export default function TripViewPage() {
                 onClick={() => setActiveTab('locations')}
                 className={activeTab === 'locations' ? 'tab-active' : 'tab'}
               >
-                Locations ({tripPlan.campingSpots.length})
+                Spots ({tripPlan.campingSpots.length})
               </button>
               <button
                 onClick={() => setActiveTab('routes')}
@@ -592,7 +592,7 @@ export default function TripViewPage() {
                 title="New location"
               >
                 <Icon name="add" width={20} height={20} />
-                New Location
+                New Spot
               </button>
             ) : (
               <button

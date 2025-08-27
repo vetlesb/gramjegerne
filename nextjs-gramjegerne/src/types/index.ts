@@ -131,3 +131,19 @@ export interface TripDocument {
   _createdAt: string;
   _updatedAt: string;
 }
+
+// Simplified trip interface for listing page (with counts instead of full arrays)
+export interface TripListItem {
+  _id: string;
+  name: string;
+  description?: string;
+  image?: {
+    asset: ImageAsset;
+  };
+  startDate?: string;
+  endDate?: string;
+  campingSpotsCount: number;
+  routesCount: number;
+  _createdAt: string;
+  _updatedAt: string;
+}
