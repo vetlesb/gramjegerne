@@ -414,8 +414,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     }, [isDrawingRoute, isMapReady, onRoutePointAdd]);
 
     return (
-      <div className="w-full h-full min-h-[600px] rounded-2xl overflow-hidden border border-white/10 relative">
-        <div ref={mapRef} className="w-full h-full min-h-[600px]" />
+      <div className="w-full h-full min-h-[300px] lg:min-h-[600px] rounded-2xl overflow-hidden border border-white/10 relative">
+        <div ref={mapRef} className="w-full h-full min-h-[300px] lg:min-h-[600px]" />
 
         {/* Error Display */}
         {mapError && (

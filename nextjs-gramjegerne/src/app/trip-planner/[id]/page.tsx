@@ -403,9 +403,9 @@ export default function TripViewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen w-screen flex">
+      <div className="h-screen w-screen flex flex-col lg:flex-row">
         {/* Main Content */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative h-1/2 lg:h-full max-h-1/2 lg:max-h-full overflow-hidden">
           <TripMap
             ref={mapRef}
             campingSpots={tripPlan.campingSpots || []}
@@ -421,12 +421,12 @@ export default function TripViewPage() {
           />
         </div>
 
-        {/* Right Dock */}
-        <div className="w-96 bg-background flex flex-col">
+        {/* Right Dock / Bottom Dock on Mobile */}
+        <div className="w-full lg:w-96 h-1/2 lg:h-full max-h-1/2 lg:max-h-full bg-background flex flex-col overflow-hidden">
           {/* Header Section - Fixed */}
-          <div className="px-4 pt-4">
+          <div className="px-4 pt-4 lg:pt-4 flex-shrink-0">
             {/* Trip Header with Back Button */}
-            <div className="flex items-center bg-dimmed justify-between mb-6 p-4 rounded-lg">
+            <div className="flex items-center bg-dimmed justify-between mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-2xl text-accent font-medium">{tripPlan.name}</h2>
@@ -445,7 +445,7 @@ export default function TripViewPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex mb-6">
+            <div className="flex mb-4 lg:mb-6">
               <button
                 onClick={() => setActiveTab('locations')}
                 className={activeTab === 'locations' ? 'tab-active' : 'tab'}
@@ -462,7 +462,7 @@ export default function TripViewPage() {
           </div>
 
           {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto p-2">
+          <div className="flex-1 overflow-y-auto p-2 lg:p-2 min-h-0">
             {/* Locations Tab */}
             {activeTab === 'locations' && (
               <div>
