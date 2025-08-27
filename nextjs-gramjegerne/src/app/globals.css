@@ -256,6 +256,18 @@ li.product-list:hover {
   box-shadow: none;
   border: 0px;
 }
+.product-map {
+  gap: 4px;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: none;
+  border: 1px solid var(--bg-dimmed);
+}
+.product-map:hover {
+  border: 1px solid var(--fg-accent);
+}
+
 .map-card {
   display: grid;
   background-color: var(--bg-dimmed);

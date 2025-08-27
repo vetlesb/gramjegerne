@@ -478,7 +478,7 @@ export default function TripViewPage() {
                   className="button-create text-sm p-2 hover:bg-white/10"
                   title="Back to trips"
                 >
-                  Back to trips
+                  Back
                 </button>
               </div>
             </div>

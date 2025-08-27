@@ -144,6 +144,9 @@ export interface TripListItem {
   endDate?: string;
   campingSpotsCount: number;
   routesCount: number;
+  routes: Array<{
+    waypoints: Array<{lat: number; lng: number}>;
+  }>;
   _createdAt: string;
   _updatedAt: string;
 }

@@ -83,6 +83,41 @@ export default function TripPlannerPage() {
     }
   }, [newPlanName]);
 
+  // Helper function to calculate route distance using Haversine formula
+  const calculateRouteDistance = (waypoints: Array<{lat: number; lng: number}>): number => {
+    if (waypoints.length < 2) return 0;
+
+    let totalDistance = 0;
+    for (let i = 1; i < waypoints.length; i++) {
+      const prev = waypoints[i - 1];
+      const curr = waypoints[i];
+
+      // Haversine formula for great circle distance
+      const R = 6371; // Earth's radius in km
+      const dLat = ((curr.lat - prev.lat) * Math.PI) / 180;
+      const dLng = ((curr.lng - prev.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((prev.lat * Math.PI) / 180) *
+          Math.cos((curr.lat * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      totalDistance += R * c;
+    }
+
+    return totalDistance;
+  };
+
+  // Calculate total trip distance from all routes
+  const calculateTotalTripDistance = (
+    routes: Array<{waypoints: Array<{lat: number; lng: number}>}>,
+  ): number => {
+    return routes.reduce((total, route) => {
+      return total + calculateRouteDistance(route.waypoints);
+    }, 0);
+  };
+
   // Delete trip plan
   const handleDeletePlan = useCallback(async (planId: string) => {
     try {
@@ -159,60 +194,44 @@ export default function TripPlannerPage() {
               Create your first trip to start planning adventures.
             </div>
           ) : (
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
+            <div className="space-y-2">
               {tripPlans.map((plan) => (
-                <li key={plan._id} className="product-list flex flex-col basis-full">
-                  <div className="flex flex-col gap-y-4">
-                    <div className="relative">
-                      <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
-                        <button
-                          onClick={() => handleDeletePlan(plan._id)}
-                          className="button-trans"
-                          title="Delete trip"
-                          disabled={isLoading}
-                        >
-                          <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                            <Icon name="delete" width={24} height={24} />
-                          </div>
-                        </button>
-                      </div>
-                      <div
-                        className="h-full w-full aspect-video flex items-center justify-center placeholder_image cursor-pointer bg-white/5 border border-white/10 rounded-md"
-                        onClick={() => handleOpenTrip(plan._id)}
-                      >
-                        <div className="text-center text-white/50">
-                          <Icon name="tree" width={48} height={48} className="mx-auto mb-2" />
-                          <p className="text-sm">Trip Preview</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-y-1 gap-x-4 pb-4 pl-4 pr-4 pt-2">
-                      <h2
-                        className="nav-logo text-3xl text-accent cursor-pointer"
-                        onClick={() => handleOpenTrip(plan._id)}
-                      >
-                        {plan.name}
-                      </h2>
-
-                      <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
-                        <li className="gap-x-3">
-                          <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
-                            <Icon name="category" width={16} height={16} />
-                            {plan.campingSpotsCount || 0} spots
-                          </p>
-                        </li>
-                        <li className="gap-x-3">
-                          <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
-                            <Icon name="tree" width={16} height={16} />
-                            {plan.routesCount || 0} routes
-                          </p>
-                        </li>
-                      </ul>
+                <div
+                  key={plan._id}
+                  className="product-map flex items-center justify-between cursor-pointer"
+                  onClick={() => handleOpenTrip(plan._id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{plan.name}</h3>
+                    <div className="flex items-center gap-x-1 mt-1">
+                      <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                        {plan.campingSpotsCount || 0} spots
+                      </span>
+                      <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                        {plan.routesCount || 0} routes
+                      </span>
+                      {plan.routes && plan.routes.length > 0 && (
+                        <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                          {calculateTotalTripDistance(plan.routes).toFixed(1)} km
+                        </span>
+                      )}
                     </div>
                   </div>
-                </li>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePlan(plan._id);
+                    }}
+                    className="button-ghost p-2 text-white rounded-md transition-colors"
+                    title="Delete trip"
+                    disabled={isLoading}
+                  >
+                    <Icon name="delete" width={20} height={20} />
+                  </button>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 

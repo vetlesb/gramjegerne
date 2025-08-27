@@ -30,6 +30,7 @@ export async function GET() {
       endDate,
       "campingSpotsCount": count(campingSpots),
       "routesCount": count(routes),
+      "routes": routes[]{waypoints},
       image
     }`;
 
