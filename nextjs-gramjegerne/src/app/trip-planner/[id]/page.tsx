@@ -50,26 +50,6 @@ export default function TripViewPage() {
   const [activeTab, setActiveTab] = useState('locations');
   const [isDockVisible, setIsDockVisible] = useState(false);
 
-  // Handle swipe down to close dock on mobile
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    if (touch) {
-      (e.currentTarget as HTMLElement).dataset.startY = touch.clientY.toString();
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const startY = parseFloat((e.currentTarget as HTMLElement).dataset.startY || '0');
-    const touch = e.changedTouches[0];
-    if (touch && startY) {
-      const deltaY = touch.clientY - startY;
-      // If swiped down more than 100px, close dock
-      if (deltaY > 100) {
-        setIsDockVisible(false);
-      }
-    }
-  }, []);
-
   // Auto-hide dock on mobile when starting creation modes
   const handleStartAddingSpot = useCallback(() => {
     setIsAddingSpot(true);
@@ -481,16 +461,9 @@ export default function TripViewPage() {
           rounded-t-2xl lg:rounded-none
           z-[1000] lg:z-auto
         `}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
         >
-          {/* Mobile Drag Handle */}
-          <div className="lg:hidden flex justify-center py-2">
-            <div className="w-12 h-1 bg-white/20 rounded-full"></div>
-          </div>
-
           {/* Header Section - Fixed */}
-          <div className="px-4 pt-2 lg:pt-4 flex-shrink-0">
+          <div className="px-4 pt-4 lg:pt-4 flex-shrink-0">
             {/* Trip Header with Back Button */}
             <div className="flex items-center bg-primary justify-between mb-2 lg:mb-4 p-1 lg:p-4 rounded-lg">
               <div className="flex items-center gap-3">
