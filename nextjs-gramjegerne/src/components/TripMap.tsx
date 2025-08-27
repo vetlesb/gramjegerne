@@ -334,14 +334,14 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       `;
         marker.bindPopup(popupContent);
 
-        // Add click handler
-        if (onSpotClick) {
+        // Add click handler (disabled during route drawing)
+        if (onSpotClick && !isDrawingRoute) {
           marker.on('click', () => onSpotClick(spot));
         }
 
         marker.addTo(map);
       });
-    }, [campingSpots, isMapReady, onSpotClick]);
+    }, [campingSpots, isMapReady, onSpotClick, isDrawingRoute]);
 
     // Add routes to map
     useEffect(() => {
@@ -377,14 +377,14 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       `;
         polyline.bindPopup(popupContent);
 
-        // Add click handler
-        if (onRouteClick) {
+        // Add click handler (disabled during route drawing)
+        if (onRouteClick && !isDrawingRoute) {
           polyline.on('click', () => onRouteClick(route));
         }
 
         polyline.addTo(map);
       });
-    }, [routes, isMapReady, onRouteClick]);
+    }, [routes, isMapReady, onRouteClick, isDrawingRoute]);
 
     // Handle route drawing mode
     useEffect(() => {

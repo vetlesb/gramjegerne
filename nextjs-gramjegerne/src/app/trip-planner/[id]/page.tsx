@@ -230,6 +230,18 @@ export default function TripViewPage() {
     [currentRoute],
   );
 
+  // Undo last route waypoint
+  const handleUndoLastPoint = useCallback(() => {
+    if (!currentRoute || currentRoute.waypoints.length <= 1) return;
+
+    const updatedRoute = {
+      ...currentRoute,
+      waypoints: currentRoute.waypoints.slice(0, -1), // Remove last waypoint
+    };
+
+    setCurrentRoute(updatedRoute);
+  }, [currentRoute]);
+
   // Finish route
   const handleFinishRoute = useCallback(() => {
     if (!currentRoute || !tripPlan || currentRoute.waypoints.length < 2) return;
@@ -720,6 +732,21 @@ export default function TripViewPage() {
                     <span className="text-sm text-white/50">
                       (~{calculateRouteDistance(currentRoute.waypoints).toFixed(1)}km)
                     </span>
+                  )}
+                  {/* Undo last point button */}
+                  {currentRoute.waypoints.length > 1 && (
+                    <button
+                      onClick={handleUndoLastPoint}
+                      className="ml-2 p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                      title="Remove last waypoint"
+                    >
+                      <Icon
+                        name="undo"
+                        width={16}
+                        height={16}
+                        className="text-white/70 hover:text-accent"
+                      />
+                    </button>
                   )}
                 </div>
               </div>
