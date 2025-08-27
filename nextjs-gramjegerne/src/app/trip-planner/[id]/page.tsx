@@ -473,7 +473,7 @@ export default function TripViewPage() {
         <div
           className={`
           lg:relative lg:w-96 lg:h-full lg:bg-dimmed lg:flex lg:flex-col lg:overflow-hidden lg:translate-y-0 lg:opacity-100
-          ${isDockVisible ? 'fixed inset-x-0 bottom-0 top-1/3 translate-y-0 opacity-100' : 'hidden translate-y-full opacity-0'} lg:flex
+          ${isDockVisible ? 'fixed inset-x-0 bottom-0 top-1/4 translate-y-0 opacity-100' : 'hidden translate-y-full opacity-0'} lg:flex
           transition-all duration-300 ease-in-out lg:transition-none
           bg-primary backdrop-blur-sm lg:bg-dimmed lg:backdrop-blur-none
           flex flex-col overflow-hidden
@@ -492,17 +492,17 @@ export default function TripViewPage() {
           {/* Header Section - Fixed */}
           <div className="px-4 pt-2 lg:pt-4 flex-shrink-0">
             {/* Trip Header with Back Button */}
-            <div className="flex items-center bg-primary justify-between mb-4 lg:mb-6 p-2 lg:p-4 rounded-lg">
+            <div className="flex items-center bg-primary justify-between mb-2 lg:mb-4 p-1 lg:p-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-2xl text-accent font-medium">{tripPlan.name}</h2>
+                  <h2 className="lg:text-2xl text-lg text-accent font-medium">{tripPlan.name}</h2>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {/* Back to Trips Button */}
                 <button
                   onClick={() => router.push('/trip-planner')}
-                  className="button-create p-2 hover:bg-white/10"
+                  className="button-create text-sm p-2 hover:bg-white/10"
                   title="Back to trips"
                 >
                   Back to trips
@@ -535,9 +535,9 @@ export default function TripViewPage() {
                 {tripPlan.campingSpots.length === 0 ? (
                   <p className="text-white/50 text-sm">No camping spots added yet.</p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-1 lg:space-y-3">
                     {tripPlan.campingSpots.map((spot) => (
-                      <div key={spot._key} className="map-card p-2">
+                      <div key={spot._key} className="map-card lg:p-2 p-1">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <button
@@ -587,7 +587,7 @@ export default function TripViewPage() {
                 {tripPlan.routes.length === 0 ? (
                   <p className="text-white/50 text-sm">No routes added yet.</p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-1 lg:space-y-3">
                     {tripPlan.routes.map((route) => (
                       <div key={route._key} className="map-card p-2">
                         <div className="flex items-start justify-between gap-2">
