@@ -74,6 +74,21 @@ export function Navbar() {
                     Lists
                   </Link>
                 </li>
+                <li
+                  className={
+                    pathname === '/trip-planner'
+                      ? 'menu-active flex text-center'
+                      : 'menu-item flex text-center'
+                  }
+                >
+                  <Link
+                    className="text-lg block w-full"
+                    href="/trip-planner"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Trips (Beta)
+                  </Link>
+                </li>
               </ul>
             )}
           </div>

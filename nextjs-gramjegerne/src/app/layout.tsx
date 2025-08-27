@@ -35,33 +35,36 @@ const apfel = localFont({
 export default function RootLayout({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith('/auth/');
+  const isTripViewPage = pathname?.startsWith('/trip-planner/') && pathname !== '/trip-planner';
 
   return (
     <html lang="en">
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
           <Providers>
-            {!isAuthPage && <Navbar />}
+            {!isAuthPage && !isTripViewPage && <Navbar />}
             {children}
-            <ProtectedRoute>
-              <div className="flex flex-col md:flex-row justify-between">
-                <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
-                  Gramjegerne
+            {!isTripViewPage && (
+              <ProtectedRoute>
+                <div className="flex flex-col md:flex-row justify-between">
+                  <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
+                    Gramjegerne
+                  </div>
+                  <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">
+                    <ThemeSelector />
+                    <Link href="mailto:gramjegerne@gmail.com" className="menu-item">
+                      Contact
+                    </Link>{' '}
+                    <button
+                      onClick={() => signOut()}
+                      className="menu-item text-lg flex items-center w-full md:w-auto gap-x-1 justify-center"
+                    >
+                      Log out
+                    </button>
+                  </div>
                 </div>
-                <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">
-                  <ThemeSelector />
-                  <Link href="mailto:gramjegerne@gmail.com" className="menu-item">
-                    Contact
-                  </Link>{' '}
-                  <button
-                    onClick={() => signOut()}
-                    className="menu-item text-lg flex items-center w-full md:w-auto gap-x-1 justify-center"
-                  >
-                    Log out
-                  </button>
-                </div>
-              </div>
-            </ProtectedRoute>
+              </ProtectedRoute>
+            )}
           </Providers>
         </ThemeProvider>
         <Toaster />
