@@ -48,6 +48,36 @@ export default function TripViewPage() {
   const params = useParams();
   const tripId = params.id as string;
   const [activeTab, setActiveTab] = useState('locations');
+  const [isDockVisible, setIsDockVisible] = useState(false);
+
+  // Handle swipe down to close dock on mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) {
+      (e.currentTarget as HTMLElement).dataset.startY = touch.clientY.toString();
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const startY = parseFloat((e.currentTarget as HTMLElement).dataset.startY || '0');
+    const touch = e.changedTouches[0];
+    if (touch && startY) {
+      const deltaY = touch.clientY - startY;
+      // If swiped down more than 100px, close dock
+      if (deltaY > 100) {
+        setIsDockVisible(false);
+      }
+    }
+  }, []);
+
+  // Auto-hide dock on mobile when starting creation modes
+  const handleStartAddingSpot = useCallback(() => {
+    setIsAddingSpot(true);
+    // Auto-hide dock on mobile
+    if (window.innerWidth < 1024) {
+      setIsDockVisible(false);
+    }
+  }, []);
 
   // Load trip plan from Sanity on mount
   useEffect(() => {
@@ -193,6 +223,11 @@ export default function TripViewPage() {
     setCurrentRoute(newRoute);
     setIsDrawingRoute(true);
 
+    // Auto-hide dock on mobile
+    if (window.innerWidth < 1024) {
+      setIsDockVisible(false);
+    }
+
     // Restore map view after starting route
     if (currentView) {
       setTimeout(() => {
@@ -267,6 +302,10 @@ export default function TripViewPage() {
     setIsEditingRoute(true);
     setCurrentRoute({...route, waypoints: [...route.waypoints]});
     setIsDrawingRoute(true);
+    // Auto-hide dock on mobile
+    if (window.innerWidth < 1024) {
+      setIsDockVisible(false);
+    }
   }, []);
 
   // Delete route
@@ -403,9 +442,9 @@ export default function TripViewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen w-screen flex flex-col lg:flex-row">
-        {/* Main Content */}
-        <div className="flex-1 relative h-1/2 lg:h-full max-h-1/2 lg:max-h-full overflow-hidden">
+      <div className="h-screen w-screen flex lg:flex-row relative">
+        {/* Main Content - Full screen on mobile */}
+        <div className="flex-1 relative h-full overflow-hidden">
           <TripMap
             ref={mapRef}
             campingSpots={tripPlan.campingSpots || []}
@@ -419,29 +458,56 @@ export default function TripViewPage() {
             onMapClick={handleMapClick}
             onRoutePointAdd={handleRoutePointAdd}
           />
+
+          {/* Mobile Toggle Button */}
+          <button
+            onClick={() => setIsDockVisible(!isDockVisible)}
+            className="lg:hidden absolute top-4 left-4 z-[1001] bg-primary text-white rounded-full p-3 shadow-2xl transition-all duration-200"
+            title={isDockVisible ? 'Hide trip details' : 'Show trip details'}
+          >
+            <Icon name={isDockVisible ? 'close' : 'menu'} width={20} height={20} />
+          </button>
         </div>
 
-        {/* Right Dock / Bottom Dock on Mobile */}
-        <div className="w-full lg:w-96 h-1/2 lg:h-full max-h-1/2 lg:max-h-full bg-background flex flex-col overflow-hidden">
+        {/* Desktop Right Dock / Mobile Overlay Dock */}
+        <div
+          className={`
+          lg:relative lg:w-96 lg:h-full lg:bg-dimmed lg:flex lg:flex-col lg:overflow-hidden lg:translate-y-0 lg:opacity-100
+          ${isDockVisible ? 'fixed inset-x-0 bottom-0 top-1/3 translate-y-0 opacity-100' : 'hidden translate-y-full opacity-0'} lg:flex
+          transition-all duration-300 ease-in-out lg:transition-none
+          bg-primary backdrop-blur-sm lg:bg-dimmed lg:backdrop-blur-none
+          flex flex-col overflow-hidden
+          border-t lg:border-t-0 lg:border-l border-white/10
+          rounded-t-2xl lg:rounded-none
+          z-[1000] lg:z-auto
+        `}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Mobile Drag Handle */}
+          <div className="lg:hidden flex justify-center py-2">
+            <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+          </div>
+
           {/* Header Section - Fixed */}
-          <div className="px-4 pt-4 lg:pt-4 flex-shrink-0">
+          <div className="px-4 pt-2 lg:pt-4 flex-shrink-0">
             {/* Trip Header with Back Button */}
-            <div className="flex items-center bg-dimmed justify-between mb-4 lg:mb-6 p-3 lg:p-4 rounded-lg">
+            <div className="flex items-center bg-primary justify-between mb-4 lg:mb-6 p-2 lg:p-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-2xl text-accent font-medium">{tripPlan.name}</h2>
-                  <p className="text-sm text-white/70">
-                    Created: {new Date(tripPlan._createdAt).toLocaleDateString()}
-                  </p>
                 </div>
               </div>
-              <button
-                onClick={() => router.push('/trip-planner')}
-                className="button-ghost p-2 hover:bg-white/10"
-                title="Back to trips"
-              >
-                <Icon name="close" width={20} height={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Back to Trips Button */}
+                <button
+                  onClick={() => router.push('/trip-planner')}
+                  className="button-create p-2 hover:bg-white/10"
+                  title="Back to trips"
+                >
+                  Back to trips
+                </button>
+              </div>
             </div>
 
             {/* Tab Navigation */}
@@ -481,12 +547,12 @@ export default function TripViewPage() {
                               <h4 className="font-medium text-white truncate">{spot.name}</h4>
                             </button>
                             {spot.description && (
-                              <p className="text-sm text-white/70 mt-1 line-clamp-2">
+                              <p className="text-sm text-white mt-1 line-clamp-2">
                                 {spot.description}
                               </p>
                             )}
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
+                            <div className="flex flex-wrap mt-2">
+                              <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                 {spot.coordinates.lat.toFixed(4)}, {spot.coordinates.lng.toFixed(4)}
                               </span>
                             </div>
@@ -497,14 +563,14 @@ export default function TripViewPage() {
                               className="button-ghost p-1.5 min-w-0"
                               title="Edit spot"
                             >
-                              <Icon name="edit" width={14} height={14} />
+                              <Icon name="edit" width={20} height={20} />
                             </button>
                             <button
                               onClick={() => handleDeleteSpot(spot._key)}
                               className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
                               title="Delete spot"
                             >
-                              <Icon name="delete" width={14} height={14} />
+                              <Icon name="delete" width={20} height={20} />
                             </button>
                           </div>
                         </div>
@@ -533,11 +599,11 @@ export default function TripViewPage() {
                               <h4 className="font-medium text-white truncate">{route.name}</h4>
                             </button>
                             <div className="flex flex-wrap gap-1 mt-2">
-                              <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
+                              <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                 {route.waypoints.length} waypoints
                               </span>
                               {route.waypoints.length >= 2 && (
-                                <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
+                                <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                   {calculateRouteDistance(route.waypoints).toFixed(1)}km
                                 </span>
                               )}
@@ -549,14 +615,14 @@ export default function TripViewPage() {
                               className="button-ghost p-1.5 min-w-0"
                               title="Edit route"
                             >
-                              <Icon name="edit" width={14} height={14} />
+                              <Icon name="edit" width={20} height={20} />
                             </button>
                             <button
                               onClick={() => handleDeleteRoute(route._key)}
                               className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
                               title="Delete route"
                             >
-                              <Icon name="delete" width={14} height={14} />
+                              <Icon name="delete" width={20} height={20} />
                             </button>
                           </div>
                         </div>
@@ -602,7 +668,7 @@ export default function TripViewPage() {
           <div className="p-6 bg-background">
             {activeTab === 'locations' ? (
               <button
-                onClick={() => setIsAddingSpot(true)}
+                onClick={handleStartAddingSpot}
                 disabled={isDrawingRoute}
                 className="button-primary w-full text-lg flex items-center justify-center gap-2 py-3"
                 title="New location"

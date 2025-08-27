@@ -57,7 +57,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const mapInstanceRef = useRef<L.Map | null>(null);
     const [isMapReady, setIsMapReady] = useState(false);
     const [mapError] = useState<string | null>(null);
-    const [showLayerInfo, setShowLayerInfo] = useState(false);
+
     const [tilesLoading, setTilesLoading] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -326,8 +326,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         const popupContent = `
         <div class="p-2">
           <h3 class="font-bold text-lg mb-2">${spot.name}</h3>
-          ${spot.description ? `<p class="text-sm text-gray-700">${spot.description}</p>` : ''}
-          <p class="text-xs text-gray-600">
+          ${spot.description ? `<p class="text-sm text-accent">${spot.description}</p>` : ''}
+          <p class="text-xs text-primary">
             ${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}
           </p>
         </div>
@@ -371,8 +371,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         // Add popup
         const popupContent = `
         <div class="p-2">
-          <h3 class="font-bold text-lg mb-2">${route.name}</h3>
-          <p class="text-sm">${route.waypoints.length} waypoints</p>
+          <h3 class="font-bold text-lg mb-2 text-secondary">${route.name}</h3>
+          <p class="text-sm text-secondary">${route.waypoints.length} waypoints</p>
         </div>
       `;
         polyline.bindPopup(popupContent);
@@ -431,21 +431,21 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         )}
 
         {/* Map Controls Overlay */}
-        <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-2">
+        <div className="absolute bottom-16 left-4 z-[1000] flex flex-col gap-2">
           {/* Search Toggle Button */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="bg-background/90 backdrop-blur-sm rounded-lg p-2 border border-white/10 hover:bg-background/95 transition-colors"
+            className="bg-dimmed backdrop-blur-sm rounded-lg p-2 hover:bg-dimmed"
             title="Toggle search"
           >
-            <div className="w-5 h-5 flex items-center justify-center">
-              <span className="text-xs text-accent">🔍</span>
+            <div className="flex items-center justify-center">
+              <span className="text-sm text-accent w-fit px-2">Search</span>
             </div>
           </button>
 
           {/* Search Panel */}
           {showSearch && (
-            <div className="bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-white/10 max-w-64">
+            <div className="bg-dimmed backdrop-blur-sm rounded-lg p-3 border border-white/10 max-w-64">
               <h3 className="text-sm font-medium text-accent mb-2">Search Places</h3>
 
               {/* Search Input */}
@@ -455,7 +455,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                   value={searchQuery}
                   onChange={handleSearchInput}
                   placeholder="Search for places in Norway..."
-                  className="w-full p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 text-sm focus:border-accent focus:outline-none"
+                  className="w-full p-2"
                   autoFocus
                 />
                 {isSearching && (
@@ -487,46 +487,13 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
               {searchQuery && searchResults.length === 0 && !isSearching && (
                 <p className="text-xs text-white/50 text-center py-2">No places found</p>
               )}
-
-              <p className="text-xs text-white/50 mt-2">
-                Search for cities, mountains, lakes, etc.
-              </p>
-            </div>
-          )}
-
-          {/* Toggle Button */}
-          <button
-            onClick={() => setShowLayerInfo(!showLayerInfo)}
-            className="bg-background/90 backdrop-blur-sm rounded-lg p-2 border border-white/10 hover:bg-background/95 transition-colors"
-            title="Toggle layer information"
-          >
-            <div className="w-5 h-5 flex items-center justify-center">
-              <span className="text-xs text-accent">ℹ️</span>
-            </div>
-          </button>
-
-          {/* Layer Information Panel */}
-          {showLayerInfo && (
-            <div className="absolute bottom-4 left-4 bg-black/80 text-white p-3 rounded-lg text-xs max-w-48">
-              <h3 className="font-medium mb-2">Map Layers</h3>
-              <ul className="space-y-1">
-                <li>
-                  • <strong>OpenTopoMap</strong> - Terrain with contours
-                </li>
-                <li>
-                  • <strong>ESRI Satellite</strong> - High-quality aerial imagery
-                </li>
-              </ul>
-              <p className="text-white/70 mt-2 text-xs">
-                Use the layer control (top-right of map) to switch
-              </p>
             </div>
           )}
         </div>
 
         {/* Status Bar */}
         <div className="absolute bottom-4 left-4 z-[1000]">
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+          <div className="bg-dimmed backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
             <div className="text-xs text-white/70">
               {!isMapReady ? (
                 <span className="text-yellow-400">Loading map...</span>
