@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS - ensure map styles load properly */
+@import 'leaflet/dist/leaflet.css';
+
 :root {
   --font-apfel: 'ApfelGrotezk', sans-serif;
 }
@@ -44,12 +47,12 @@ body {
   right: 0;
 }
 
-button {
+.button-back {
   color: var(--fg-primary);
   padding: 1rem;
   border-radius: 4px;
 }
-button:hover {
+.button-back:hover {
   background-color: var(--bg-primary-hover);
 }
 .button-toggle {
@@ -249,6 +252,15 @@ li.product-list:hover {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 2rem;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border: 0px;
+}
+.map-card {
+  display: grid;
+  background-color: var(--bg-dimmed);
+  border-radius: 8px;
+  padding: 1rem;
   margin-bottom: 8px;
   box-shadow: none;
   border: 0px;

@@ -18,6 +18,10 @@ export interface Item {
   image?: {
     asset: ImageAsset;
   };
+  category?: {
+    _id: string;
+    title: string;
+  };
   size?: string;
   weight?: {weight: number; unit: string};
   quantity?: number;
@@ -41,6 +45,9 @@ export interface SharedListReference {
     _id: string;
     name: string;
     slug: {current: string};
+    image?: {
+      asset: ImageAsset;
+    };
     user: {
       _id: string;
       name: string;
@@ -54,10 +61,18 @@ export interface ListDocument {
   _id: string;
   slug: {current: string};
   name: string;
-
+  image?: {
+    asset: ImageAsset;
+  };
   days: number;
   weight: number;
   participants: number;
+  completed: boolean;
+  user: {
+    _ref: string;
+  };
+  _createdAt: string;
+  _updatedAt: string;
   items: Array<{
     _key: string;
     quantity?: number;
