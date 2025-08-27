@@ -484,7 +484,7 @@ export default function TripViewPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex mb-4 lg:mb-6">
+            <div className="flex mb-4 lg:mb-2">
               <button
                 onClick={() => setActiveTab('locations')}
                 className={activeTab === 'locations' ? 'tab-active' : 'tab'}
@@ -508,9 +508,9 @@ export default function TripViewPage() {
                 {tripPlan.campingSpots.length === 0 ? (
                   <p className="text-white/50 text-sm">No camping spots added yet.</p>
                 ) : (
-                  <div className="space-y-1 lg:space-y-3">
+                  <div className="space-y-1 lg:space-y-2">
                     {tripPlan.campingSpots.map((spot) => (
-                      <div key={spot._key} className="map-card lg:p-2 p-1">
+                      <div key={spot._key} className="map-card p-1 lg:p-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <button
@@ -540,7 +540,7 @@ export default function TripViewPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteSpot(spot._key)}
-                              className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
+                              className="button-ghost p-1.5 min-w-0"
                               title="Delete spot"
                             >
                               <Icon name="delete" width={20} height={20} />
@@ -560,9 +560,9 @@ export default function TripViewPage() {
                 {tripPlan.routes.length === 0 ? (
                   <p className="text-white/50 text-sm">No routes added yet.</p>
                 ) : (
-                  <div className="space-y-1 lg:space-y-3">
+                  <div className="space-y-1 lg:space-y-2">
                     {tripPlan.routes.map((route) => (
-                      <div key={route._key} className="map-card p-2">
+                      <div key={route._key} className="map-card p-1 lg:p-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <button
@@ -592,7 +592,7 @@ export default function TripViewPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteRoute(route._key)}
-                              className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
+                              className="button-ghost p-1.5 min-w-0"
                               title="Delete route"
                             >
                               <Icon name="delete" width={20} height={20} />
@@ -622,7 +622,7 @@ export default function TripViewPage() {
                             </span>
                             <button
                               onClick={() => handleRoutePointRemove(index)}
-                              className="text-red-400 hover:text-red-300 p-1"
+                              className=" p-1"
                               title="Remove waypoint"
                             >
                               <Icon name="delete" width={12} height={12} />

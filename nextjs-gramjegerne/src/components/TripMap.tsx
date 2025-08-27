@@ -414,7 +414,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     }, [isDrawingRoute, isMapReady, onRoutePointAdd]);
 
     return (
-      <div className="w-full h-full min-h-[300px] lg:min-h-[600px] rounded-2xl overflow-hidden border border-white/10 relative">
+      <div className="w-full h-full min-h-[300px] lg:min-h-[600px] overflow-hidden border border-white/10 relative">
         <div ref={mapRef} className="w-full h-full min-h-[300px] lg:min-h-[600px]" />
 
         {/* Error Display */}
@@ -431,7 +431,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         )}
 
         {/* Map Controls Overlay */}
-        <div className="absolute bottom-16 left-4 z-[1000] flex flex-col gap-2">
+        <div className="absolute lg:bottom-16 bottom-24 left-4 z-[1000] flex flex-col gap-2">
           {/* Search Toggle Button */}
           <button
             onClick={() => setShowSearch(!showSearch)}
