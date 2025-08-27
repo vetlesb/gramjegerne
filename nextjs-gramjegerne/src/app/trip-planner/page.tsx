@@ -3,97 +3,114 @@ import {useState, useCallback, useEffect} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
 import {useRouter} from 'next/navigation';
+import {TripDocument} from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-interface CampingSpot {
-  id: string;
-  name: string;
-  coordinates: Coordinates;
-  description?: string;
-  elevation?: number;
-}
-
-interface Route {
-  id: string;
-  name: string;
-  waypoints: Coordinates[];
-  color?: string;
-}
-
-interface TripPlan {
-  id: string;
-  name: string;
-  description?: string;
-  campingSpots: CampingSpot[];
-  routes: Route[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export default function TripPlannerPage() {
-  const [tripPlans, setTripPlans] = useState<TripPlan[]>([]);
+  const [tripPlans, setTripPlans] = useState<TripDocument[]>([]);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Load trip plans from localStorage on mount
+  // Load trip plans from Sanity on mount
   useEffect(() => {
-    const saved = localStorage.getItem('tripPlans');
-    if (saved) {
+    const fetchTrips = async () => {
       try {
-        const parsed = JSON.parse(saved);
-        setTripPlans(
-          parsed.map((plan: any) => ({
-            ...plan,
-            createdAt: new Date(plan.createdAt),
-            updatedAt: new Date(plan.updatedAt),
-          })),
-        );
-      } catch (error) {
-        console.error('Failed to parse saved trip plans:', error);
-      }
-    }
-  }, []);
+        setIsLoading(true);
+        setError(null);
 
-  // Save trip plans to localStorage
-  const saveTripPlans = useCallback((plans: TripPlan[]) => {
-    localStorage.setItem('tripPlans', JSON.stringify(plans));
-    setTripPlans(plans);
+        const response = await fetch('/api/getTrips');
+        if (!response.ok) {
+          throw new Error('Failed to fetch trips');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setTripPlans(data.trips);
+        } else {
+          throw new Error(data.error || 'Failed to fetch trips');
+        }
+      } catch (error) {
+        console.error('Failed to fetch trips:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch trips');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrips();
   }, []);
 
   // Create new trip plan
-  const handleCreatePlan = useCallback(() => {
+  const handleCreatePlan = useCallback(async () => {
     if (!newPlanName.trim()) return;
 
-    const newPlan: TripPlan = {
-      id: Date.now().toString(),
-      name: newPlanName.trim(),
-      campingSpots: [],
-      routes: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    const updatedPlans = [...tripPlans, newPlan];
-    saveTripPlans(updatedPlans);
-    setIsCreatingNew(false);
-    setNewPlanName('');
-  }, [newPlanName, tripPlans, saveTripPlans]);
+      const response = await fetch('/api/createTrip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newPlanName.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create trip');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Add the new trip to the list
+        setTripPlans((prev) => [data.trip, ...prev]);
+        setIsCreatingNew(false);
+        setNewPlanName('');
+      } else {
+        throw new Error(data.error || 'Failed to create trip');
+      }
+    } catch (error) {
+      console.error('Failed to create trip:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create trip');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [newPlanName]);
 
   // Delete trip plan
-  const handleDeletePlan = useCallback(
-    (planId: string) => {
-      const updatedPlans = tripPlans.filter((plan) => plan.id !== planId);
-      saveTripPlans(updatedPlans);
-    },
-    [tripPlans, saveTripPlans],
-  );
+  const handleDeletePlan = useCallback(async (planId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/deleteTrip?tripId=${planId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete trip');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Remove the trip from the list
+        setTripPlans((prev) => prev.filter((plan) => plan._id !== planId));
+      } else {
+        throw new Error(data.error || 'Failed to delete trip');
+      }
+    } catch (error) {
+      console.error('Failed to delete trip:', error);
+      setError(error instanceof Error ? error.message : 'Failed to delete trip');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Open trip for editing
   const handleOpenTrip = useCallback(
@@ -102,6 +119,18 @@ export default function TripPlannerPage() {
     },
     [router],
   );
+
+  if (isLoading && tripPlans.length === 0) {
+    return (
+      <ProtectedRoute>
+        <main className="container mx-auto min-h-screen p-16">
+          <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
+            Loading trips...
+          </div>
+        </main>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
@@ -112,10 +141,18 @@ export default function TripPlannerPage() {
             <button
               onClick={() => setIsCreatingNew(true)}
               className="button-create text-md flex items-center gap-2"
+              disabled={isLoading}
             >
               Create New Trip
             </button>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="text-red-400 text-center p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+              {error}
+            </div>
+          )}
 
           {tripPlans.length === 0 ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
@@ -124,14 +161,15 @@ export default function TripPlannerPage() {
           ) : (
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
               {tripPlans.map((plan) => (
-                <li key={plan.id} className="product-list flex flex-col basis-full">
+                <li key={plan._id} className="product-list flex flex-col basis-full">
                   <div className="flex flex-col gap-y-4">
                     <div className="relative">
                       <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
                         <button
-                          onClick={() => handleDeletePlan(plan.id)}
+                          onClick={() => handleDeletePlan(plan._id)}
                           className="button-trans"
                           title="Delete trip"
+                          disabled={isLoading}
                         >
                           <div className="flex items-center justify-center gap-x-1 w-full text-lg">
                             <Icon name="delete" width={24} height={24} />
@@ -140,7 +178,7 @@ export default function TripPlannerPage() {
                       </div>
                       <div
                         className="h-full w-full aspect-video flex items-center justify-center placeholder_image cursor-pointer bg-white/5 border border-white/10 rounded-md"
-                        onClick={() => handleOpenTrip(plan.id)}
+                        onClick={() => handleOpenTrip(plan._id)}
                       >
                         <div className="text-center text-white/50">
                           <Icon name="tree" width={48} height={48} className="mx-auto mb-2" />
@@ -151,7 +189,7 @@ export default function TripPlannerPage() {
                     <div className="flex flex-col gap-y-1 gap-x-4 pb-4 pl-4 pr-4 pt-2">
                       <h2
                         className="nav-logo text-3xl text-accent cursor-pointer"
-                        onClick={() => handleOpenTrip(plan.id)}
+                        onClick={() => handleOpenTrip(plan._id)}
                       >
                         {plan.name}
                       </h2>
@@ -160,13 +198,13 @@ export default function TripPlannerPage() {
                         <li className="gap-x-3">
                           <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                             <Icon name="category" width={16} height={16} />
-                            {plan.campingSpots.length} spots
+                            {plan.campingSpots?.length || 0} spots
                           </p>
                         </li>
                         <li className="gap-x-3">
                           <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                             <Icon name="tree" width={16} height={16} />
-                            {plan.routes.length} routes
+                            {plan.routes?.length || 0} routes
                           </p>
                         </li>
                       </ul>
@@ -180,8 +218,8 @@ export default function TripPlannerPage() {
 
         {/* Create New Plan Dialog */}
         {isCreatingNew && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
-            <div className="bg-background border border-white/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+          <div className="fixed inset-0 bg-dimmed/80 flex items-center justify-center z-[9999]">
+            <div className="bg-dimmed border border-white/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
               <h2 className="text-2xl text-accent mb-6">Create New Trip</h2>
 
               <div className="flex flex-col gap-4">
@@ -194,16 +232,17 @@ export default function TripPlannerPage() {
                     placeholder="e.g., Jotunheimen Summer 2024"
                     className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
                     autoFocus
+                    disabled={isLoading}
                   />
                 </label>
 
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={handleCreatePlan}
-                    disabled={!newPlanName.trim()}
+                    disabled={!newPlanName.trim() || isLoading}
                     className="button-primary flex-1"
                   >
-                    Create Trip
+                    {isLoading ? 'Creating...' : 'Create Trip'}
                   </button>
                   <button
                     onClick={() => {
@@ -211,6 +250,7 @@ export default function TripPlannerPage() {
                       setNewPlanName('');
                     }}
                     className="button-secondary flex-1"
+                    disabled={isLoading}
                   >
                     Cancel
                   </button>

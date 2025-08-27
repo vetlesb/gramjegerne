@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {TripDocument, CampingSpot, Route} from '@/types';
 
 // Dynamically import TripMap to avoid SSR issues with Leaflet
 const TripMap = dynamicImport(() => import('@/components/TripMap'), {
@@ -35,83 +36,87 @@ interface Coordinates {
   lng: number;
 }
 
-interface CampingSpot {
-  id: string;
-  name: string;
-  coordinates: Coordinates;
-  description?: string;
-  elevation?: number;
-}
-
-interface Route {
-  id: string;
-  name: string;
-  waypoints: Coordinates[];
-  color?: string;
-}
-
-interface TripPlan {
-  id: string;
-  name: string;
-  description?: string;
-  campingSpots: CampingSpot[];
-  routes: Route[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export default function TripViewPage() {
-  const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
+  const [tripPlan, setTripPlan] = useState<TripDocument | null>(null);
   const [isAddingSpot, setIsAddingSpot] = useState(false);
   const [isDrawingRoute, setIsDrawingRoute] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
   const [isEditingRoute, setIsEditingRoute] = useState<boolean>(false);
   const [editingSpot, setEditingSpot] = useState<CampingSpot | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<TripMapRef>(null);
   const router = useRouter();
   const params = useParams();
   const tripId = params.id as string;
   const [activeTab, setActiveTab] = useState('locations');
 
-  // Load trip plan from localStorage on mount
+  // Load trip plan from Sanity on mount
   useEffect(() => {
-    const saved = localStorage.getItem('tripPlans');
-    if (saved) {
+    const fetchTrip = async () => {
       try {
-        const parsed = JSON.parse(saved);
-        const plan = parsed.find((p: any) => p.id === tripId);
-        if (plan) {
-          setTripPlan({
-            ...plan,
-            createdAt: new Date(plan.createdAt),
-            updatedAt: new Date(plan.updatedAt),
-          });
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/trips/${tripId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch trip');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setTripPlan(data.trip);
         } else {
-          router.push('/trip-planner');
+          throw new Error(data.error || 'Failed to fetch trip');
         }
       } catch (error) {
-        console.error('Failed to parse saved trip plans:', error);
+        console.error('Failed to fetch trip:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch trip');
         router.push('/trip-planner');
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      router.push('/trip-planner');
+    };
+
+    if (tripId) {
+      fetchTrip();
     }
   }, [tripId, router]);
 
-  // Save trip plan to localStorage
-  const saveTripPlan = useCallback((plan: TripPlan) => {
-    const saved = localStorage.getItem('tripPlans');
-    if (saved) {
+  // Save trip plan to Sanity
+  const saveTripPlan = useCallback(
+    async (plan: Partial<TripDocument>) => {
+      if (!tripPlan?._id) return;
+
       try {
-        const parsed = JSON.parse(saved);
-        const updated = parsed.map((p: any) => (p.id === plan.id ? plan : p));
-        localStorage.setItem('tripPlans', JSON.stringify(updated));
-        setTripPlan(plan);
+        const response = await fetch('/api/updateTrip', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tripId: tripPlan._id,
+            updates: plan,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update trip');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setTripPlan(data.trip);
+        } else {
+          throw new Error(data.error || 'Failed to update trip');
+        }
       } catch (error) {
         console.error('Failed to save trip plan:', error);
+        setError(error instanceof Error ? error.message : 'Failed to save trip');
       }
-    }
-  }, []);
+    },
+    [tripPlan?._id],
+  );
 
   // Add camping spot
   const handleAddSpot = useCallback(
@@ -122,16 +127,15 @@ export default function TripViewPage() {
       const currentView = mapRef.current?.getCurrentView();
 
       const newSpot: CampingSpot = {
-        id: Date.now().toString(),
-        name: `Camping Spot ${tripPlan.campingSpots.length + 1}`,
+        _key: Date.now().toString(),
+        name: `Camping Spot ${(tripPlan.campingSpots?.length || 0) + 1}`,
         coordinates,
         description: '',
       };
 
       const updatedPlan = {
         ...tripPlan,
-        campingSpots: [...tripPlan.campingSpots, newSpot],
-        updatedAt: new Date(),
+        campingSpots: [...(tripPlan.campingSpots || []), newSpot],
       };
 
       saveTripPlan(updatedPlan);
@@ -155,10 +159,9 @@ export default function TripViewPage() {
 
       const updatedPlan = {
         ...tripPlan,
-        campingSpots: tripPlan.campingSpots.map((spot) =>
-          spot.id === updatedSpot.id ? updatedSpot : spot,
+        campingSpots: (tripPlan.campingSpots || []).map((spot) =>
+          spot._key === updatedSpot._key ? updatedSpot : spot,
         ),
-        updatedAt: new Date(),
       };
 
       saveTripPlan(updatedPlan);
@@ -169,13 +172,12 @@ export default function TripViewPage() {
 
   // Delete camping spot
   const handleDeleteSpot = useCallback(
-    (spotId: string) => {
+    (spotKey: string) => {
       if (!tripPlan) return;
 
       const updatedPlan = {
         ...tripPlan,
-        campingSpots: tripPlan.campingSpots.filter((spot) => spot.id !== spotId),
-        updatedAt: new Date(),
+        campingSpots: (tripPlan.campingSpots || []).filter((spot) => spot._key !== spotKey),
       };
 
       saveTripPlan(updatedPlan);
@@ -191,8 +193,8 @@ export default function TripViewPage() {
     const currentView = mapRef.current?.getCurrentView();
 
     const newRoute: Route = {
-      id: Date.now().toString(),
-      name: `Route ${tripPlan.routes.length + 1}`,
+      _key: Date.now().toString(),
+      name: `Route ${(tripPlan.routes?.length || 0) + 1}`,
       waypoints: [],
       color: '#FF0000',
     };
@@ -208,7 +210,7 @@ export default function TripViewPage() {
     }
   }, [tripPlan]);
 
-  // Add route waypoint
+  // Handle route point addition
   const handleRoutePointAdd = useCallback(
     (coordinates: Coordinates) => {
       if (!currentRoute) return;
@@ -217,7 +219,6 @@ export default function TripViewPage() {
         ...currentRoute,
         waypoints: [...currentRoute.waypoints, coordinates],
       };
-
       setCurrentRoute(updatedRoute);
     },
     [currentRoute],
@@ -245,7 +246,6 @@ export default function TripViewPage() {
     const updatedPlan = {
       ...tripPlan,
       routes: [...tripPlan.routes, currentRoute],
-      updatedAt: new Date(),
     };
 
     saveTripPlan(updatedPlan);
@@ -268,13 +268,12 @@ export default function TripViewPage() {
 
   // Delete route
   const handleDeleteRoute = useCallback(
-    (routeId: string) => {
+    (routeKey: string) => {
       if (!tripPlan) return;
 
       const updatedPlan = {
         ...tripPlan,
-        routes: tripPlan.routes.filter((route) => route.id !== routeId),
-        updatedAt: new Date(),
+        routes: (tripPlan.routes || []).filter((route) => route._key !== routeKey),
       };
 
       saveTripPlan(updatedPlan);
@@ -282,22 +281,21 @@ export default function TripViewPage() {
     [tripPlan, saveTripPlan],
   );
 
-  // Save edited route
-  const handleSaveEditedRoute = useCallback(() => {
-    if (!tripPlan || !currentRoute || !isEditingRoute) return;
+  // Save current route
+  const handleSaveRoute = useCallback(() => {
+    if (!tripPlan || !currentRoute) return;
 
-    // Remove the old route and add the edited one
     const updatedPlan = {
       ...tripPlan,
-      routes: tripPlan.routes.map((route) => (route.id === currentRoute.id ? currentRoute : route)),
-      updatedAt: new Date(),
+      routes: (tripPlan.routes || []).map((route) =>
+        route._key === currentRoute._key ? currentRoute : route,
+      ),
     };
 
     saveTripPlan(updatedPlan);
     setCurrentRoute(null);
     setIsDrawingRoute(false);
-    setIsEditingRoute(false);
-  }, [tripPlan, currentRoute, isEditingRoute, saveTripPlan]);
+  }, [tripPlan, currentRoute, saveTripPlan]);
 
   // Cancel route editing
   const handleCancelRouteEdit = useCallback(() => {
@@ -305,15 +303,12 @@ export default function TripViewPage() {
     setCurrentRoute(null);
   }, []);
 
+  // Handle map click for camping spots only
   const handleMapClick = useCallback(
-    (coordinates: {lat: number; lng: number}) => {
-      if (isAddingSpot) {
-        handleAddSpot(coordinates);
-      } else if (isDrawingRoute && currentRoute) {
-        handleRoutePointAdd(coordinates);
-      }
+    (coordinates: Coordinates) => {
+      handleAddSpot(coordinates);
     },
-    [isAddingSpot, isDrawingRoute, currentRoute, handleAddSpot, handleRoutePointAdd],
+    [handleAddSpot],
   );
 
   // Helper function to calculate route distance
@@ -407,12 +402,15 @@ export default function TripViewPage() {
         <div className="flex-1 relative">
           <TripMap
             ref={mapRef}
-            campingSpots={tripPlan.campingSpots}
+            campingSpots={tripPlan.campingSpots || []}
             routes={
-              isDrawingRoute && currentRoute ? [...tripPlan.routes, currentRoute] : tripPlan.routes
+              isDrawingRoute && currentRoute
+                ? [...(tripPlan.routes || []), currentRoute]
+                : tripPlan.routes || []
             }
             isDrawingRoute={isDrawingRoute}
             onMapClick={handleMapClick}
+            onRoutePointAdd={handleRoutePointAdd}
           />
         </div>
 
@@ -426,7 +424,7 @@ export default function TripViewPage() {
                 <div>
                   <h2 className="text-2xl text-accent font-medium">{tripPlan.name}</h2>
                   <p className="text-sm text-white/70">
-                    Created: {tripPlan.createdAt.toLocaleDateString()}
+                    Created: {new Date(tripPlan._createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -466,7 +464,7 @@ export default function TripViewPage() {
                 ) : (
                   <div className="space-y-3">
                     {tripPlan.campingSpots.map((spot, index) => (
-                      <div key={index} className="map-card p-2">
+                      <div key={spot._key} className="map-card p-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <button
@@ -484,11 +482,6 @@ export default function TripViewPage() {
                               <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
                                 {spot.coordinates.lat.toFixed(4)}, {spot.coordinates.lng.toFixed(4)}
                               </span>
-                              {spot.elevation && (
-                                <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
-                                  {spot.elevation}m
-                                </span>
-                              )}
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
@@ -500,7 +493,7 @@ export default function TripViewPage() {
                               <Icon name="edit" width={14} height={14} />
                             </button>
                             <button
-                              onClick={() => handleDeleteSpot(spot.id)}
+                              onClick={() => handleDeleteSpot(spot._key)}
                               className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
                               title="Delete spot"
                             >
@@ -523,7 +516,7 @@ export default function TripViewPage() {
                 ) : (
                   <div className="space-y-3">
                     {tripPlan.routes.map((route, index) => (
-                      <div key={index} className="map-card p-2">
+                      <div key={route._key} className="map-card p-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <button
@@ -552,7 +545,7 @@ export default function TripViewPage() {
                               <Icon name="edit" width={14} height={14} />
                             </button>
                             <button
-                              onClick={() => handleDeleteRoute(route.id)}
+                              onClick={() => handleDeleteRoute(route._key)}
                               className="button-ghost p-1.5 min-w-0 text-red-400 hover:text-red-300"
                               title="Delete route"
                             >
@@ -699,24 +692,6 @@ export default function TripViewPage() {
                   />
                 </label>
               </div>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-white/70">Elevation (meters, optional)</span>
-                <input
-                  type="number"
-                  step="1"
-                  value={editingSpot?.elevation || ''}
-                  onChange={(e) =>
-                    editingSpot &&
-                    setEditingSpot({
-                      ...editingSpot,
-                      elevation: e.target.value ? parseFloat(e.target.value) : 0,
-                    })
-                  }
-                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
-                  placeholder="e.g., 1200"
-                />
-              </label>
             </div>
 
             <DialogFooter className="mt-6">
@@ -773,7 +748,7 @@ export default function TripViewPage() {
                 {isEditingRoute ? (
                   <>
                     <button
-                      onClick={handleSaveEditedRoute}
+                      onClick={handleSaveRoute}
                       disabled={currentRoute.waypoints.length < 2}
                       className="button-primary w-full text-lg flex items-center justify-center gap-2 py-1"
                     >

@@ -87,3 +87,47 @@ export interface ListDocument {
     } | null;
   }>;
 }
+
+// New trip-related types following your existing pattern
+export interface CampingSpot {
+  _key: string;
+  name: string;
+  description?: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  image?: {
+    asset: ImageAsset;
+  };
+}
+
+export interface Route {
+  _key: string;
+  name: string;
+  description?: string;
+  waypoints: Array<{
+    lat: number;
+    lng: number;
+  }>;
+  color: string;
+}
+
+export interface TripDocument {
+  _id: string;
+  slug: {current: string};
+  name: string;
+  description?: string;
+  image?: {
+    asset: ImageAsset;
+  };
+  startDate?: string;
+  endDate?: string;
+  campingSpots: CampingSpot[];
+  routes: Route[];
+  user: {
+    _ref: string;
+  };
+  _createdAt: string;
+  _updatedAt: string;
+}

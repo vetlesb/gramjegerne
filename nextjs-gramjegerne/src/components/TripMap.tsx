@@ -2,6 +2,7 @@
 import {useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback} from 'react';
 import * as L from 'leaflet';
 import {Icon} from '@/components/Icon';
+import {CampingSpot, Route} from '@/types';
 
 // Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as {_getIconUrl?: string})._getIconUrl;
@@ -14,21 +15,6 @@ L.Icon.Default.mergeOptions({
 interface Coordinates {
   lat: number;
   lng: number;
-}
-
-interface CampingSpot {
-  id: string;
-  name: string;
-  coordinates: Coordinates;
-  description?: string;
-  elevation?: number;
-}
-
-interface Route {
-  id: string;
-  name: string;
-  waypoints: Coordinates[];
-  color?: string;
 }
 
 interface TripMapProps {
@@ -254,8 +240,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Remove existing click handlers
       map.off('click');
 
-      // Add click handler for adding new spots
-      if (onMapClick) {
+      // Add click handler for adding new spots (only when not drawing routes)
+      if (onMapClick && !isDrawingRoute) {
         map.on('click', (e) => {
           const coordinates: Coordinates = {
             lat: e.latlng.lat,
@@ -264,7 +250,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           onMapClick(coordinates);
         });
       }
-    }, [onMapClick, isMapReady]);
+    }, [onMapClick, isMapReady, isDrawingRoute]);
 
     // Add camping spots to map
     useEffect(() => {
@@ -299,11 +285,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         const popupContent = `
         <div class="p-2">
           <h3 class="font-bold text-lg mb-2">${spot.name}</h3>
-          ${spot.description ? `<p class="text-sm mb-2">${spot.description}</p>` : ''}
+          ${spot.description ? `<p class="text-sm text-gray-700">${spot.description}</p>` : ''}
           <p class="text-xs text-gray-600">
             ${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}
           </p>
-          ${spot.elevation ? `<p class="text-xs text-gray-600">Elevation: ${spot.elevation}m</p>` : ''}
         </div>
       `;
         marker.bindPopup(popupContent);
