@@ -294,12 +294,15 @@ export default function TripViewPage() {
     setCurrentRoute(null);
   }, []);
 
-  // Handle map click for camping spots only
+  // Handle map click for camping spots only when in adding mode
   const handleMapClick = useCallback(
     (coordinates: Coordinates) => {
-      handleAddSpot(coordinates);
+      if (isAddingSpot) {
+        handleAddSpot(coordinates);
+        setIsAddingSpot(false); // Exit adding mode after placing spot
+      }
     },
-    [handleAddSpot],
+    [handleAddSpot, isAddingSpot],
   );
 
   // Helper function to calculate route distance
@@ -400,6 +403,7 @@ export default function TripViewPage() {
                 : tripPlan.routes || []
             }
             isDrawingRoute={isDrawingRoute}
+            isAddingSpot={isAddingSpot}
             onMapClick={handleMapClick}
             onRoutePointAdd={handleRoutePointAdd}
           />

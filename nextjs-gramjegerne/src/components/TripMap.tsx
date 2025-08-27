@@ -30,6 +30,7 @@ interface TripMapProps {
   onMapClick?: (coordinates: Coordinates) => void;
   onRouteClick?: (route: Route) => void;
   isDrawingRoute?: boolean;
+  isAddingSpot?: boolean;
   onRoutePointAdd?: (coordinates: Coordinates) => void;
 }
 
@@ -47,6 +48,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onMapClick,
       onRouteClick,
       isDrawingRoute = false,
+      isAddingSpot = false,
       onRoutePointAdd,
     },
     ref,
@@ -56,6 +58,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [isMapReady, setIsMapReady] = useState(false);
     const [mapError] = useState<string | null>(null);
     const [showLayerInfo, setShowLayerInfo] = useState(false);
+    const [tilesLoading, setTilesLoading] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -138,24 +141,40 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     useEffect(() => {
       if (!mapRef.current) return;
 
-      // Create map instance
+      // Create map instance with optimized settings
       const map = L.map(mapRef.current, {
         center: [62.5, 10.5], // Center of Norway
         zoom: 6,
         zoomControl: false,
+        // Performance optimizations
+        preferCanvas: false, // SVG is better for detailed topo maps
+        maxBoundsViscosity: 0.8, // Smooth boundary handling
       });
 
-      // Define base maps
+      // Define base maps with optimized tile loading
       const baseMaps = {
         OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenTopoMap contributors',
-          maxZoom: 18,
+          maxZoom: 17, // OpenTopoMap's actual max zoom
+          crossOrigin: 'anonymous', // Better caching
+          updateWhenIdle: false, // Load tiles while panning
+          updateWhenZooming: true, // Load tiles while zooming
+          keepBuffer: 3, // Keep more tiles in memory for smoother experience
+          // Tile loading optimizations
+          errorTileUrl: '', // Don't show error tiles
+          // Multiple subdomains for faster loading
+          subdomains: ['a', 'b', 'c'],
         }),
         'ESRI Satellite': L.tileLayer(
           'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
           {
             attribution: '© ESRI',
-            maxZoom: 18,
+            maxZoom: 19, // ESRI supports higher zoom
+            crossOrigin: 'anonymous',
+            updateWhenIdle: false,
+            updateWhenZooming: true,
+            keepBuffer: 3,
+            errorTileUrl: '',
           },
         ),
       };
@@ -206,6 +225,39 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           });
         });
       }
+
+      // Add tile loading progress tracking
+      const currentLayer = baseMaps['OpenTopoMap'];
+
+      currentLayer.on('loading', () => {
+        setTilesLoading((prev) => prev + 1);
+      });
+
+      currentLayer.on('load', () => {
+        setTilesLoading((prev) => Math.max(0, prev - 1));
+      });
+
+      currentLayer.on('tileerror', () => {
+        setTilesLoading((prev) => Math.max(0, prev - 1));
+      });
+
+      // Reset loading state when layer changes
+      map.on('baselayerchange', (e: L.LayersControlEvent) => {
+        setTilesLoading(0);
+
+        // Add loading events to new layer
+        e.layer.on('loading', () => {
+          setTilesLoading((prev) => prev + 1);
+        });
+
+        e.layer.on('load', () => {
+          setTilesLoading((prev) => Math.max(0, prev - 1));
+        });
+
+        e.layer.on('tileerror', () => {
+          setTilesLoading((prev) => Math.max(0, prev - 1));
+        });
+      });
 
       // Store map instance
       mapInstanceRef.current = map;
@@ -478,10 +530,17 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             <div className="text-xs text-white/70">
               {!isMapReady ? (
                 <span className="text-yellow-400">Loading map...</span>
+              ) : tilesLoading > 0 ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-3 h-3 border border-accent border-t-transparent rounded-full"></div>
+                  <span className="text-accent">Loading tiles... ({tilesLoading} remaining)</span>
+                </div>
               ) : isDrawingRoute ? (
                 <span className="text-accent">Click to add route waypoints</span>
+              ) : isAddingSpot ? (
+                <span className="text-accent">Click to place camping spot</span>
               ) : (
-                <span>Click to add camping spots</span>
+                <span>Press &quot;New Spot&quot; or &quot;New Route&quot; to start</span>
               )}
             </div>
           </div>
