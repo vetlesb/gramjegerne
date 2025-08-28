@@ -153,6 +153,18 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       // Define base maps with optimized tile loading
       const baseMaps = {
+        'Kartverket Raster': L.tileLayer(
+          'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
+          {
+            attribution: '© Kartverket',
+            maxZoom: 18,
+            crossOrigin: 'anonymous',
+            updateWhenIdle: false,
+            updateWhenZooming: true,
+            keepBuffer: 3,
+            errorTileUrl: '',
+          },
+        ),
         OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenTopoMap contributors',
           maxZoom: 17, // OpenTopoMap's actual max zoom
@@ -177,10 +189,19 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             errorTileUrl: '',
           },
         ),
+        OpenStreetMap: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19,
+          crossOrigin: 'anonymous',
+          updateWhenIdle: false,
+          updateWhenZooming: true,
+          keepBuffer: 3,
+          errorTileUrl: '',
+        }),
       };
 
-      // Add default layer (OpenTopoMap)
-      baseMaps['OpenTopoMap'].addTo(map);
+      // Add default layer (Kartverket Raster)
+      baseMaps['Kartverket Raster'].addTo(map);
 
       // Add layer control
       const layerControl = L.control.layers(baseMaps).addTo(map);
