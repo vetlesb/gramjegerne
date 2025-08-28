@@ -41,6 +41,9 @@ interface TripMapProps {
   onToggleCampSpots?: () => void;
   onToggleFishingSpots?: () => void;
   onToggleViewpointSpots?: () => void;
+  // Mobile dock control
+  isDockVisible?: boolean;
+  onToggleDock?: () => void;
 }
 
 export interface TripMapRef {
@@ -68,6 +71,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleCampSpots,
       onToggleFishingSpots,
       onToggleViewpointSpots,
+      // Mobile dock control
+      isDockVisible,
+      onToggleDock,
     },
     ref,
   ) => {
@@ -267,6 +273,35 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       // Store map instance
       mapInstanceRef.current = map;
+
+      // Auto-fit map to show all content
+      const fitMapToContent = () => {
+        // Collect all coordinates from spots and routes
+        const spotCoordinates = campingSpots.map((spot) => [
+          spot.coordinates.lat,
+          spot.coordinates.lng,
+        ]);
+        const routeCoordinates = routes.flatMap((route) =>
+          route.waypoints.map((wp) => [wp.lat, wp.lng]),
+        );
+        const allCoordinates = [...spotCoordinates, ...routeCoordinates];
+
+        if (allCoordinates.length > 0) {
+          // Fit map to show all content with padding
+          const bounds = L.latLngBounds(allCoordinates as [number, number][]);
+          map.fitBounds(bounds, {
+            padding: [20, 20],
+            maxZoom: 16, // Don't zoom in too much for single points
+          });
+        } else {
+          // Default view for empty trips (center on Norway)
+          map.setView([61.5, 9], 6);
+        }
+      };
+
+      // Fit map after a short delay to ensure all layers are loaded
+      setTimeout(fitMapToContent, 100);
+
       setIsMapReady(true);
 
       // Cleanup function
@@ -276,7 +311,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           mapInstanceRef.current = null;
         }
       };
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // ^ Intentionally empty - we only want auto-fit on initial load, not when content changes
 
     // Create toolbar after map is ready (separate from map initialization)
     useEffect(() => {
@@ -481,6 +517,21 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             });
           }
 
+          // Mobile dock toggle button (only show on mobile and if onToggleDock is provided)
+          if (onToggleDock) {
+            const dockBtn = L.DomUtil.create('button', '', div);
+            dockBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" fill="currentColor"/>
+</svg>
+`;
+            dockBtn.title = isDockVisible ? 'Hide trip details' : 'Show trip details';
+            dockBtn.className = `${isDockVisible ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center lg:hidden`;
+            L.DomEvent.on(dockBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleDock();
+            });
+          }
+
           return div;
         },
       });
@@ -508,6 +559,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleCampSpots,
       onToggleFishingSpots,
       onToggleViewpointSpots,
+      isDockVisible,
+      onToggleDock,
     ]);
 
     // Handle map click events separately to prevent map recreation

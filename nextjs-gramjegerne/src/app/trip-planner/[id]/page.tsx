@@ -458,15 +458,17 @@ export default function TripViewPage() {
             onToggleCampSpots={() => setShowCamps(!showCamps)}
             onToggleFishingSpots={() => setShowFishing(!showFishing)}
             onToggleViewpointSpots={() => setShowViewpoints(!showViewpoints)}
+            isDockVisible={isDockVisible}
+            onToggleDock={() => setIsDockVisible(!isDockVisible)}
           />
 
-          {/* Mobile Toggle Button */}
+          {/* Back Button - Top Left */}
           <button
-            onClick={() => setIsDockVisible(!isDockVisible)}
-            className="lg:hidden absolute top-4 left-4 z-[1001] bg-primary text-white rounded-full p-3 shadow-2xl transition-all duration-200"
-            title={isDockVisible ? 'Hide trip details' : 'Show trip details'}
+            onClick={() => router.push('/trip-planner')}
+            className="absolute top-4 left-4 z-[1001] bg-dimmed backdrop-blur-sm rounded-lg p-3 hover:bg-dimmed shadow-lg transition-all duration-200"
+            title="Back to trips"
           >
-            <Icon name={isDockVisible ? 'close' : 'menu'} width={20} height={20} />
+            <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
           </button>
         </div>
 
@@ -493,13 +495,13 @@ export default function TripViewPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {/* Back to Trips Button */}
+                {/* Mobile Close Dock Button */}
                 <button
-                  onClick={() => router.push('/trip-planner')}
-                  className="button-create text-sm p-2 hover:bg-white/10"
-                  title="Back to trips"
+                  onClick={() => setIsDockVisible(false)}
+                  className="lg:hidden button-ghost p-2"
+                  title="Close dock"
                 >
-                  Back
+                  <Icon name="close" width={16} height={16} />
                 </button>
               </div>
             </div>
