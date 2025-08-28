@@ -89,10 +89,13 @@ export interface ListDocument {
 }
 
 // New trip-related types following your existing pattern
+export type SpotCategory = 'camp' | 'fishing' | 'viewpoint';
+
 export interface CampingSpot {
   _key: string;
   name: string;
   description?: string;
+  category: SpotCategory;
   coordinates: {
     lat: number;
     lng: number;

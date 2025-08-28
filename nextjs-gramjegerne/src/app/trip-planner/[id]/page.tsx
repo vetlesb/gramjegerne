@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {TripDocument, CampingSpot, Route} from '@/types';
+import {TripDocument, CampingSpot, Route, SpotCategory} from '@/types';
 
 // Dynamically import TripMap to avoid SSR issues with Leaflet
 const TripMap = dynamicImport(() => import('@/components/TripMap'), {
@@ -49,6 +49,17 @@ export default function TripViewPage() {
   const tripId = params.id as string;
   const [activeTab, setActiveTab] = useState('locations');
   const [isDockVisible, setIsDockVisible] = useState(false);
+
+  // Map toolbar visibility states
+  const [showRoutes, setShowRoutes] = useState(true);
+  const [showCamps, setShowCamps] = useState(true);
+  const [showFishing, setShowFishing] = useState(true);
+  const [showViewpoints, setShowViewpoints] = useState(true);
+
+  // Spot category filter for dock
+  const [spotCategoryFilter, setSpotCategoryFilter] = useState<
+    'all' | 'camp' | 'fishing' | 'viewpoint'
+  >('all');
 
   // Auto-hide dock on mobile when starting creation modes
   const handleStartAddingSpot = useCallback(() => {
@@ -132,6 +143,7 @@ export default function TripViewPage() {
         name: `Camping Spot ${(tripPlan.campingSpots?.length || 0) + 1}`,
         coordinates,
         description: '',
+        category: 'camp' as SpotCategory,
       };
 
       const updatedPlan = {
@@ -437,6 +449,15 @@ export default function TripViewPage() {
             isAddingSpot={isAddingSpot}
             onMapClick={handleMapClick}
             onRoutePointAdd={handleRoutePointAdd}
+            // Toolbar visibility controls
+            showRoutes={showRoutes}
+            showCampSpots={showCamps}
+            showFishingSpots={showFishing}
+            showViewpointSpots={showViewpoints}
+            onToggleRoutes={() => setShowRoutes(!showRoutes)}
+            onToggleCampSpots={() => setShowCamps(!showCamps)}
+            onToggleFishingSpots={() => setShowFishing(!showFishing)}
+            onToggleViewpointSpots={() => setShowViewpoints(!showViewpoints)}
           />
 
           {/* Mobile Toggle Button */}
@@ -505,50 +526,91 @@ export default function TripViewPage() {
             {/* Locations Tab */}
             {activeTab === 'locations' && (
               <div>
+                {/* Category Filter Tabs */}
+                <div className="flex gap-x-2 no-scrollbar my-1 p-2 mb-4">
+                  <button
+                    onClick={() => setSpotCategoryFilter('all')}
+                    className={`menu-category text-sm ${spotCategoryFilter === 'all' ? 'menu-active' : ''}`}
+                  >
+                    All
+                  </button>
+                  {/* Only show category tabs if there are spots of that type */}
+                  {tripPlan.campingSpots.some((spot) => spot.category === 'camp') && (
+                    <button
+                      onClick={() => setSpotCategoryFilter('camp')}
+                      className={`menu-category text-sm ${spotCategoryFilter === 'camp' ? 'menu-active' : ''}`}
+                    >
+                      Camps
+                    </button>
+                  )}
+                  {tripPlan.campingSpots.some((spot) => spot.category === 'fishing') && (
+                    <button
+                      onClick={() => setSpotCategoryFilter('fishing')}
+                      className={`menu-category text-sm ${spotCategoryFilter === 'fishing' ? 'menu-active' : ''}`}
+                    >
+                      Fishing waters
+                    </button>
+                  )}
+                  {tripPlan.campingSpots.some((spot) => spot.category === 'viewpoint') && (
+                    <button
+                      onClick={() => setSpotCategoryFilter('viewpoint')}
+                      className={`menu-category text-sm ${spotCategoryFilter === 'viewpoint' ? 'menu-active' : ''}`}
+                    >
+                      Viewpoints
+                    </button>
+                  )}
+                </div>
+
                 {tripPlan.campingSpots.length === 0 ? (
                   <p className="text-white/50 text-sm">No camping spots added yet.</p>
                 ) : (
                   <div className="space-y-1 lg:space-y-2">
-                    {tripPlan.campingSpots.map((spot) => (
-                      <div key={spot._key} className="map-card p-1 lg:p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <button
-                              onClick={() => handleZoomToSpot(spot)}
-                              className="text-left w-full hover:underline"
-                            >
-                              <h4 className="font-medium text-white truncate">{spot.name}</h4>
-                            </button>
-                            {spot.description && (
-                              <p className="text-sm text-white mt-1 line-clamp-2">
-                                {spot.description}
-                              </p>
-                            )}
-                            <div className="flex flex-wrap mt-2">
-                              <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
-                                {spot.coordinates.lat.toFixed(4)}, {spot.coordinates.lng.toFixed(4)}
-                              </span>
+                    {tripPlan.campingSpots
+                      .filter(
+                        (spot) =>
+                          spotCategoryFilter === 'all' || spot.category === spotCategoryFilter,
+                      )
+                      .map((spot) => (
+                        <div key={spot._key} className="map-card p-1 lg:p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <button
+                                onClick={() => handleZoomToSpot(spot)}
+                                className="text-left w-full hover:underline"
+                              >
+                                <h4 className="font-medium text-white truncate">{spot.name}</h4>
+                              </button>
+                              {spot.description && (
+                                <p className="text-sm text-white mt-1 line-clamp-2">
+                                  {spot.description}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap mt-2">
+                                <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
+                                  {spot.coordinates.lat.toFixed(4)},{' '}
+                                  {spot.coordinates.lng.toFixed(4)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => setEditingSpot(spot)}
+                                className="button-ghost p-1.5 min-w-0"
+                                title="Edit spot"
+                              >
+                                <Icon name="edit" width={20} height={20} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSpot(spot._key)}
+                                className="button-ghost p-1.5 min-w-0"
+                                title="Delete spot"
+                              >
+                                <Icon name="delete" width={20} height={20} />
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-1 flex-shrink-0">
-                            <button
-                              onClick={() => setEditingSpot(spot)}
-                              className="button-ghost p-1.5 min-w-0"
-                              title="Edit spot"
-                            >
-                              <Icon name="edit" width={20} height={20} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSpot(spot._key)}
-                              className="button-ghost p-1.5 min-w-0"
-                              title="Delete spot"
-                            >
-                              <Icon name="delete" width={20} height={20} />
-                            </button>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </div>
@@ -695,6 +757,22 @@ export default function TripViewPage() {
                   className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none resize-none"
                   placeholder="Add notes about this camping spot..."
                 />
+              </label>
+
+              <label className="flex flex-col gap-2">
+                <span className="text-white/70">Category</span>
+                <select
+                  value={editingSpot?.category || 'camp'}
+                  onChange={(e) =>
+                    editingSpot &&
+                    setEditingSpot({...editingSpot, category: e.target.value as SpotCategory})
+                  }
+                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
+                >
+                  <option value="camp">Camp</option>
+                  <option value="fishing">Fishing water</option>
+                  <option value="viewpoint">Viewpoint</option>
+                </select>
               </label>
 
               <div className="grid grid-cols-2 gap-4">

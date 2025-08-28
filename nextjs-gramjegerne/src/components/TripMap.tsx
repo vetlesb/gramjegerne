@@ -32,6 +32,15 @@ interface TripMapProps {
   isDrawingRoute?: boolean;
   isAddingSpot?: boolean;
   onRoutePointAdd?: (coordinates: Coordinates) => void;
+  // Toolbar visibility controls
+  showRoutes?: boolean;
+  showCampSpots?: boolean;
+  showFishingSpots?: boolean;
+  showViewpointSpots?: boolean;
+  onToggleRoutes?: () => void;
+  onToggleCampSpots?: () => void;
+  onToggleFishingSpots?: () => void;
+  onToggleViewpointSpots?: () => void;
 }
 
 export interface TripMapRef {
@@ -50,6 +59,15 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       isDrawingRoute = false,
       isAddingSpot = false,
       onRoutePointAdd,
+      // Toolbar controls
+      showRoutes = true,
+      showCampSpots = true,
+      showFishingSpots = true,
+      showViewpointSpots = true,
+      onToggleRoutes,
+      onToggleCampSpots,
+      onToggleFishingSpots,
+      onToggleViewpointSpots,
     },
     ref,
   ) => {
@@ -63,6 +81,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
+    const [currentLayer, setCurrentLayer] = useState('Kartverket Raster');
 
     // Search for places using OpenStreetMap Nominatim API
     const searchPlaces = useCallback(async (query: string) => {
@@ -203,48 +222,14 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Add default layer (Kartverket Raster)
       baseMaps['Kartverket Raster'].addTo(map);
 
-      // Add layer control
-      const layerControl = L.control.layers(baseMaps).addTo(map);
+      // Add layer control (but hide it - we'll use our custom toolbar)
+      const layerControl = L.control.layers(baseMaps);
+      layerControl.addTo(map);
 
-      // Customize layer control styling
+      // Hide the default layer control
       const layerControlContainer = layerControl.getContainer();
       if (layerControlContainer) {
-        layerControlContainer.style.backgroundColor = '#1a1a1a';
-        layerControlContainer.style.border = '1px solid #333';
-        layerControlContainer.style.borderRadius = '8px';
-        layerControlContainer.style.padding = '8px';
-        layerControlContainer.style.color = 'white';
-        layerControlContainer.style.fontSize = '12px';
-        layerControlContainer.style.fontFamily = 'system-ui, sans-serif';
-
-        // Style the radio buttons and labels
-        const labels = layerControlContainer.querySelectorAll('label');
-        labels.forEach((label) => {
-          label.style.color = 'white';
-          label.style.marginBottom = '4px';
-          label.style.cursor = 'pointer';
-          label.style.display = 'block';
-          label.style.padding = '2px 0';
-        });
-
-        const inputs = layerControlContainer.querySelectorAll('input[type="radio"]');
-        inputs.forEach((input) => {
-          (input as HTMLElement).style.accentColor = '#3b82f6';
-          (input as HTMLElement).style.marginRight = '6px';
-        });
-
-        // Add hover effects
-        labels.forEach((label) => {
-          label.addEventListener('mouseenter', () => {
-            label.style.backgroundColor = '#333';
-            label.style.borderRadius = '4px';
-            label.style.padding = '2px 4px';
-          });
-          label.addEventListener('mouseleave', () => {
-            label.style.backgroundColor = 'transparent';
-            label.style.padding = '2px 0';
-          });
-        });
+        layerControlContainer.style.display = 'none';
       }
 
       // Add tile loading progress tracking
@@ -293,6 +278,238 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       };
     }, []);
 
+    // Create toolbar after map is ready (separate from map initialization)
+    useEffect(() => {
+      if (!mapInstanceRef.current || !isMapReady) return;
+
+      const map = mapInstanceRef.current;
+
+      // Create custom toolbar control
+      const CustomToolbar = L.Control.extend({
+        onAdd: function () {
+          const div = L.DomUtil.create('div', 'custom-toolbar');
+          div.style.backgroundColor = '#1a1a1a';
+          div.style.border = '1px solid #333';
+          div.style.borderRadius = '8px';
+          div.style.padding = '8px';
+          div.style.display = 'flex';
+          div.style.flexDirection = 'column';
+          div.style.gap = '4px';
+
+          // Map Layer Button with Popover
+          const layerBtnContainer = L.DomUtil.create('div', '', div);
+          layerBtnContainer.style.position = 'relative';
+          layerBtnContainer.style.marginBottom = '4px';
+
+          const layerBtn = L.DomUtil.create('button', '', layerBtnContainer);
+          layerBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 3L21 3L21 17L8 17L8 3ZM19 5L10 5L10 15L19 15L19 5ZM4 8L6 8L6 19L17 19L17 21L4 21L4 8Z" fill="currentColor"/>
+</svg>
+`;
+          layerBtn.title = 'Select map layer';
+          layerBtn.className = 'button-ghost !w-8 !h-8 !p-0 flex items-center justify-center';
+
+          // Create popover
+          const popover = L.DomUtil.create('div', '', layerBtnContainer);
+          popover.style.cssText = `
+            position: absolute; top: 0; right: 100%; margin-right: 4px;
+            background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
+            padding: 8px; min-width: 120px; display: none; z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          `;
+
+          const layerOptions = [
+            {key: 'Kartverket Raster', label: 'Kartverket'},
+            {key: 'OpenTopoMap', label: 'TopoMap'},
+            {key: 'ESRI Satellite', label: 'Satellite'},
+            {key: 'OpenStreetMap', label: 'Street'},
+          ];
+
+          layerOptions.forEach((option) => {
+            const optionBtn = L.DomUtil.create('button', '', popover);
+            optionBtn.textContent = option.label;
+            optionBtn.style.cssText = `
+              display: block; width: 100%; text-align: left; padding: 4px 8px;
+              background: ${currentLayer === option.key ? '#10b981' : 'transparent'};
+              color: white; border: none; border-radius: 4px; cursor: pointer;
+              font-size: 12px; margin-bottom: 2px;
+            `;
+            optionBtn.style.setProperty('hover:background-color', '#333', 'important');
+
+            L.DomEvent.on(optionBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              setCurrentLayer(option.key);
+
+              // Switch the map layer
+              const map = mapInstanceRef.current;
+              if (map) {
+                // Remove current layer
+                map.eachLayer((layer) => {
+                  if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                  }
+                });
+                // Add new layer
+                const baseMaps = {
+                  'Kartverket Raster': L.tileLayer(
+                    'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
+                    {
+                      attribution: '© Kartverket',
+                      maxZoom: 18,
+                    },
+                  ),
+                  OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenTopoMap contributors',
+                    maxZoom: 18,
+                  }),
+                  'ESRI Satellite': L.tileLayer(
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    {
+                      attribution: '© Esri',
+                      maxZoom: 18,
+                    },
+                  ),
+                  OpenStreetMap: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19,
+                  }),
+                };
+                baseMaps[option.key as keyof typeof baseMaps].addTo(map);
+              }
+
+              // Hide popover
+              popover.style.display = 'none';
+            });
+
+            // Add hover effect
+            L.DomEvent.on(optionBtn, 'mouseenter', function () {
+              if (currentLayer !== option.key) {
+                optionBtn.style.backgroundColor = '#333';
+              }
+            });
+            L.DomEvent.on(optionBtn, 'mouseleave', function () {
+              if (currentLayer !== option.key) {
+                optionBtn.style.backgroundColor = 'transparent';
+              }
+            });
+          });
+
+          // Toggle popover on button click
+          L.DomEvent.on(layerBtn, 'click', function (e) {
+            L.DomEvent.stopPropagation(e);
+            const isVisible = popover.style.display === 'block';
+            popover.style.display = isVisible ? 'none' : 'block';
+          });
+
+          // Hide popover when clicking elsewhere
+          document.addEventListener('click', function () {
+            popover.style.display = 'none';
+          });
+
+          // Check if we have any routes
+          const hasRoutes = routes && routes.length > 0;
+
+          // Routes toggle (only show if there are routes)
+          if (hasRoutes) {
+            const routesBtn = L.DomUtil.create('button', '', div);
+            routesBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C15.866 2 19 5.41126 19 9.61914L18.9883 10.0996C18.757 15.0265 15.0094 18.7245 12 22C8.99062 18.7245 5.243 15.0265 5.01172 10.0996L5 9.61914C5 5.41126 8.13401 2 12 2ZM12 4C9.39475 4 7 6.3529 7 9.61914C7.00002 11.6723 7.76642 13.5356 8.99512 15.3643C9.86438 16.6579 10.9066 17.8522 12 19.0479C13.0934 17.8522 14.1356 16.6579 15.0049 15.3643C16.2336 13.5356 17 11.6723 17 9.61914C17 6.3529 14.6052 4 12 4ZM12 6C13.6569 6 15 7.34315 15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6Z" fill="currentColor"/>
+</svg>
+`;
+            routesBtn.title = 'Toggle routes';
+            routesBtn.className = `${showRoutes ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(routesBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleRoutes?.();
+            });
+          }
+
+          // Check if we have camping spots
+          const hasCampSpots =
+            campingSpots && campingSpots.some((spot) => spot.category === 'camp');
+
+          // Camp spots toggle (only show if there are camp spots)
+          if (hasCampSpots) {
+            const campBtn = L.DomUtil.create('button', '', div);
+            campBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14.8359 2.5L12.8818 5.88379L21.3203 20.5L19.5879 21.5L11.7266 7.88379L3.86621 21.5L2.13379 20.5L10.5723 5.88281L8.61914 2.5L10.3506 1.5L11.7266 3.88379L13.1035 1.5L14.8359 2.5Z" fill="currentColor"/>
+</svg>
+`;
+            campBtn.title = 'Toggle camp spots';
+            campBtn.className = `${showCampSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(campBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleCampSpots?.();
+            });
+          }
+
+          // Check if we have fishing spots
+          const hasFishingSpots =
+            campingSpots && campingSpots.some((spot) => spot.category === 'fishing');
+
+          // Fishing spots toggle (only show if there are fishing spots)
+          if (hasFishingSpots) {
+            const fishingBtn = L.DomUtil.create('button', '', div);
+            fishingBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.88477 6.00977C12.3125 6.17206 15.0403 8.35368 17.4443 10.5547L21.6572 6.34277V17.6572L17.4443 13.4443C15.0402 15.6455 12.3127 17.8279 8.88477 17.9902L8.47656 18C4.89986 18 2 15.3137 2 12C2 8.68629 4.89986 6 8.47656 6L8.88477 6.00977ZM8.47656 8C5.85785 8 4 9.93195 4 12C4 14.068 5.85785 16 8.47656 16C10.1373 15.9999 11.6607 15.3759 13.1855 14.3428C14.1784 13.67 15.101 12.8738 16.0273 12.0273L16 12L16.0273 11.9717C15.1012 11.1254 14.1782 10.3298 13.1855 9.65723C11.6607 8.62406 10.1373 8.00009 8.47656 8Z" fill="currentColor"/>
+</svg>
+`;
+            fishingBtn.title = 'Toggle fishing spots';
+            fishingBtn.className = `${showFishingSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(fishingBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleFishingSpots?.();
+            });
+          }
+
+          // Check if we have viewpoint spots
+          const hasViewpointSpots =
+            campingSpots && campingSpots.some((spot) => spot.category === 'viewpoint');
+
+          // Viewpoint spots toggle (only show if there are viewpoint spots)
+          if (hasViewpointSpots) {
+            const viewpointBtn = L.DomUtil.create('button', '', div);
+            viewpointBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12ZM22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM14.7423 8.84745L10.9675 13.2306L8.65155 11.2414L7.34843 12.7586L10.422 15.3985L11.1796 16.0492L11.8313 15.2924L16.2577 10.1526L14.7423 8.84745Z" fill="currentColor"/>
+</svg>
+`;
+            viewpointBtn.title = 'Toggle viewpoint spots';
+            viewpointBtn.className = `${showViewpointSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(viewpointBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleViewpointSpots?.();
+            });
+          }
+
+          return div;
+        },
+      });
+
+      // Add custom toolbar
+      const toolbar = new CustomToolbar({position: 'topright'});
+      toolbar.addTo(map);
+
+      // Store toolbar reference for cleanup
+      return () => {
+        if (toolbar && map) {
+          map.removeControl(toolbar);
+        }
+      };
+    }, [
+      isMapReady,
+      showRoutes,
+      showCampSpots,
+      showFishingSpots,
+      showViewpointSpots,
+      currentLayer,
+      campingSpots,
+      routes,
+      onToggleRoutes,
+      onToggleCampSpots,
+      onToggleFishingSpots,
+      onToggleViewpointSpots,
+    ]);
+
     // Handle map click events separately to prevent map recreation
     useEffect(() => {
       if (!mapInstanceRef.current || !isMapReady) return;
@@ -327,15 +544,47 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         }
       });
 
-      // Add camping spot markers
+      // Add camping spot markers (filtered by category visibility)
       campingSpots.forEach((spot) => {
+        // Check if this category should be visible
+        const shouldShow =
+          (spot.category === 'camp' && showCampSpots) ||
+          (spot.category === 'fishing' && showFishingSpots) ||
+          (spot.category === 'viewpoint' && showViewpointSpots);
+
+        if (!shouldShow) return;
+
+        // Use theme variables instead of category-specific colors
+
+        // Get the appropriate icon SVG based on category
+        const getCategoryIcon = (category: string) => {
+          switch (category) {
+            case 'camp':
+              return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14.8359 2.5L12.8818 5.88379L21.3203 20.5L19.5879 21.5L11.7266 7.88379L3.86621 21.5L2.13379 20.5L10.5723 5.88281L8.61914 2.5L10.3506 1.5L11.7266 3.88379L13.1035 1.5L14.8359 2.5Z" fill="currentColor"/>
+              </svg>`;
+            case 'fishing':
+              return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.88477 6.00977C12.3125 6.17206 15.0403 8.35368 17.4443 10.5547L21.6572 6.34277V17.6572L17.4443 13.4443C15.0402 15.6455 12.3127 17.8279 8.88477 17.9902L8.47656 18C4.89986 18 2 15.3137 2 12C2 8.68629 4.89986 6 8.47656 6L8.88477 6.00977ZM8.47656 8C5.85785 8 4 9.93195 4 12C4 14.068 5.85785 16 8.47656 16C10.1373 15.9999 11.6607 15.3759 13.1855 14.3428C14.1784 13.67 15.101 12.8738 16.0273 12.0273L16 12L16.0273 11.9717C15.1012 11.1254 14.1782 10.3298 13.1855 9.65723C11.6607 8.62406 10.1373 8.00009 8.47656 8Z" fill="currentColor"/>
+              </svg>`;
+            case 'viewpoint':
+              return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12ZM22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM14.7423 8.84745L10.9675 13.2306L8.65155 11.2414L7.34843 12.7586L10.422 15.3985L11.1796 16.0492L11.8313 15.2924L16.2577 10.1526L14.7423 8.84745Z" fill="currentColor"/>
+              </svg>`;
+            default:
+              return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C15.866 2 19 5.41126 19 9.61914L18.9883 10.0996C18.757 15.0265 15.0094 18.7245 12 22C8.99062 18.7245 5.243 15.0265 5.01172 10.0996L5 9.61914C5 5.41126 8.13401 2 12 2ZM12 4C9.39475 4 7 6.3529 7 9.61914C7.00002 11.6723 7.76642 13.5356 8.99512 15.3643C9.86438 16.6579 10.9066 17.8522 12 19.0479C13.0934 17.8522 14.1356 16.6579 15.0049 15.3643C16.2336 13.5356 17 11.6723 17 9.61914C17 6.3529 14.6052 4 12 4ZM12 6C13.6569 6 15 7.34315 15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6Z" fill="currentColor"/>
+              </svg>`;
+          }
+        };
+
         const marker = L.marker([spot.coordinates.lat, spot.coordinates.lng], {
           title: spot.name,
           icon: L.divIcon({
             className: 'custom-marker',
             html: `
-            <div class="bg-accent text-secondary rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold border-2 border-secondary shadow-lg">
-              ⛺︎
+            <div class="rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold border-2 border-white shadow-lg" style="background-color: var(--bg-primary); color: var(--fg-accent);">
+              ${getCategoryIcon(spot.category)}
             </div>
           `,
             iconSize: [32, 32],
@@ -343,17 +592,44 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           }),
         });
 
-        // Add popup
+        // Get category display name
+        const getCategoryDisplayName = (category: string) => {
+          switch (category) {
+            case 'camp':
+              return 'Camp';
+            case 'fishing':
+              return 'Fishing water';
+            case 'viewpoint':
+              return 'Viewpoint';
+            default:
+              return 'Spot';
+          }
+        };
+
+        // Add popup with theme variables
         const popupContent = `
-        <div class="p-2">
-          <h3 class="font-bold text-lg mb-2">${spot.name}</h3>
-          ${spot.description ? `<p class="text-sm text-accent">${spot.description}</p>` : ''}
-          <p class="text-xs text-primary">
-            ${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}
-          </p>
+        <div style="background-color: var(--bg-primary); color: var(--fg-primary); border-radius: 8px; min-width: 200px; padding: 10px 0 6px 0;">
+          <h3 class="font-bold text-lg mb-1" style="color: var(--fg-accent);">${spot.name}</h3>
+          <p class="text-sm mb-2 opacity-75" style="color: var(--fg-primary);">${getCategoryDisplayName(spot.category)}</p>
+          ${spot.description ? `<p class="text-sm mb-2" style="color: var(--fg-primary);">${spot.description}</p>` : ''}
+          <p class="text-xs opacity-60" style="color: var(--fg-primary);">${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}</p>
         </div>
+        <style>
+          .leaflet-popup-content-wrapper {
+            background-color: var(--bg-primary) !important;
+            border-radius: 8px !important;
+            padding: 0 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .leaflet-popup-tip {
+            background-color: var(--bg-primary) !important;
+          }
+        </style>
       `;
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupContent, {
+          closeButton: false,
+        });
 
         // Add click handler (disabled during route drawing)
         if (onSpotClick && !isDrawingRoute) {
@@ -362,7 +638,15 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         marker.addTo(map);
       });
-    }, [campingSpots, isMapReady, onSpotClick, isDrawingRoute]);
+    }, [
+      campingSpots,
+      isMapReady,
+      onSpotClick,
+      isDrawingRoute,
+      showCampSpots,
+      showFishingSpots,
+      showViewpointSpots,
+    ]);
 
     // Add routes to map
     useEffect(() => {
@@ -377,35 +661,37 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         }
       });
 
-      // Add route polylines
-      routes.forEach((route) => {
-        if (route.waypoints.length < 2) return;
+      // Add route polylines (only if routes are visible)
+      if (showRoutes) {
+        routes.forEach((route) => {
+          if (route.waypoints.length < 2) return;
 
-        const latlngs = route.waypoints.map((wp) => [wp.lat, wp.lng]);
-        const polyline = L.polyline(latlngs as [number, number][], {
-          color: route.color || '#10B981',
-          weight: 4,
-          opacity: 0.8,
-          dashArray: '10, 5',
-        });
+          const latlngs = route.waypoints.map((wp) => [wp.lat, wp.lng]);
+          const polyline = L.polyline(latlngs as [number, number][], {
+            color: route.color || '#10B981',
+            weight: 4,
+            opacity: 0.8,
+            dashArray: '10, 5',
+          });
 
-        // Add popup
-        const popupContent = `
+          // Add popup
+          const popupContent = `
         <div class="p-2">
           <h3 class="font-bold text-lg mb-2 text-secondary">${route.name}</h3>
           <p class="text-sm text-secondary">${route.waypoints.length} waypoints</p>
         </div>
       `;
-        polyline.bindPopup(popupContent);
+          polyline.bindPopup(popupContent);
 
-        // Add click handler (disabled during route drawing)
-        if (onRouteClick && !isDrawingRoute) {
-          polyline.on('click', () => onRouteClick(route));
-        }
+          // Add click handler (disabled during route drawing)
+          if (onRouteClick && !isDrawingRoute) {
+            polyline.on('click', () => onRouteClick(route));
+          }
 
-        polyline.addTo(map);
-      });
-    }, [routes, isMapReady, onRouteClick, isDrawingRoute]);
+          polyline.addTo(map);
+        });
+      }
+    }, [routes, isMapReady, onRouteClick, isDrawingRoute, showRoutes]);
 
     // Handle route drawing mode
     useEffect(() => {
