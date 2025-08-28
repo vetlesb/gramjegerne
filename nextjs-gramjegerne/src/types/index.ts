@@ -150,6 +150,9 @@ export interface TripListItem {
   routes: Array<{
     waypoints: Array<{lat: number; lng: number}>;
   }>;
+  campingSpots: Array<{
+    category: SpotCategory;
+  }>;
   _createdAt: string;
   _updatedAt: string;
 }

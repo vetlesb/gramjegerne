@@ -31,6 +31,7 @@ export async function GET() {
       "campingSpotsCount": count(campingSpots),
       "routesCount": count(routes),
       "routes": routes[]{waypoints},
+      "campingSpots": campingSpots[]{category},
       image
     }`;
 

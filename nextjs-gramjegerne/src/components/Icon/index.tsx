@@ -28,6 +28,8 @@ import {LocationIcon} from './icons/LocationIcon';
 import {UndoIcon} from './icons/UndoIcon';
 import {FishingIcon} from './icons/FishingIcon';
 import {ViewpointIcon} from './icons/ViewpointIcon';
+import {RouteIcon} from './icons/RouteIcon';
+import {TentIcon} from './icons/TentIcon';
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -61,6 +63,8 @@ const iconMap = {
   undo: UndoIcon,
   fishing: FishingIcon,
   viewpoint: ViewpointIcon,
+  route: RouteIcon,
+  tent: TentIcon,
 };
 
 type IconName = keyof typeof iconMap;

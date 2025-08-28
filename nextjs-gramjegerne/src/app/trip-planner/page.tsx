@@ -1,6 +1,7 @@
 'use client';
 import {useState, useCallback, useEffect} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
+import {DeleteTripButton} from '@/components/deleteTripButton';
 import {Icon} from '@/components/Icon';
 import {useRouter} from 'next/navigation';
 import {TripListItem} from '@/types';
@@ -118,34 +119,22 @@ export default function TripPlannerPage() {
     }, 0);
   };
 
-  // Delete trip plan
-  const handleDeletePlan = useCallback(async (planId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  // Helper function to count spots by category
+  const countSpotsByCategory = (campingSpots: Array<{category: string}>) => {
+    const counts = {
+      camp: 0,
+      fishing: 0,
+      viewpoint: 0,
+    };
 
-      const response = await fetch(`/api/deleteTrip?tripId=${planId}`, {
-        method: 'DELETE',
-      });
+    campingSpots.forEach((spot) => {
+      if (spot.category === 'camp') counts.camp++;
+      else if (spot.category === 'fishing') counts.fishing++;
+      else if (spot.category === 'viewpoint') counts.viewpoint++;
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete trip');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        // Remove the trip from the list
-        setTripPlans((prev) => prev.filter((plan) => plan._id !== planId));
-      } else {
-        throw new Error(data.error || 'Failed to delete trip');
-      }
-    } catch (error) {
-      console.error('Failed to delete trip:', error);
-      setError(error instanceof Error ? error.message : 'Failed to delete trip');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    return counts;
+  };
 
   // Open trip for editing
   const handleOpenTrip = useCallback(
@@ -204,31 +193,58 @@ export default function TripPlannerPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{plan.name}</h3>
                     <div className="flex items-center gap-x-1 mt-1">
-                      <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                        {plan.campingSpotsCount || 0} spots
-                      </span>
-                      <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                        {plan.routesCount || 0} routes
-                      </span>
+                      {/* Total Distance */}
                       {plan.routes && plan.routes.length > 0 && (
                         <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
                           {calculateTotalTripDistance(plan.routes).toFixed(1)} km
                         </span>
                       )}
+
+                      {/* Routes */}
+                      {plan.routesCount > 0 && (
+                        <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                          <Icon name="route" width={16} height={16} />
+                          {plan.routesCount}
+                        </span>
+                      )}
+
+                      {/* Spots by Category */}
+                      {(() => {
+                        const spotCounts = countSpotsByCategory(plan.campingSpots || []);
+                        return (
+                          <>
+                            {spotCounts.camp > 0 && (
+                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <Icon name="tent" width={16} height={16} />
+                                {spotCounts.camp}
+                              </span>
+                            )}
+                            {spotCounts.fishing > 0 && (
+                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <Icon name="fishing" width={16} height={16} />
+                                {spotCounts.fishing}
+                              </span>
+                            )}
+                            {spotCounts.viewpoint > 0 && (
+                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                <Icon name="viewpoint" width={16} height={16} />
+                                {spotCounts.viewpoint}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePlan(plan._id);
+                  <DeleteTripButton
+                    tripId={plan._id}
+                    tripName={plan.name}
+                    onSuccess={() => {
+                      // Remove the trip from the list after successful deletion
+                      setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
                     }}
-                    className="button-ghost p-2 text-white rounded-md transition-colors"
-                    title="Delete trip"
-                    disabled={isLoading}
-                  >
-                    <Icon name="delete" width={20} height={20} />
-                  </button>
+                  />
                 </div>
               ))}
             </div>
