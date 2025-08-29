@@ -687,11 +687,12 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         // Add popup with theme variables
         const popupContent = `
-        <div style="background-color: var(--bg-primary); color: var(--fg-primary); border-radius: 8px; min-width: 200px; padding: 10px 0 6px 0;">
-          <h3 class="font-bold text-lg mb-1" style="color: var(--fg-accent);">${spot.name}</h3>
-          <p class="text-sm mb-2 opacity-75" style="color: var(--fg-primary);">${getCategoryDisplayName(spot.category)}</p>
-          ${spot.description ? `<p class="text-sm mb-2" style="color: var(--fg-primary);">${spot.description}</p>` : ''}
-          <p class="text-xs opacity-60" style="color: var(--fg-primary);">${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}</p>
+        <div style="background-color: var(--bg-primary); color: var(--fg-primary); border-radius: 8px; min-width: 200px; margin: 0; padding: 10px 0 6px 0;">
+          <h3 class="font-bold text-lg" style="color: var(--fg-accent); margin-bottom: 8px; margin-top: 0;">${spot.name}</h3>
+
+          ${spot.description ? `<p class="text-md" style="color: var(--fg-primary); margin-bottom: 16px; font-size: 14px; margin-top: 0;">${spot.description}</p>` : ''}
+                    <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; margin-bottom: 8px; margin-top: 0;">${getCategoryDisplayName(spot.category)}</p>
+          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; opacity: 0.5; margin-bottom: 8px; margin-top: 0;">${spot.coordinates.lat.toFixed(6)}, ${spot.coordinates.lng.toFixed(6)}</p>
         </div>
         <style>
           .leaflet-popup-content-wrapper {
@@ -703,6 +704,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
           .leaflet-popup-tip {
             background-color: var(--bg-primary) !important;
+            margin: 0 !important;
           }
         </style>
       `;
@@ -824,7 +826,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
               type="text"
               value={searchQuery}
               onChange={handleSearchInput}
-              placeholder="Search places..."
+              placeholder="Search"
               className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm placeholder-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-sm lg:text-base"
             />
             {isSearching && (
