@@ -2,6 +2,7 @@
 import {useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback} from 'react';
 import * as L from 'leaflet';
 import {CampingSpot, Route} from '@/types';
+import {useDebounce} from '@/hooks/useDebounce';
 
 // Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as {_getIconUrl?: string})._getIconUrl;
@@ -86,18 +87,21 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [showSearch, setShowSearch] = useState(false);
     const [currentLayer, setCurrentLayer] = useState('Kartverket Raster');
 
     // Search for places using OpenStreetMap Nominatim API
     const searchPlaces = useCallback(async (query: string) => {
-      if (!query.trim()) return;
+      if (!query.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
 
       setIsSearching(true);
       try {
         // Use OpenStreetMap Nominatim for geocoding (free, no API key)
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=no&viewbox=3.0,57.0,32.0,71.0&bounded=1`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&countrycodes=no&viewbox=3.0,57.0,32.0,71.0&bounded=1&addressdetails=1`,
         );
 
         if (!response.ok) throw new Error('Search failed');
@@ -112,6 +116,12 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       }
     }, []);
 
+    // Debounced search function
+    const debouncedSearch = useDebounce((...args: unknown[]) => {
+      const query = args[0] as string;
+      searchPlaces(query);
+    }, 300);
+
     // Zoom to search result
     const zoomToSearchResult = useCallback((result: SearchResult) => {
       if (mapInstanceRef.current) {
@@ -119,7 +129,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         const lon = parseFloat(result.lon);
 
         mapInstanceRef.current.setView([lat, lon], 15);
-        setShowSearch(false);
         setSearchQuery('');
         setSearchResults([]);
       }
@@ -132,13 +141,22 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         setSearchQuery(query);
 
         if (query.trim()) {
-          searchPlaces(query);
+          setIsSearching(true);
+          debouncedSearch(query);
         } else {
           setSearchResults([]);
+          setIsSearching(false);
         }
       },
-      [searchPlaces],
+      [debouncedSearch],
     );
+
+    // Clear search results when clicking on map
+    const handleMapClick = useCallback(() => {
+      if (searchResults.length > 0) {
+        setSearchResults([]);
+      }
+    }, [searchResults.length]);
 
     // Expose map functions to parent component
     useImperativeHandle(
@@ -575,14 +593,22 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Add click handler for adding new spots (only when not drawing routes)
       if (onMapClick && !isDrawingRoute) {
         map.on('click', (e) => {
+          // Clear search results when clicking on map
+          handleMapClick();
+
           const coordinates: Coordinates = {
             lat: e.latlng.lat,
             lng: e.latlng.lng,
           };
           onMapClick(coordinates);
         });
+      } else {
+        // Still clear search results even when not adding spots
+        map.on('click', () => {
+          handleMapClick();
+        });
       }
-    }, [onMapClick, isMapReady, isDrawingRoute]);
+    }, [onMapClick, isMapReady, isDrawingRoute, handleMapClick]);
 
     // Add camping spots to map
     useEffect(() => {
@@ -791,61 +817,52 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         )}
 
         {/* Map Controls Overlay */}
-        <div className="absolute lg:bottom-16 bottom-24 left-4 z-[1000] flex flex-col gap-2">
-          {/* Search Toggle Button */}
-          <button
-            onClick={() => setShowSearch(!showSearch)}
-            className="bg-dimmed backdrop-blur-sm rounded-lg p-2 hover:bg-dimmed"
-            title="Toggle search"
-          >
-            <div className="flex items-center justify-center">
-              <span className="text-sm text-accent w-fit px-2">Search</span>
-            </div>
-          </button>
-
-          {/* Search Panel */}
-          {showSearch && (
-            <div className="bg-dimmed backdrop-blur-sm rounded-lg p-3 border border-white/10 max-w-64">
-              <h3 className="text-sm font-medium text-accent mb-2">Search Places</h3>
-
-              {/* Search Input */}
-              <div className="relative mb-3">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchInput}
-                  placeholder="Search for places in Norway..."
-                  className="w-full p-2"
-                  autoFocus
-                />
-                {isSearching && (
-                  <div className="absolute right-2 top-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
-                  </div>
-                )}
+        {/* Search - Top Center */}
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] w-full max-w-xs sm:max-w-sm lg:max-w-md px-16 lg:px-4">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchInput}
+              placeholder="Search places..."
+              className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm placeholder-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-sm lg:text-base"
+            />
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent border-b-transparent"></div>
               </div>
+            )}
+          </div>
 
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div className="space-y-1 max-h-48 overflow-y-auto">
+          {/* Search Results */}
+          {(searchResults.length > 0 ||
+            (searchQuery && searchResults.length === 0 && !isSearching)) && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-sm rounded-lg border border-gray-200 shadow-xl max-h-80 overflow-y-auto">
+              {searchResults.length > 0 ? (
+                <div className="py-2">
                   {searchResults.map((result, index) => (
                     <button
                       key={index}
-                      onClick={() => zoomToSearchResult(result)}
-                      className="w-full text-left p-2 hover:bg-white/10 rounded text-sm text-white/90 hover:text-white transition-colors"
+                      onClick={() => {
+                        zoomToSearchResult(result);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
                     >
-                      <div className="font-medium">{result.display_name.split(',')[0]}</div>
-                      <div className="text-xs text-white/60 truncate">
-                        {result.display_name.split(',').slice(1, 3).join(',')}
+                      <div className="font-medium text-gray-900 truncate">
+                        {result.display_name.split(',')[0]}
+                      </div>
+                      <div className="text-sm text-gray-600 truncate mt-1">
+                        {result.display_name.split(',').slice(1, 3).join(', ')}
                       </div>
                     </button>
                   ))}
                 </div>
-              )}
-
-              {/* No Results */}
-              {searchQuery && searchResults.length === 0 && !isSearching && (
-                <p className="text-xs text-white/50 text-center py-2">No places found</p>
+              ) : (
+                <div className="py-4 px-4 text-center text-gray-500 text-sm">
+                  No places found for &quot;{searchQuery}&quot;
+                </div>
               )}
             </div>
           )}
