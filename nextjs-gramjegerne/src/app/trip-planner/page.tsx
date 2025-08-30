@@ -2,6 +2,7 @@
 import {useState, useCallback, useEffect} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {DeleteTripButton} from '@/components/deleteTripButton';
+import {EditTripDialog} from '@/components/EditTripDialog';
 import {Icon} from '@/components/Icon';
 import {useRouter} from 'next/navigation';
 import {TripListItem} from '@/types';
@@ -14,6 +15,7 @@ export default function TripPlannerPage() {
   const [newPlanName, setNewPlanName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
   const router = useRouter();
 
   // Load trip plans from Sanity on mount
@@ -237,14 +239,26 @@ export default function TripPlannerPage() {
                     </div>
                   </div>
 
-                  <DeleteTripButton
-                    tripId={plan._id}
-                    tripName={plan.name}
-                    onSuccess={() => {
-                      // Remove the trip from the list after successful deletion
-                      setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
-                    }}
-                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingTrip(plan);
+                      }}
+                      className="button-ghost p-2 text-white rounded-md transition-colors"
+                      title="Edit trip"
+                    >
+                      <Icon name="edit" width={20} height={20} />
+                    </button>
+                    <DeleteTripButton
+                      tripId={plan._id}
+                      tripName={plan.name}
+                      onSuccess={() => {
+                        // Remove the trip from the list after successful deletion
+                        setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -293,6 +307,29 @@ export default function TripPlannerPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Edit Trip Dialog */}
+        {editingTrip && (
+          <EditTripDialog
+            trip={editingTrip}
+            open={!!editingTrip}
+            onOpenChange={(open) => {
+              if (!open) {
+                setEditingTrip(null);
+              }
+            }}
+            onSuccess={async () => {
+              // Refresh the trips list after successful edit
+              const response = await fetch('/api/getTrips');
+              if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                  setTripPlans(data.trips);
+                }
+              }
+            }}
+          />
         )}
       </main>
     </ProtectedRoute>
