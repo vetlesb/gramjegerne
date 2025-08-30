@@ -337,6 +337,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       if (!mapInstanceRef.current || !isMapReady) return;
 
       const map = mapInstanceRef.current;
+      let popover: HTMLElement | null = null;
 
       // Create custom toolbar control
       const CustomToolbar = L.Control.extend({
@@ -363,32 +364,30 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           layerBtn.title = 'Select map layer';
           layerBtn.className = 'button-ghost !w-8 !h-8 !p-0 flex items-center justify-center';
 
-          // Create popover
-          const popover = L.DomUtil.create('div', '', layerBtnContainer);
+          // Create popover outside of Leaflet control (append to body to escape stacking context)
+          popover = L.DomUtil.create('div', '');
+          document.body.appendChild(popover);
           popover.style.cssText = `
-            position: absolute; top: 0; right: 100%; margin-right: 4px;
-            background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
-            padding: 8px; min-width: 120px; display: none; z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: fixed; 
+            background: var(--bg-primary); border: 1px solid var(--bg-dimmed); border-radius: 8px;
+            padding: 8px; min-width: 120px; display: none; z-index: 1010;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
           `;
 
           const layerOptions = [
-            {key: 'Kartverket Raster', label: 'Kartverket'},
+            {key: 'Kartverket Raster', label: 'NO Topo'},
             {key: 'OpenTopoMap', label: 'TopoMap'},
             {key: 'ESRI Satellite', label: 'Satellite'},
             {key: 'OpenStreetMap', label: 'Street'},
           ];
 
           layerOptions.forEach((option) => {
-            const optionBtn = L.DomUtil.create('button', '', popover);
+            const optionBtn = L.DomUtil.create('button', '', popover!);
             optionBtn.textContent = option.label;
+            optionBtn.className = `${currentLayer === option.key ? 'button-primary' : 'button-ghost'} !w-full !text-left !text-sm !mb-1 !py-2 !px-3`;
             optionBtn.style.cssText = `
-              display: block; width: 100%; text-align: left; padding: 4px 8px;
-              background: ${currentLayer === option.key ? '#10b981' : 'transparent'};
-              color: white; border: none; border-radius: 4px; cursor: pointer;
-              font-size: 12px; margin-bottom: 2px;
+              display: block; border: none; cursor: pointer;
             `;
-            optionBtn.style.setProperty('hover:background-color', '#333', 'important');
 
             L.DomEvent.on(optionBtn, 'click', function (e) {
               L.DomEvent.stopPropagation(e);
@@ -431,33 +430,41 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                 baseMaps[option.key as keyof typeof baseMaps].addTo(map);
               }
 
-              // Hide popover
-              popover.style.display = 'none';
-            });
+              // Update all button classes to reflect new active state
+              if (popover) {
+                const buttons = popover.querySelectorAll('button');
+                buttons.forEach((btn) => {
+                  const isActive = btn.textContent === option.label;
+                  btn.className = `${isActive ? 'button-primary' : 'button-ghost'} !w-full !text-left !text-sm !mb-1 !py-2 !px-3`;
+                });
+              }
 
-            // Add hover effect
-            L.DomEvent.on(optionBtn, 'mouseenter', function () {
-              if (currentLayer !== option.key) {
-                optionBtn.style.backgroundColor = '#333';
-              }
-            });
-            L.DomEvent.on(optionBtn, 'mouseleave', function () {
-              if (currentLayer !== option.key) {
-                optionBtn.style.backgroundColor = 'transparent';
-              }
+              // Hide popover
+              if (popover) popover.style.display = 'none';
             });
           });
 
           // Toggle popover on button click
           L.DomEvent.on(layerBtn, 'click', function (e) {
             L.DomEvent.stopPropagation(e);
+            if (!popover) return;
+
             const isVisible = popover.style.display === 'block';
-            popover.style.display = isVisible ? 'none' : 'block';
+
+            if (!isVisible) {
+              // Position popover relative to button
+              const btnRect = layerBtn.getBoundingClientRect();
+              popover.style.top = `${btnRect.top}px`;
+              popover.style.left = `${btnRect.left - 130}px`; // 120px width + 10px margin
+              popover.style.display = 'block';
+            } else {
+              popover.style.display = 'none';
+            }
           });
 
           // Hide popover when clicking elsewhere
           document.addEventListener('click', function () {
-            popover.style.display = 'none';
+            if (popover) popover.style.display = 'none';
           });
 
           // Check if we have any routes
@@ -562,6 +569,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       return () => {
         if (toolbar && map) {
           map.removeControl(toolbar);
+        }
+        // Clean up popover from body
+        if (popover && document.body.contains(popover)) {
+          document.body.removeChild(popover);
         }
       };
     }, [
@@ -703,8 +714,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           }
 
           .leaflet-popup-tip {
-            background-color: var(--bg-primary) !important;
-            margin: 0 !important;
+            display: none !important;
           }
         </style>
       `;
@@ -757,12 +767,27 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
           // Add popup
           const popupContent = `
-        <div class="p-2">
-          <h3 class="font-bold text-lg mb-2 text-secondary">${route.name}</h3>
-          <p class="text-sm text-secondary">${route.waypoints.length} waypoints</p>
+        <div style="background-color: var(--bg-primary); color: var(--fg-primary); border-radius: 8px; min-width: 200px; margin: 0; padding: 10px 0 6px 0;">
+          <h3 class="font-bold text-lg" style="color: var(--fg-accent); margin-bottom: 8px; margin-top: 0;">${route.name}</h3>
+          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; margin-bottom: 8px; margin-top: 0;">Route</p>
+          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; opacity: 0.5; margin-bottom: 8px; margin-top: 0;">${route.waypoints.length} waypoints</p>
         </div>
+        <style>
+          .leaflet-popup-content-wrapper {
+            background-color: var(--bg-primary) !important;
+            border-radius: 8px !important;
+            padding: 0 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+          }
+
+          .leaflet-popup-tip {
+            display: none !important;
+          }
+        </style>
       `;
-          polyline.bindPopup(popupContent);
+          polyline.bindPopup(popupContent, {
+            closeButton: false,
+          });
 
           // Add click handler (disabled during route drawing)
           if (onRouteClick && !isDrawingRoute) {
