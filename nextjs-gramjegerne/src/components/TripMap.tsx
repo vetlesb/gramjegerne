@@ -378,6 +378,11 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       // Auto-fit map to show all content
       const fitMapToContent = () => {
+        // Check if map still exists and is initialized
+        if (!mapInstanceRef.current) return;
+
+        const currentMap = mapInstanceRef.current;
+
         // Collect all coordinates from spots and routes
         const spotCoordinates = campingSpots.map((spot) => [
           spot.coordinates.lat,
@@ -391,23 +396,26 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         if (allCoordinates.length > 0) {
           // Fit map to show all content with padding
           const bounds = L.latLngBounds(allCoordinates as [number, number][]);
-          map.fitBounds(bounds, {
+          currentMap.fitBounds(bounds, {
             padding: [20, 20],
             maxZoom: 16, // Don't zoom in too much for single points
           });
         } else {
           // Default view for empty trips (center on Norway)
-          map.setView([61.5, 9], 6);
+          currentMap.setView([61.5, 9], 6);
         }
       };
 
       // Fit map after a short delay to ensure all layers are loaded
-      setTimeout(fitMapToContent, 100);
+      const timeoutId = setTimeout(fitMapToContent, 100);
 
       setIsMapReady(true);
 
       // Cleanup function
       return () => {
+        // Clear the timeout if component unmounts
+        clearTimeout(timeoutId);
+
         if (userLocationMarker && mapInstanceRef.current) {
           mapInstanceRef.current.removeLayer(userLocationMarker);
         }
