@@ -141,7 +141,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           html: `<div style="
           width: 20px; 
           height: 20px; 
-          background-color: #3b82f6; 
+          background-color: var(--bg-accent); 
+          outline: 8px solid color-mix(in srgb, var(--bg-accent) 50%, transparent);
           border: 3px solid white; 
           border-radius: 50%; 
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
