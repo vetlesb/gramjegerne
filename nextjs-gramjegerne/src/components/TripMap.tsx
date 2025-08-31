@@ -88,6 +88,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [currentLayer, setCurrentLayer] = useState('Kartverket Raster');
+    const [isGettingLocation, setIsGettingLocation] = useState(false);
+    const [userLocationMarker, setUserLocationMarker] = useState<L.Marker | null>(null);
 
     // Search for places using OpenStreetMap Nominatim API
     const searchPlaces = useCallback(async (query: string) => {
@@ -121,6 +123,87 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       const query = args[0] as string;
       searchPlaces(query);
     }, 300);
+
+    // Show user location on map
+    const showUserLocation = useCallback(
+      (lat: number, lng: number) => {
+        const map = mapInstanceRef.current;
+        if (!map) return;
+
+        // Remove existing location marker if any
+        if (userLocationMarker) {
+          map.removeLayer(userLocationMarker);
+        }
+
+        // Create location marker with a simple blue circle
+        const locationIcon = L.divIcon({
+          className: 'user-location-marker',
+          html: `<div style="
+          width: 20px; 
+          height: 20px; 
+          background-color: #3b82f6; 
+          border: 3px solid white; 
+          border-radius: 50%; 
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>`,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
+        });
+
+        // Add new location marker
+        const marker = L.marker([lat, lng], {
+          icon: locationIcon,
+        }).addTo(map);
+
+        setUserLocationMarker(marker);
+
+        // Center map on user location
+        map.setView([lat, lng], 15);
+      },
+      [userLocationMarker],
+    );
+
+    // Get user location
+    const handleGetLocation = useCallback(() => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by this browser.');
+        return;
+      }
+
+      setIsGettingLocation(true);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const {latitude, longitude} = position.coords;
+          showUserLocation(latitude, longitude);
+          setIsGettingLocation(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          let errorMessage = 'Unable to get your location.';
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied by user.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information is unavailable.';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out.';
+              break;
+          }
+
+          alert(errorMessage);
+          setIsGettingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000, // Accept cached position up to 1 minute old
+        },
+      );
+    }, [showUserLocation]);
 
     // Zoom to search result
     const zoomToSearchResult = useCallback((result: SearchResult) => {
@@ -324,6 +407,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       // Cleanup function
       return () => {
+        if (userLocationMarker && mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(userLocationMarker);
+        }
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
           mapInstanceRef.current = null;
@@ -467,6 +553,33 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             if (popover) popover.style.display = 'none';
           });
 
+          // Mobile dock toggle button (only show on mobile and if onToggleDock is provided)
+          if (onToggleDock) {
+            const dockBtn = L.DomUtil.create('button', '', div);
+            dockBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" fill="currentColor"/>
+</svg>
+`;
+            dockBtn.title = isDockVisible ? 'Hide trip details' : 'Show trip details';
+            dockBtn.className = `${isDockVisible ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center lg:hidden`;
+            L.DomEvent.on(dockBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleDock();
+            });
+          }
+
+          // Location button
+          const locationBtn = L.DomUtil.create('button', '', div);
+          locationBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 4.06348C16.6169 4.51459 19.4822 7.37888 19.9355 10.9951H22.0049V12.9951H19.9365C19.4872 16.6159 16.6201 19.484 13 19.9355V22H11V19.9355C7.37989 19.484 4.51285 16.6159 4.06348 12.9951H2.00488V10.9951H4.06445C4.51776 7.37888 7.38308 4.51459 11 4.06348V2H13V4.06348ZM12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6ZM12 9C13.6569 9 15 10.3431 15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9Z" fill="currentColor"/>
+</svg>`;
+          locationBtn.title = 'Show my location';
+          locationBtn.className = `${isGettingLocation ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+          L.DomEvent.on(locationBtn, 'click', function (e) {
+            L.DomEvent.stopPropagation(e);
+            handleGetLocation();
+          });
+
           // Check if we have any routes
           const hasRoutes = routes && routes.length > 0;
 
@@ -542,21 +655,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             });
           }
 
-          // Mobile dock toggle button (only show on mobile and if onToggleDock is provided)
-          if (onToggleDock) {
-            const dockBtn = L.DomUtil.create('button', '', div);
-            dockBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" fill="currentColor"/>
-</svg>
-`;
-            dockBtn.title = isDockVisible ? 'Hide trip details' : 'Show trip details';
-            dockBtn.className = `${isDockVisible ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center lg:hidden`;
-            L.DomEvent.on(dockBtn, 'click', function (e) {
-              L.DomEvent.stopPropagation(e);
-              onToggleDock();
-            });
-          }
-
           return div;
         },
       });
@@ -590,6 +688,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleViewpointSpots,
       isDockVisible,
       onToggleDock,
+      isGettingLocation,
+      handleGetLocation,
     ]);
 
     // Handle map click events separately to prevent map recreation

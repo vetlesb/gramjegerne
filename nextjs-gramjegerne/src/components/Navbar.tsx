@@ -86,7 +86,7 @@ export function Navbar() {
                     href="/trip-planner"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Trips (Beta)
+                    Trips
                   </Link>
                 </li>
               </ul>
