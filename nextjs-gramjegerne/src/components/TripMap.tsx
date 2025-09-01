@@ -290,6 +290,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             updateWhenZooming: true,
             keepBuffer: 3,
             errorTileUrl: '',
+            // Conservative performance improvements
+            updateInterval: 150, // Smooth updates without overwhelming server
+            detectRetina: true, // Better quality on high-DPI displays
           },
         ),
         OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
@@ -303,6 +306,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           errorTileUrl: '', // Don't show error tiles
           // Multiple subdomains for faster loading
           subdomains: ['a', 'b', 'c'],
+          // Conservative performance improvements
+          updateInterval: 150, // Smooth updates
+          detectRetina: true, // Better quality on high-DPI displays
         }),
         'ESRI Satellite': L.tileLayer(
           'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -314,9 +320,12 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             updateWhenZooming: true,
             keepBuffer: 3,
             errorTileUrl: '',
+            // Conservative performance improvements
+            updateInterval: 150, // Smooth updates
+            detectRetina: true, // Better quality on high-DPI displays
           },
         ),
-        OpenStreetMap: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        OpenStreetMap: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19,
           crossOrigin: 'anonymous',
@@ -324,6 +333,11 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           updateWhenZooming: true,
           keepBuffer: 3,
           errorTileUrl: '',
+          // Multiple subdomains for faster loading
+          subdomains: ['a', 'b', 'c'],
+          // Conservative performance improvements
+          updateInterval: 150, // Smooth updates
+          detectRetina: true, // Better quality on high-DPI displays
         }),
       };
 
@@ -870,8 +884,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           const polyline = L.polyline(latlngs as [number, number][], {
             color: route.color || '#10B981',
             weight: 4,
-            opacity: 0.8,
-            dashArray: '10, 5',
+            opacity: 1,
+            dashArray: '10, 8',
           });
 
           // Add popup
