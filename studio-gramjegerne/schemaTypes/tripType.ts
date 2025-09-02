@@ -190,6 +190,20 @@ const fields = [
     type: 'reference',
     to: [{type: 'user'}],
   }),
+  defineField({
+    name: 'shareId',
+    type: 'string',
+    title: 'Share ID',
+    description: 'Unique identifier for sharing this trip',
+    readOnly: true,
+  }),
+  defineField({
+    name: 'isShared',
+    type: 'boolean',
+    title: 'Is Shared',
+    description: 'Whether this trip is publicly shareable',
+    initialValue: false,
+  }),
 ];
 
 export const tripType = defineType({
