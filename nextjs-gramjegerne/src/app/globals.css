@@ -904,7 +904,10 @@ input[type='checkbox'] {
   width: 16px;
   height: 16px;
   padding: 0.7rem;
-  outline: none;
+  outline: 1px solid var(--fg-accent);
+}
+input[type='checkbox']:hover {
+  outline: 1px solid var(--fg-primary);
 }
 
 input[type='checkbox']:checked {

@@ -17,6 +17,10 @@ interface UpdateData {
     };
   } | null;
   completed: boolean;
+  connectedTrip?: {
+    _type: 'reference';
+    _ref: string;
+  } | null;
   [key: string]: unknown;
 }
 
@@ -55,6 +59,11 @@ export async function PATCH(request: NextRequest) {
         weight,
         image,
         completed,
+        "connectedTrip": connectedTrip->{
+          _id,
+          name,
+          slug
+        },
         items
       }`,
       {
@@ -84,6 +93,18 @@ export async function PATCH(request: NextRequest) {
 
     const weight = formData.get('weight');
     if (weight) updateData.weight = parseFloat(weight.toString());
+
+    // Handle connected trip
+    const connectedTripId = formData.get('connectedTripId');
+    if (connectedTripId) {
+      updateData.connectedTrip = {
+        _type: 'reference',
+        _ref: connectedTripId.toString(),
+      };
+    } else if (connectedTripId === '') {
+      // Empty string means user wants to remove the connection
+      updateData.connectedTrip = null;
+    }
 
     // Handle image upload
     const image = formData.get('image');

@@ -145,6 +145,13 @@ const fields = [
     to: [{type: 'user'}],
     validation: (rule: ReferenceRule) => rule.required(),
   }),
+  defineField({
+    name: 'connectedTrip',
+    type: 'reference',
+    to: [{type: 'trip'}],
+    title: 'Connected Trip',
+    description: 'Optional trip connection for map integration',
+  }),
 ];
 
 export const listType = defineType({

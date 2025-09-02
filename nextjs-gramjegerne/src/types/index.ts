@@ -71,6 +71,11 @@ export interface ListDocument {
   user: {
     _ref: string;
   };
+  connectedTrip?: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+  };
   _createdAt: string;
   _updatedAt: string;
   items: Array<{

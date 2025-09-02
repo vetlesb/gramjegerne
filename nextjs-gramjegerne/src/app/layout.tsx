@@ -35,7 +35,7 @@ const apfel = localFont({
 export default function RootLayout({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith('/auth/');
-  const isTripViewPage = pathname?.startsWith('/trip-planner/') && pathname !== '/trip-planner';
+  const isTripViewPage = pathname?.startsWith('/maps/') && pathname !== '/maps';
 
   return (
     <html lang="en">

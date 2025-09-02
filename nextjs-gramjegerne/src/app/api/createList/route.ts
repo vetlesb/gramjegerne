@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const participants = formData.get('participants')
       ? parseInt(formData.get('participants') as string)
       : null;
+    const connectedTripId = formData.get('connectedTripId') as string | null;
 
     // Validate required fields
     if (!name) {
@@ -84,6 +85,12 @@ export async function POST(request: Request) {
         _type: 'reference',
         _ref: fullUserRef,
       },
+      ...(connectedTripId && {
+        connectedTrip: {
+          _type: 'reference',
+          _ref: connectedTripId,
+        },
+      }),
     };
 
     await client.create(newList);

@@ -34,6 +34,11 @@ export function LIST_QUERY(slug: string) {
   weight,
   participants,
   image,
+  "connectedTrip": connectedTrip->{
+    _id,
+    name,
+    slug
+  },
   "items": items[] {
     _key,
     _type,
@@ -121,6 +126,11 @@ export interface List {
   participants: number;
   days: number;
   items: ListItem[];
+  connectedTrip?: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+  };
 }
 
 /**

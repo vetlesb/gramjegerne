@@ -2,7 +2,7 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
-import {useRouter, useParams} from 'next/navigation';
+import {useRouter, useParams, useSearchParams} from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import {
   Dialog,
@@ -46,6 +46,7 @@ export default function TripViewPage() {
   const mapRef = useRef<TripMapRef>(null);
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const tripId = params.id as string;
   const [activeTab, setActiveTab] = useState('locations');
   const [isDockVisible, setIsDockVisible] = useState(false);
@@ -60,6 +61,20 @@ export default function TripViewPage() {
   const [spotCategoryFilter, setSpotCategoryFilter] = useState<
     'all' | 'camp' | 'fishing' | 'viewpoint'
   >('all');
+
+  // Handle context-aware back navigation
+  const handleBackNavigation = useCallback(() => {
+    const fromList = searchParams.get('from');
+    const listSlug = searchParams.get('slug');
+
+    if (fromList === 'list' && listSlug) {
+      // Navigate back to the specific packing list
+      router.push(`/lists/${listSlug}`);
+    } else {
+      // Default navigation to maps
+      router.push('/maps');
+    }
+  }, [router, searchParams]);
 
   // Auto-hide dock on mobile when starting creation modes
   const handleStartAddingSpot = useCallback(() => {
@@ -87,7 +102,7 @@ export default function TripViewPage() {
         }
       } catch (error) {
         console.error('Failed to fetch trip:', error);
-        router.push('/trip-planner');
+        router.push('/maps');
       }
     };
 
@@ -464,9 +479,9 @@ export default function TripViewPage() {
 
           {/* Back Button - Top Left */}
           <button
-            onClick={() => router.push('/trip-planner')}
+            onClick={handleBackNavigation}
             className="absolute top-4 left-4 z-[1001] bg-dimmed backdrop-blur-sm rounded-lg p-3 hover:bg-dimmed shadow-lg transition-all duration-200"
-            title="Back to trips"
+            title={searchParams.get('from') === 'list' ? 'Back to packing list' : 'Back to maps'}
           >
             <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
           </button>

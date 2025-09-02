@@ -9,7 +9,7 @@ import {TripListItem} from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-export default function TripPlannerPage() {
+export default function MapsPage() {
   const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
@@ -141,7 +141,7 @@ export default function TripPlannerPage() {
   // Open trip for editing
   const handleOpenTrip = useCallback(
     (planId: string) => {
-      router.push(`/trip-planner/${planId}`);
+      router.push(`/maps/${planId}`);
     },
     [router],
   );
@@ -169,7 +169,7 @@ export default function TripPlannerPage() {
               className="button-create text-md flex items-center gap-2"
               disabled={isLoading}
             >
-              Create New Trip
+              New map
             </button>
           </div>
 

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {client} from '@/sanity/client';
-import {ListDocument} from '@/types';
+import {ListDocument, TripListItem} from '@/types';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
@@ -45,19 +45,40 @@ export function AddListDialog({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [selectedTripId, setSelectedTripId] = useState<string>('');
+  const [trips, setTrips] = useState<TripListItem[]>([]);
+  const [isLoadingTrips, setIsLoadingTrips] = useState(false);
 
   // Handle controlled/uncontrolled open state
   const isOpen = controlledOpen !== undefined ? controlledOpen : isDialogOpen;
   const handleOpenChange = onOpenChange || setIsDialogOpen;
 
-  // Reset form when dialog opens
+  // Fetch trips for selection
+  const fetchTrips = async () => {
+    setIsLoadingTrips(true);
+    try {
+      const response = await fetch('/api/getTrips');
+      if (response.ok) {
+        const data = await response.json();
+        setTrips(data.trips || []);
+      }
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+    } finally {
+      setIsLoadingTrips(false);
+    }
+  };
+
+  // Reset form when dialog opens and fetch trips
   useEffect(() => {
     if (isOpen) {
+      fetchTrips();
       if (editList) {
         setNewListName(editList.name);
         setNewListDays(editList.days ?? null);
         setNewListParticipants(editList.participants ?? null);
         setIsCompleted(editList.completed ?? false);
+        setSelectedTripId(editList.connectedTrip?._id || '');
         if (editList.image) {
           setExistingImage(editList.image);
         }
@@ -75,6 +96,7 @@ export function AddListDialog({
     setNewListWeight(null);
     setNewListParticipants(null);
     setIsCompleted(false);
+    setSelectedTripId('');
     setError(null);
     setSuccessMessage(null);
   };
@@ -105,6 +127,11 @@ export function AddListDialog({
       }
       if (newListParticipants !== null) {
         formData.append('participants', newListParticipants.toString());
+      }
+
+      // Include connected trip if selected
+      if (selectedTripId) {
+        formData.append('connectedTripId', selectedTripId);
       }
 
       // Include user ID
@@ -256,6 +283,28 @@ export function AddListDialog({
                     }
                     className="w-full max-w-full p-4"
                   />
+                </label>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="flex flex-col gap-y-2 text-lg">
+                  Connected Map (Optional)
+                  <select
+                    value={selectedTripId}
+                    onChange={(e) => setSelectedTripId(e.target.value)}
+                    className="w-full max-w-full p-4"
+                    disabled={isLoadingTrips}
+                  >
+                    <option value="">No trip connected</option>
+                    {trips.map((trip) => (
+                      <option key={trip._id} value={trip._id}>
+                        {trip.name}
+                      </option>
+                    ))}
+                  </select>
+                  {isLoadingTrips && (
+                    <span className="text-sm text-gray-500">Loading trips...</span>
+                  )}
                 </label>
               </div>
 

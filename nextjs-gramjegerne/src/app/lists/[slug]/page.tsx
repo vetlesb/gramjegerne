@@ -812,6 +812,20 @@ export default function ListPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Map button - only show if trip is connected */}
+          {list?.connectedTrip && (
+            <button
+              onClick={() =>
+                router.push(`/maps/${list.connectedTrip?._id}?from=list&slug=${listSlug}`)
+              }
+              className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md"
+              title={`View ${list.connectedTrip.name} map`}
+            >
+              Map
+            </button>
+          )}
+
           <ShareButton slug={listSlug} />
         </div>
         <div className="flex gap-x-2 no-scrollbar my-8 p-2">

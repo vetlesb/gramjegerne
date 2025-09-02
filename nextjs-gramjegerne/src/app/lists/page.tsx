@@ -53,6 +53,11 @@ function ListsPageContent() {
       completed,
       _updatedAt,
       _createdAt,
+      "connectedTrip": connectedTrip->{
+        _id,
+        name,
+        slug
+      },
       "items": items[] {
         _key,
         quantity,
