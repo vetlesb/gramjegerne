@@ -302,9 +302,7 @@ export function AddListDialog({
                       </option>
                     ))}
                   </select>
-                  {isLoadingTrips && (
-                    <span className="text-sm text-gray-500">Loading trips...</span>
-                  )}
+                  {isLoadingTrips && <span className="text-sm text-gray-500">Loading maps...</span>}
                 </label>
               </div>
 

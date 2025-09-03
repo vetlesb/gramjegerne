@@ -151,7 +151,7 @@ export default function MapsPage() {
       <ProtectedRoute>
         <main className="container mx-auto min-h-screen p-16">
           <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
-            Loading trips...
+            Loading maps...
           </div>
         </main>
       </ProtectedRoute>
