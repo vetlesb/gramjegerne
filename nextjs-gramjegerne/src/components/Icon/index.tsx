@@ -1,7 +1,7 @@
 import React from 'react';
 import {AddIcon} from './icons/AddIcon';
 import {CaloriesIcon} from './icons/CaloriesIcon';
-import {CategoryIcon} from './icons/CategoryIcon';
+import {GridIcon} from './icons/GridIcon';
 import {ChevronDownIcon} from './icons/ChevronDownIcon';
 import {ChevronUpIcon} from './icons/ChevronUpIcon';
 import {CloseIcon} from './icons/CloseIcon';
@@ -30,6 +30,7 @@ import {FishingIcon} from './icons/FishingIcon';
 import {ViewpointIcon} from './icons/ViewpointIcon';
 import {RouteIcon} from './icons/RouteIcon';
 import {TentIcon} from './icons/TentIcon';
+import {ListIcon} from './icons/ListIcon';
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -44,7 +45,7 @@ const iconMap = {
   weight: WeightIcon,
   calories: CaloriesIcon,
   logout: LogOutIcon,
-  category: CategoryIcon,
+  grid: GridIcon,
   document: DocumentIcon,
   link: LinkIcon,
   menu: MenuIcon,
@@ -65,6 +66,7 @@ const iconMap = {
   viewpoint: ViewpointIcon,
   route: RouteIcon,
   tent: TentIcon,
+  list: ListIcon,
 };
 
 type IconName = keyof typeof iconMap;

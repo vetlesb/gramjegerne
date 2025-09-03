@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function CategoryIcon(props: React.SVGProps<SVGSVGElement>) {
+export function GridIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       width="24"
