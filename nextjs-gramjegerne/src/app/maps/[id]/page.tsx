@@ -501,9 +501,9 @@ export default function TripViewPage() {
         `}
         >
           {/* Header Section - Fixed */}
-          <div className="px-4 pt-4 lg:pt-4 flex-shrink-0">
+          <div className="px-6 pt-6 flex-shrink-0">
             {/* Trip Header with Back Button */}
-            <div className="flex items-center bg-primary justify-between mb-2 lg:mb-4 p-1 lg:p-4 rounded-lg">
+            <div className="flex items-center bg-primary justify-between mb-2 lg:mb-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="lg:text-2xl text-lg text-accent font-medium">{tripPlan.name}</h2>
@@ -522,7 +522,7 @@ export default function TripViewPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex mb-4 lg:mb-2">
+            <div className="flex mb-4 lg:mb-2 border-b border-white/10">
               <button
                 onClick={() => setActiveTab('locations')}
                 className={activeTab === 'locations' ? 'tab-active' : 'tab'}
@@ -717,7 +717,7 @@ export default function TripViewPage() {
           </div>
 
           {/* Sticky Bottom Add Button */}
-          <div className="p-6 bg-background">
+          <div className="p-6 bg-background border-t border-white/10">
             {activeTab === 'locations' ? (
               <button
                 onClick={handleStartAddingSpot}

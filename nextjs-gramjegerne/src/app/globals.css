@@ -612,6 +612,40 @@ select {
   transform: translate(-50%, 0);
 }
 
+/* Sonner Toast Customization */
+[data-sonner-toaster] {
+  --normal-bg: var(--bg-primary);
+  --normal-border: var(--bg-dimmed);
+  --normal-text: var(--fg-primary);
+  --success-bg: var(--bg-accent);
+  --success-border: var(--bg-accent);
+  --success-text: var(--fg-secondary);
+  --error-bg: #dc2626;
+  --error-border: #dc2626;
+  --error-text: white;
+}
+
+[data-sonner-toast] {
+  background: var(--normal-bg) !important;
+  border: 1px solid var(--normal-border) !important;
+  color: var(--normal-text) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-sonner-toast][data-type='success'] {
+  background: var(--bg-accent) !important;
+  border: 1px solid var(--fg-accent) !important;
+  color: var(--fg-secondary) !important;
+  font-size: 16px !important;
+}
+
+[data-sonner-toast][data-type='error'] {
+  background: var(--error-bg) !important;
+  border: 1px solid var(--error-border) !important;
+  color: var(--error-text) !important;
+}
+
 @media (min-width: 240px) {
   .container {
     max-width: 100%;

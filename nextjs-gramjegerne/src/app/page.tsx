@@ -260,6 +260,27 @@ function IndexPageContent() {
     }
   }
 
+  async function confirmDeleteItemDesktop(itemId: string) {
+    setIsLoadingDelete(true);
+    try {
+      const response = await fetch(`/api/deleteItem?itemId=${itemId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Kunne ikke slette utstyr');
+      }
+
+      setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
+    } catch (error: unknown) {
+      console.error('Error deleting item:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Kunne ikke slette utstyr');
+    } finally {
+      setIsLoadingDelete(false);
+    }
+  }
+
   async function handleImportSuccess() {
     // Refresh data immediately after successful import
     await refreshData();
@@ -527,7 +548,6 @@ function IndexPageContent() {
                             className="button-ghost flex gap-x-2 h-fit align-middle"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setItemToDelete(item._id);
                             }}
                           >
                             <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
@@ -546,7 +566,7 @@ function IndexPageContent() {
                           <DialogFooter className="gap-y-4 gap-x-1">
                             <button
                               className="button-primary-accent"
-                              onClick={confirmDeleteItem}
+                              onClick={() => confirmDeleteItemDesktop(item._id)}
                               disabled={isLoadingDelete}
                             >
                               {isLoadingDelete ? 'Sletter...' : 'Slett'}
@@ -556,7 +576,6 @@ function IndexPageContent() {
                                 type="button"
                                 className="button-secondary"
                                 onClick={() => {
-                                  setItemToDelete(null);
                                   setErrorMessage('');
                                 }}
                               >
@@ -626,7 +645,7 @@ function IndexPageContent() {
           </DialogContent>
         </Dialog>
         {/* Delete Category Dialog */}
-        <Dialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(null)}>
+        <Dialog open={!!categoryToDelete}>
           <DialogContent className="dialog gap-y-8">
             <DialogHeader>
               <DialogTitle>Are you sure you want to delete this category?</DialogTitle>
@@ -635,11 +654,13 @@ function IndexPageContent() {
               <button onClick={confirmDeleteCategory} className="button-primary-accent">
                 Yes, delete
               </button>
-              <DialogClose asChild>
-                <button type="button" className="button-secondary">
-                  Cancel
-                </button>
-              </DialogClose>
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => setCategoryToDelete(null)}
+              >
+                Cancel
+              </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -662,7 +683,7 @@ function IndexPageContent() {
           </DialogContent>
         </Dialog>
         {/* Delete confirmation dialog - moved outside the mobile menu */}
-        <Dialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
+        <Dialog open={!!itemToDelete}>
           <DialogContent className="dialog gap-y-8">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal text-accent">
@@ -682,27 +703,25 @@ function IndexPageContent() {
               >
                 {isLoadingDelete ? 'Sletter...' : 'Slett'}
               </button>
-              <DialogClose asChild>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  onClick={() => {
-                    setItemToDelete(null);
-                    setErrorMessage('');
-                  }}
-                >
-                  Avbryt
-                </button>
-              </DialogClose>
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => {
+                  setItemToDelete(null);
+                  setErrorMessage('');
+                }}
+              >
+                Avbryt
+              </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Image Expansion Modal */}
         <Dialog open={!!expandedImage} onOpenChange={() => setExpandedImage(null)}>
-          <DialogContent className="dialog p-4 max-w-4xl">
+          <DialogContent className="dialog lg:p-8 p-4 max-w-3xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-normal text-accent">
+              <DialogTitle className="lg:text-4xl text-xl text-center pb-2 font-normal text-accent">
                 {expandedImage?.alt}
               </DialogTitle>
             </DialogHeader>
@@ -717,13 +736,6 @@ function IndexPageContent() {
                 />
               </div>
             )}
-            <DialogFooter>
-              <DialogClose asChild>
-                <button type="button" className="button-secondary">
-                  Close
-                </button>
-              </DialogClose>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </main>
