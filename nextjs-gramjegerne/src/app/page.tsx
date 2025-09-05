@@ -660,7 +660,7 @@ function IndexPageContent() {
                   </div>
                 ) : (
                   // Grid view
-                  <div className="flex flex-col gap-y-4">
+                  <div className="flex flex-col image-minus gap-y-4">
                     <div className="relative">
                       <div className="flex flex-col gap-y-1 p-2 absolute top-0 right-0">
                         <button
@@ -669,7 +669,7 @@ function IndexPageContent() {
                           title="Edit item"
                         >
                           <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                            <Icon name="edit" width={24} height={24} />
+                            <Icon name="edit" width={16} height={16} />
                           </div>
                         </button>
                         <button
@@ -681,13 +681,13 @@ function IndexPageContent() {
                           title="Delete item"
                         >
                           <div className="flex items-center justify-center gap-x-1 w-full text-lg">
-                            <Icon name="delete" width={24} height={24} />
+                            <Icon name="delete" width={16} height={16} />
                           </div>
                         </button>
                       </div>
                       {item.image?.asset ? (
                         <Image
-                          className="rounded-md h-full w-full aspect-square object-cover cursor-pointer"
+                          className="rounded-tl-md rounded-tr-md h-full w-full aspect-square object-cover cursor-pointer"
                           src={urlFor(item.image.asset)}
                           alt={item.name}
                           width={800}
@@ -717,7 +717,7 @@ function IndexPageContent() {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-col gap-y-1">
+                    <div className="flex flex-col gap-y-1 pl-4 pr-4 pb-4">
                       <h2 className="text-lg text-accent">{item.name}</h2>
                       <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
                         {item.size && (

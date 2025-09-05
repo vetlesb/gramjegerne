@@ -196,6 +196,9 @@ img.list-image {
   border-radius: 8px;
   width: 56px;
 }
+.image-minus {
+  margin: -16px;
+}
 
 ul {
   padding: 0px;
