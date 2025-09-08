@@ -3,6 +3,7 @@ import {useState, useCallback, useEffect} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {DeleteTripButton} from '@/components/deleteTripButton';
 import {EditTripDialog} from '@/components/EditTripDialog';
+import {AddTripDialog} from '@/components/AddTripDialog';
 import {Icon} from '@/components/Icon';
 import {useRouter} from 'next/navigation';
 import {TripListItem} from '@/types';
@@ -11,8 +12,6 @@ export const dynamic = 'force-dynamic';
 
 export default function MapsPage() {
   const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [newPlanName, setNewPlanName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
@@ -47,44 +46,25 @@ export default function MapsPage() {
     fetchTrips();
   }, []);
 
-  // Create new trip plan
-  const handleCreatePlan = useCallback(async () => {
-    if (!newPlanName.trim()) return;
-
+  // Refresh trips list
+  const refreshTrips = useCallback(async () => {
     try {
-      setIsLoading(true);
       setError(null);
-
-      const response = await fetch('/api/createTrip', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newPlanName.trim(),
-        }),
-      });
-
+      const response = await fetch('/api/getTrips');
       if (!response.ok) {
-        throw new Error('Failed to create trip');
+        throw new Error('Failed to fetch trips');
       }
-
       const data = await response.json();
       if (data.success) {
-        // Add the new trip to the list
-        setTripPlans((prev) => [data.trip, ...prev]);
-        setIsCreatingNew(false);
-        setNewPlanName('');
+        setTripPlans(data.trips);
       } else {
-        throw new Error(data.error || 'Failed to create trip');
+        throw new Error(data.error || 'Failed to fetch trips');
       }
     } catch (error) {
-      console.error('Failed to create trip:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create trip');
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to refresh trips:', error);
+      setError(error instanceof Error ? error.message : 'Failed to refresh trips');
     }
-  }, [newPlanName]);
+  }, []);
 
   // Helper function to calculate route distance using Haversine formula
   const calculateRouteDistance = (waypoints: Array<{lat: number; lng: number}>): number => {
@@ -164,13 +144,12 @@ export default function MapsPage() {
         {/* Header */}
         <div className="flex flex-col gap-y-4">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsCreatingNew(true)}
-              className="button-create text-md flex items-center gap-2"
-              disabled={isLoading}
-            >
-              New map
-            </button>
+            <AddTripDialog
+              onSuccess={async (newTrip) => {
+                // Add the new trip to the list
+                setTripPlans((prev) => [newTrip, ...prev]);
+              }}
+            />
           </div>
 
           {/* Error Display */}
@@ -265,50 +244,6 @@ export default function MapsPage() {
           )}
         </div>
 
-        {/* Create New Plan Dialog */}
-        {isCreatingNew && (
-          <div className="fixed inset-0 bg-dimmed/80 flex items-center justify-center z-[9999]">
-            <div className="bg-dimmed border border-white/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-              <h2 className="text-2xl text-accent mb-6">Create New Trip</h2>
-
-              <div className="flex flex-col gap-4">
-                <label className="flex flex-col gap-2">
-                  <span className="text-white/70">Trip Name</span>
-                  <input
-                    type="text"
-                    value={newPlanName}
-                    onChange={(e) => setNewPlanName(e.target.value)}
-                    placeholder="e.g., Jotunheimen Summer 2024"
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
-                    autoFocus
-                    disabled={isLoading}
-                  />
-                </label>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={handleCreatePlan}
-                    disabled={!newPlanName.trim() || isLoading}
-                    className="button-primary flex-1"
-                  >
-                    {isLoading ? 'Creating...' : 'Create Trip'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCreatingNew(false);
-                      setNewPlanName('');
-                    }}
-                    className="button-secondary flex-1"
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Edit Trip Dialog */}
         {editingTrip && (
           <EditTripDialog
@@ -319,16 +254,7 @@ export default function MapsPage() {
                 setEditingTrip(null);
               }
             }}
-            onSuccess={async () => {
-              // Refresh the trips list after successful edit
-              const response = await fetch('/api/getTrips');
-              if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                  setTripPlans(data.trips);
-                }
-              }
-            }}
+            onSuccess={refreshTrips}
           />
         )}
       </main>

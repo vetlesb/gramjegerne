@@ -80,6 +80,11 @@ export default function ListPage() {
     [key: string]: number;
   }>({});
 
+  // Add state for temporary input values (allows empty/invalid states)
+  const [tempQuantityInputs, setTempQuantityInputs] = useState<{
+    [key: string]: string;
+  }>({});
+
   // Add a new state for dialog search
   const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
@@ -640,6 +645,13 @@ export default function ListPage() {
       [itemKey]: newQuantity,
     }));
 
+    // Clear the temporary input state since we have a valid value
+    setTempQuantityInputs((prev) => {
+      const newState = {...prev};
+      delete newState[itemKey];
+      return newState;
+    });
+
     try {
       const updatedItems = selectedItems.map((item) =>
         item._key === itemKey ? {...item, quantity: newQuantity} : item,
@@ -1091,18 +1103,52 @@ export default function ListPage() {
                             min="0.1"
                             step="0.1"
                             value={
-                              pendingQuantities[listItem._key] !== undefined
-                                ? pendingQuantities[listItem._key]
-                                : listItem.quantity || 1
+                              tempQuantityInputs[listItem._key] !== undefined
+                                ? tempQuantityInputs[listItem._key]
+                                : pendingQuantities[listItem._key] !== undefined
+                                  ? pendingQuantities[listItem._key].toString()
+                                  : (listItem.quantity || 1).toString()
                             }
                             onChange={(e) => {
                               e.stopPropagation();
-                              const newValue = parseFloat(e.target.value);
-                              if (!isNaN(newValue)) {
+                              const inputValue = e.target.value;
+
+                              // Always update the temporary input state
+                              setTempQuantityInputs((prev) => ({
+                                ...prev,
+                                [listItem._key]: inputValue,
+                              }));
+                            }}
+                            onBlur={(e) => {
+                              e.stopPropagation();
+                              const inputValue = e.target.value;
+                              const newValue = parseFloat(inputValue);
+
+                              if (!isNaN(newValue) && newValue >= 0.1) {
+                                // Valid value - update the quantity
                                 handleQuantityChange(listItem._key, newValue);
+                              } else {
+                                // Invalid value - reset to current quantity
+                                const currentQuantity =
+                                  pendingQuantities[listItem._key] !== undefined
+                                    ? pendingQuantities[listItem._key]
+                                    : listItem.quantity || 1;
+                                setTempQuantityInputs((prev) => ({
+                                  ...prev,
+                                  [listItem._key]: currentQuantity.toString(),
+                                }));
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.currentTarget.blur(); // Trigger onBlur
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => {
+                              // Select all text when focused for easy editing
+                              e.target.select();
+                            }}
                             className="number-input w-12 text-center p-1 rounded-full"
                           />
                         </div>

@@ -441,6 +441,7 @@ function IndexPageContent() {
           >
             Excel
           </button>
+
           <button
             className="button-create text-md gap-x-1 flex flex-row items-center"
             onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
@@ -448,6 +449,7 @@ function IndexPageContent() {
             <Icon name={viewMode === 'list' ? 'grid' : 'list'} />
           </button>
         </div>
+
         {/* Categories Menu */}
         <div className="flex gap-x-2 no-scrollbar mb-4 p-2 overflow-x-auto pt-1">
           {items.length > 0 && (

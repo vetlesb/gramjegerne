@@ -493,6 +493,20 @@ select {
   padding: 1rem;
   border-radius: 4px;
 }
+
+select {
+  /* Add proper padding for dropdown arrow */
+  padding-right: 3rem;
+  /* Add dropdown arrow */
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==');
+  background-repeat: no-repeat;
+  background-size: 0.7rem;
+  background-position: right 1rem center;
+  /* Ensure proper appearance */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
 input:focus,
 select:focus,
 input:active,
