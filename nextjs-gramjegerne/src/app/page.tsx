@@ -537,7 +537,7 @@ function IndexPageContent() {
 
                     <div className="flex flex-col flex-grow">
                       <h2 className="text-lg md:text-xl text-accent mb-1">{item.name}</h2>
-                      <div className="flex flex-wrap gap-x-1">
+                      <div className="flex flex-wrap gap-x-1 gap-y-1">
                         {item.size && (
                           <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
                             <Icon name="size" width={16} height={16} />
