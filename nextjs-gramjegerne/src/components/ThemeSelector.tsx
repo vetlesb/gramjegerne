@@ -15,7 +15,6 @@ export function ThemeSelector() {
 
   const themes = [
     {value: 'green', label: 'Forrest', icon: 'tree'},
-
     {value: 'blue', label: 'Ocean', icon: 'water'},
     {value: 'yellow', label: 'Spring', icon: 'leaf'},
   ] as const;

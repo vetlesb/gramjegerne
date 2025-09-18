@@ -449,7 +449,7 @@ export default function TripViewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen w-screen flex lg:flex-row relative">
+      <div className="full-screen-ios w-screen flex lg:flex-row relative">
         {/* Main Content - Full screen on mobile */}
         <div className="flex-1 relative h-full overflow-hidden">
           <TripMap

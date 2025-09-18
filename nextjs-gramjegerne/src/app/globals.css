@@ -421,12 +421,15 @@ ul.category-list {
   height: 16px;
 }
 .menu-category {
-  padding: 8px 16px 8px 16px;
+  padding: 8px 16px;
   border-radius: 48px;
-  max-height: 40px;
+  height: 40px;
   white-space: nowrap;
   color: var(--fg-primary);
   border: 1px solid var(--fg-dimmed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .menu-category:hover {
   background-color: var(--bg-dimmed);
@@ -796,7 +799,7 @@ select {
   :root[data-theme='green'] {
     --bg-primary: #1f261c;
     --bg-primary-hover: #1c2219;
-    --bg-secondary: #eaffe2;
+    --bg-secondary: #ffffff;
     --bg-dimmed: #272e23;
     --bg-dimmed-hover: #222a1f;
     --bg-accent: #b4ed9f;
@@ -810,23 +813,48 @@ select {
     --bg-50: rgba(23, 38, 28, 0.5);
     --radius: 8px;
   }
-  /* Default theme (light green) */
+  /* Light green theme */
   :root[data-theme='light-green'] {
     --bg-primary: #e6f1e4;
-    --bg-primary-hover: #dbe6d9;
-    --bg-secondary: #001f08;
-    --bg-dimmed: #dbe6d9;
-    --bg-dimmed-hover: #cfdacd;
-    --bg-accent: #b1b9af;
-    --bg-accent-hover: #001f08;
-    --bg-checked: #343e2f;
-    --fg-primary: #111;
-    --fg-secondary: #fff;
-    --fg-dimmed: #dbe6d9;
-    --fg-accent: #111;
-    --bg-25: rgba(23, 38, 28, 0.25);
-    --bg-50: rgba(23, 38, 28, 0.5);
+    --bg-primary-hover: #f0f8ef;
+    --bg-secondary: #ffffff;
+    --bg-dimmed: #d8e7d5;
+    --bg-dimmed-hover: #d3e4d0;
+    --bg-accent: #d9e7d5;
+    --bg-accent-hover: #3d6b4a;
+    --bg-checked: #d3e4d0;
+    --fg-primary: #1a2e1f;
+    --fg-secondary: #1a2e1f;
+    --fg-dimmed: #a5bca0;
+    --fg-accent: #001e09;
+    --bg-25: rgba(74, 124, 89, 0.1);
+    --bg-50: rgba(74, 124, 89, 0.2);
     --radius: 8px;
+  }
+
+  /* Full screen support - desktop uses standard h-screen, mobile gets iOS fixes */
+  .full-screen-ios {
+    /* Desktop: standard viewport height */
+    height: 100vh;
+  }
+
+  /* Mobile-specific iOS Safari fixes */
+  @media (max-width: 1024px) {
+    .full-screen-ios {
+      /* Modern browsers with dynamic viewport height support */
+      height: 100dvh;
+
+      /* Ensure full coverage on iOS Safari */
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    /* Support for older iOS versions */
+    @supports (-webkit-touch-callout: none) {
+      .full-screen-ios {
+        height: -webkit-fill-available;
+      }
+    }
   }
 
   /* Blue theme */
