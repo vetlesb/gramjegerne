@@ -256,6 +256,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
               className="w-full max-w-full p-4"
               type="text"
               value={name}
+              placeholder="Title"
               onChange={(e) => setName(e.target.value)}
               required
               minLength={1}
@@ -479,7 +480,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         </div>
 
         {/* Submit Button */}
-        <button className="button-primary-accent py-2 px-4" type="submit" disabled={isLoading}>
+        <button className="button-primary-accent py-2 px-4 mt-2" type="submit" disabled={isLoading}>
           {isLoading ? 'Adding...' : 'Add'}
         </button>
       </form>

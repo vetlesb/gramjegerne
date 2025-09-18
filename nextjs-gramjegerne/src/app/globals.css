@@ -158,8 +158,17 @@ body {
 .bg-dimmed-hover {
   background-color: var(--bg-dimmed-hover);
 }
+.bg-map-search {
+  background-color: var(--bg-primary);
+}
+.bg-map-search-hover {
+  background-color: pink;
+}
 .bg-primary {
   background-color: var(--bg-primary);
+}
+.bg-primary-hover {
+  background-color: var(--bg-primary-hover);
 }
 .bg-secondary {
   background-color: var(--bg-secondary);

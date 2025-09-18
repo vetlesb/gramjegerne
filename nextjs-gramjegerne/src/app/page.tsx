@@ -372,82 +372,86 @@ function IndexPageContent() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <div className="flex flex-row gap-y-4 gap-x-2 pb-8 overflow-y-auto no-scrollbar p-1">
-          {/* New Item Dialog */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="button-create text-md flex flex-shrink-0 flex-row items-center gap-x-1">
-                Add
-              </button>
-            </DialogTrigger>
-            <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-normal text-accent pb-8">
-                  Add gear
-                </DialogTitle>
-              </DialogHeader>
-              <NewItemForm
-                onSuccess={async () => {
-                  await refreshData();
-                  return new Promise<void>((resolve) => {
-                    // Close the dialog after a short delay to ensure the success message is seen
-                    setTimeout(() => {
-                      const closeButton = document.querySelector('[data-dialog-close]');
-                      (closeButton as HTMLButtonElement)?.click();
-                      resolve();
-                    }, 500);
-                  });
-                }}
-              />
-              <DialogFooter>
-                <DialogClose data-dialog-close className="hidden" />
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        <div className="flex flex-row space-between overflow-y-auto no-scrollbar pb-8 p-1 gap-x-2">
+          <div className="flex flex-row space-between gap-y-4 gap-x-2 w-full">
+            {/* New Item Dialog */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="button-create text-md flex flex-shrink-0 flex-row items-center gap-x-1">
+                  Add
+                </button>
+              </DialogTrigger>
+              <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-normal text-accent pb-8">
+                    Add gear
+                  </DialogTitle>
+                </DialogHeader>
+                <NewItemForm
+                  onSuccess={async () => {
+                    await refreshData();
+                    return new Promise<void>((resolve) => {
+                      // Close the dialog after a short delay to ensure the success message is seen
+                      setTimeout(() => {
+                        const closeButton = document.querySelector('[data-dialog-close]');
+                        (closeButton as HTMLButtonElement)?.click();
+                        resolve();
+                      }, 500);
+                    });
+                  }}
+                />
+                <DialogFooter>
+                  <DialogClose data-dialog-close className="hidden" />
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-          {/* Add Category Dialog */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <button className="button-create text-md flex flex-row items-center gap-x-1">
-                Categories
-              </button>
-            </DialogTrigger>
-            <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-2xl text-accent font-normal pb-8">
-                  Add category
-                </DialogTitle>
-              </DialogHeader>
+            {/* Add Category Dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="button-create text-md flex flex-row items-center gap-x-1">
+                  Categories
+                </button>
+              </DialogTrigger>
+              <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl text-accent font-normal pb-8">
+                    Add category
+                  </DialogTitle>
+                </DialogHeader>
 
-              <AddCategoryForm
-                onSuccess={(newCategory) => {
-                  setCategories((prev) => sortCategories([...prev, newCategory]));
-                }}
-              />
+                <AddCategoryForm
+                  onSuccess={(newCategory) => {
+                    setCategories((prev) => sortCategories([...prev, newCategory]));
+                  }}
+                />
 
-              <p className="mt-6">Categories</p>
-              <CategoryList
-                categories={categories}
-                onUpdate={handleUpdateCategory}
-                onDelete={setCategoryToDelete}
-              />
-            </DialogContent>
-          </Dialog>
+                <p className="mt-6">Categories</p>
+                <CategoryList
+                  categories={categories}
+                  onUpdate={handleUpdateCategory}
+                  onDelete={setCategoryToDelete}
+                />
+              </DialogContent>
+            </Dialog>
 
-          {/* Import Dialog Button */}
-          <button
-            className="button-create text-md gap-x-1 flex flex-row items-center"
-            onClick={handleOpenImportDialog}
-          >
-            Excel
-          </button>
-
-          <button
-            className="button-create text-md gap-x-1 flex flex-row items-center"
-            onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
-          >
-            <Icon name={viewMode === 'list' ? 'grid' : 'list'} />
-          </button>
+            {/* Import Dialog Button */}
+            <button
+              className="button-create text-md gap-x-1 flex flex-row items-center"
+              onClick={handleOpenImportDialog}
+            >
+              Excel
+            </button>
+          </div>
+          <div className="flex flex-row items-center gap-x-1">
+            <button
+              className="button-create text-md gap-x-1 flex flex-row items-center"
+              onClick={() => handleViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
+            >
+              <Icon name={viewMode === 'list' ? 'grid' : 'list'} width={16} height={16} />
+              <p>{viewMode === 'list' ? 'Grid' : 'List'}</p>
+            </button>
+          </div>
         </div>
 
         {/* Categories Menu */}

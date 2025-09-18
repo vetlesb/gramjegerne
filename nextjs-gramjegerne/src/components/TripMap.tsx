@@ -975,7 +975,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
               value={searchQuery}
               onChange={handleSearchInput}
               placeholder="Search"
-              className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm placeholder-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-sm lg:text-base"
+              className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-sm lg:text-base"
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -987,7 +987,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           {/* Search Results */}
           {(searchResults.length > 0 ||
             (searchQuery && searchResults.length === 0 && !isSearching)) && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-sm rounded-lg border border-gray-200 shadow-xl max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 pr-2 mt-1 pl-2 bg-primary rounded-lg no-scrollbar shadow-xl max-h-80 overflow-y-auto">
               {searchResults.length > 0 ? (
                 <div className="py-2">
                   {searchResults.map((result, index) => (
@@ -998,19 +998,19 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                         setSearchQuery('');
                         setSearchResults([]);
                       }}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                      className="w-full text-left mb-2 last:mb-0 rounded-md button-create transition-colors"
                     >
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="font-medium text-accent truncate">
                         {result.display_name.split(',')[0]}
                       </div>
-                      <div className="text-sm text-gray-600 truncate mt-1">
+                      <div className="text-sm text-primary truncate mt-1">
                         {result.display_name.split(',').slice(1, 3).join(', ')}
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="py-4 px-4 text-center text-gray-500 text-sm">
+                <div className="py-4 px-4 text-center text-primary text-sm">
                   No places found for &quot;{searchQuery}&quot;
                 </div>
               )}
