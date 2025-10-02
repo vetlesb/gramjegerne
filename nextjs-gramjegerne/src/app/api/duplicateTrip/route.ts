@@ -1,20 +1,31 @@
+import {NextRequest, NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
+import {authOptions} from '../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
-import {getUserSession} from '@/lib/auth-helpers';
 import {nanoid} from 'nanoid';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getUserSession();
-
-    if (!session || !session.user) {
-      return new Response(JSON.stringify({message: 'Unauthorized'}), {
-        status: 401,
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
     const {tripId} = await request.json();
     if (!tripId) {
-      return new Response('Trip ID is required', {status: 400});
+      return NextResponse.json({error: 'Trip ID is required'}, {status: 400});
+    }
+
+    // Extract the raw Google ID from session (remove "google_" prefix)
+    const rawGoogleId = session.user.id.replace('google_', '');
+
+    // Get the current user
+    const user = await client.fetch(`*[_type == "user" && googleId == $googleId][0]`, {
+      googleId: rawGoogleId,
+    });
+
+    if (!user) {
+      return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
     // Fetch the original trip (no ownership check - we want to allow duplicating shared trips)
@@ -34,7 +45,7 @@ export async function POST(request: Request) {
     );
 
     if (!originalTrip) {
-      return new Response('Trip not found', {status: 404});
+      return NextResponse.json({error: 'Trip not found'}, {status: 404});
     }
 
     // Create a new slug
@@ -57,7 +68,7 @@ export async function POST(request: Request) {
       routes: originalTrip.routes || [],
       user: {
         _type: 'reference',
-        _ref: session.user.id,
+        _ref: user._id,
       },
       // Don't copy sharing properties - new trip starts as private
       shareId: undefined,
@@ -67,24 +78,17 @@ export async function POST(request: Request) {
     // Create the new trip in Sanity
     const result = await client.create(newTrip);
 
-    return new Response(
-      JSON.stringify({
-        message: 'Trip duplicated successfully',
-        trip: {
-          _id: result._id,
-          name: newTrip.name,
-          slug: {current: newSlug},
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    return NextResponse.json({
+      success: true,
+      message: 'Trip duplicated successfully',
+      trip: {
+        _id: result._id,
+        name: newTrip.name,
+        slug: {current: newSlug},
       },
-    );
+    });
   } catch (error) {
     console.error('Error duplicating trip:', error);
-    return new Response(JSON.stringify({message: 'Failed to duplicate trip'}), {status: 500});
+    return NextResponse.json({error: 'Failed to duplicate trip'}, {status: 500});
   }
 }

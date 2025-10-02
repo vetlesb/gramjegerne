@@ -7,7 +7,6 @@ import {AddTripDialog} from '@/components/AddTripDialog';
 import {Icon} from '@/components/Icon';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {TripListItem, SharedTripReference} from '@/types';
-import {SharedTripItem} from '@/components/SharedTripItem';
 import {useSession} from 'next-auth/react';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
@@ -316,16 +315,64 @@ function MapsPageContent() {
               </div>
 
               {selectedFilter === 'shared' ? (
-                // Show shared trips
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
+                // Show shared trips with same styling as regular trips
+                <div className="space-y-2">
                   {sharedTrips.map((sharedTrip, index) => (
-                    <SharedTripItem
+                    <div
                       key={sharedTrip._key || `shared_${sharedTrip.trip._id}_${index}`}
-                      sharedTrip={sharedTrip}
-                      onRemove={handleRemoveSharedTrip}
-                    />
+                      className="product-map flex items-center justify-between cursor-pointer"
+                      onClick={() => {
+                        // Navigate to the shared trip view using shareId if available, otherwise use trip ID
+                        if (sharedTrip.trip.shareId) {
+                          router.push(`/share/map/${sharedTrip.trip.shareId}`);
+                        } else {
+                          // Fallback to regular trip view with shared flag
+                          router.push(`/maps/${sharedTrip.trip._id}?shared=true`);
+                        }
+                      }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{sharedTrip.trip.name}</h3>
+                        <div className="flex items-center gap-x-1 mt-1">
+                          {/* User */}
+                          <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                            <Icon name="user" width={16} height={16} />
+                            {sharedTrip.trip.user.name}
+                          </span>
+
+                          {/* Routes */}
+                          {sharedTrip.trip.routesCount > 0 && (
+                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              <Icon name="route" width={16} height={16} />
+                              {sharedTrip.trip.routesCount}
+                            </span>
+                          )}
+
+                          {/* Spots */}
+                          {sharedTrip.trip.campingSpotsCount > 0 && (
+                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              <Icon name="location" width={16} height={16} />
+                              {sharedTrip.trip.campingSpotsCount} spots
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveSharedTrip(sharedTrip.trip._id);
+                          }}
+                          className="button-ghost p-2 text-white rounded-md transition-colors"
+                          title="Remove from shared trips"
+                        >
+                          <Icon name="delete" width={20} height={20} />
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
                 // Show regular trips (filtered by 'my' or show all when null)
                 <div className="space-y-2">
