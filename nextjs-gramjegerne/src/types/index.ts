@@ -37,6 +37,7 @@ export interface User {
   googleId: string;
   image?: string;
   sharedLists?: SharedListReference[];
+  sharedTrips?: SharedTripReference[];
 }
 
 export interface SharedListReference {
@@ -53,6 +54,27 @@ export interface SharedListReference {
       name: string;
       email: string;
     };
+  };
+  addedAt: string;
+}
+
+export interface SharedTripReference {
+  _key: string;
+  trip: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+    shareId?: string;
+    image?: {
+      asset: ImageAsset;
+    };
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+    campingSpotsCount: number;
+    routesCount: number;
   };
   addedAt: string;
 }
