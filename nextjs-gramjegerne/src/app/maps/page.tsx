@@ -10,6 +10,7 @@ import {TripListItem, SharedTripReference} from '@/types';
 import {useSession} from 'next-auth/react';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
+import {toast} from 'sonner';
 
 export const dynamic = 'force-dynamic';
 
@@ -190,7 +191,7 @@ function MapsPageContent() {
     }
   };
 
-  const handleDuplicateTrip = async (tripId: string) => {
+  const handleDuplicateTrip = async (tripId: string, tripName: string) => {
     try {
       setDuplicatingTripId(tripId);
       const response = await fetch('/api/duplicateTrip', {
@@ -216,13 +217,20 @@ function MapsPageContent() {
 
       const data = await response.json();
       
-      // Navigate to the new duplicated trip
-      router.push(`/maps/${data.trip._id}`);
+      // Show success toast and stay on the page
+      toast.success(`${tripName} duplicated successfully!`, {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+
+      // Refresh the trips list to show the new duplicate
+      await fetchTrips();
     } catch (error) {
       console.error('Error duplicating trip:', error);
-      alert(
-        `Failed to duplicate trip: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
-      );
+      toast.error('Failed to duplicate trip. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     } finally {
       setDuplicatingTripId(null);
     }
@@ -401,7 +409,7 @@ function MapsPageContent() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDuplicateTrip(sharedTrip.trip._id);
+                            handleDuplicateTrip(sharedTrip.trip._id, sharedTrip.trip.name);
                           }}
                           disabled={duplicatingTripId === sharedTrip.trip._id}
                           className="button-ghost p-2 text-white rounded-md transition-colors"
