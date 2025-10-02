@@ -4,7 +4,7 @@ import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import {notFound} from 'next/navigation';
 import {useParams} from 'next/navigation';
 import {useEffect, useState, Suspense} from 'react';
-import {CampingSpot, Route, SpotCategory} from '@/types';
+import {CampingSpot, Route} from '@/types';
 import ShareMapClient from './ShareMapClient';
 
 // Define the type for the fetched trip

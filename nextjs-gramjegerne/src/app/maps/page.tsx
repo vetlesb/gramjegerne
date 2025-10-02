@@ -1,5 +1,5 @@
 'use client';
-import {useState, useCallback, useEffect, useMemo, useRef, Suspense} from 'react';
+import {useState, useCallback, useEffect, useRef, Suspense} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {DeleteTripButton} from '@/components/deleteTripButton';
 import {EditTripDialog} from '@/components/EditTripDialog';
@@ -215,7 +215,7 @@ function MapsPageContent() {
         throw new Error(`Failed to duplicate trip: ${errorData.error || response.statusText}`);
       }
 
-      const data = await response.json();
+      await response.json();
       
       // Show success toast and stay on the page
       toast.success(`${tripName} duplicated successfully!`, {

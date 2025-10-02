@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import {useSession} from 'next-auth/react';
 import {client} from '@/sanity/client';
-import {CampingSpot, Route, SpotCategory} from '@/types';
+import {CampingSpot, Route} from '@/types';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 
 // Dynamically import TripMap to avoid SSR issues with Leaflet

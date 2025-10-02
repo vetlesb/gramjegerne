@@ -158,6 +158,8 @@ export interface TripDocument {
   user: {
     _ref: string;
   };
+  shareId?: string;
+  isShared?: boolean;
   _createdAt: string;
   _updatedAt: string;
 }
