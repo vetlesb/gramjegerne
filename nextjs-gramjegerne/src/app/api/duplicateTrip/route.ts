@@ -6,13 +6,20 @@ import {nanoid} from 'nanoid';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Duplicate trip API called');
     const session = await getServerSession(authOptions);
+    console.log('Session:', session?.user?.id ? 'authenticated' : 'not authenticated');
+    
     if (!session?.user?.id) {
+      console.log('Unauthorized - no session');
       return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
     const {tripId} = await request.json();
+    console.log('Trip ID:', tripId);
+    
     if (!tripId) {
+      console.log('No trip ID provided');
       return NextResponse.json({error: 'Trip ID is required'}, {status: 400});
     }
 
@@ -89,6 +96,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error duplicating trip:', error);
-    return NextResponse.json({error: 'Failed to duplicate trip'}, {status: 500});
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return NextResponse.json({
+      error: 'Failed to duplicate trip',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, {status: 500});
   }
 }

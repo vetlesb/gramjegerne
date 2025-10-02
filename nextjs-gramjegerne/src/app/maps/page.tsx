@@ -202,8 +202,15 @@ function MapsPageContent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
+        console.error('Response not OK:', response.status, response.statusText);
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.error('API Error:', errorData);
+        } catch (jsonError) {
+          console.error('Failed to parse error response as JSON:', jsonError);
+          errorData = { error: response.statusText };
+        }
         throw new Error(`Failed to duplicate trip: ${errorData.error || response.statusText}`);
       }
 

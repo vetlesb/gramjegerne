@@ -127,7 +127,6 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
     }
   };
 
-
   // Check if saved on mount
   useEffect(() => {
     checkIfSaved();
