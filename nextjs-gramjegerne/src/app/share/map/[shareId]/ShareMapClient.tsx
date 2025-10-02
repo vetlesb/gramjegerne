@@ -153,7 +153,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
       }
 
       const data = await response.json();
-      
+
       // Navigate to the new duplicated trip
       router.push(`/maps/${data.trip._id}`);
     } catch (error) {
@@ -452,7 +452,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
                   isSaved ? 'button-secondary' : 'button-primary'
                 }`}
               >
-                <Icon name={isSaved ? 'check' : 'add'} width={20} height={20} />
+                <Icon name={isSaved ? 'checkmark' : 'add'} width={20} height={20} />
                 {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
               </button>
               <button

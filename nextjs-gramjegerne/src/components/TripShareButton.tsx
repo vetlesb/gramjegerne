@@ -81,7 +81,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
       {isGeneratingLink ? (
         <div className="animate-spin w-5 h-5 border border-accent border-t-transparent rounded-full" />
       ) : (
-        <Icon name="share" width={20} height={20} />
+        <Icon name="link" width={20} height={20} />
       )}
     </button>
   );
