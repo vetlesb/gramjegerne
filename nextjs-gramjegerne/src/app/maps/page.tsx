@@ -44,6 +44,7 @@ function MapsPageContent() {
     },
   );
   const isUpdatingURL = useRef(false);
+  const [duplicatingTripId, setDuplicatingTripId] = useState<string | null>(null);
 
   // Fetch user's own trips
   const fetchTrips = useCallback(async () => {
@@ -186,6 +187,37 @@ function MapsPageContent() {
     } catch (error) {
       console.error('Error removing shared trip:', error);
       alert('Failed to remove shared trip. Please try again.');
+    }
+  };
+
+  const handleDuplicateTrip = async (tripId: string) => {
+    try {
+      setDuplicatingTripId(tripId);
+      const response = await fetch('/api/duplicateTrip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({tripId}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`Failed to duplicate trip: ${errorData.error || response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Navigate to the new duplicated trip
+      router.push(`/maps/${data.trip._id}`);
+    } catch (error) {
+      console.error('Error duplicating trip:', error);
+      alert(
+        `Failed to duplicate trip: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+      );
+    } finally {
+      setDuplicatingTripId(null);
     }
   };
 
@@ -359,6 +391,21 @@ function MapsPageContent() {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateTrip(sharedTrip.trip._id);
+                          }}
+                          disabled={duplicatingTripId === sharedTrip.trip._id}
+                          className="button-ghost p-2 text-white rounded-md transition-colors"
+                          title="Duplicate trip"
+                        >
+                          {duplicatingTripId === sharedTrip.trip._id ? (
+                            <div className="animate-spin w-5 h-5 border border-accent border-t-transparent rounded-full" />
+                          ) : (
+                            <Icon name="duplicate" width={20} height={20} />
+                          )}
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
