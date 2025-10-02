@@ -1,53 +1,53 @@
 'use client';
-import {useState, useCallback, useEffect} from 'react';
+import {useState, useCallback, useEffect, useMemo, useRef, Suspense} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {DeleteTripButton} from '@/components/deleteTripButton';
 import {EditTripDialog} from '@/components/EditTripDialog';
 import {AddTripDialog} from '@/components/AddTripDialog';
 import {Icon} from '@/components/Icon';
-import {useRouter} from 'next/navigation';
-import {TripListItem} from '@/types';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {TripListItem, SharedTripReference} from '@/types';
+import {SharedTripItem} from '@/components/SharedTripItem';
+import {useSession} from 'next-auth/react';
+import {client} from '@/sanity/client';
+import {groq} from 'next-sanity';
 
 export const dynamic = 'force-dynamic';
 
-export default function MapsPage() {
+function MapsPageContent() {
+  const {data: session} = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
+  const [sharedTrips, setSharedTrips] = useState<SharedTripReference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
-  const router = useRouter();
-
-  // Load trip plans from Sanity on mount
-  useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/getTrips');
-        if (!response.ok) {
-          throw new Error('Failed to fetch trips');
+  const [selectedFilter, setSelectedFilter] = useState<'my' | 'shared' | null>(
+    () => {
+      // Initialize from URL or localStorage fallback
+      const urlFilter = searchParams.get('filter');
+      if (urlFilter) {
+        // Validate the filter value
+        if (['my', 'shared'].includes(urlFilter)) {
+          return urlFilter as 'my' | 'shared';
         }
-
-        const data = await response.json();
-        if (data.success) {
-          setTripPlans(data.trips);
-        } else {
-          throw new Error(data.error || 'Failed to fetch trips');
-        }
-      } catch (error) {
-        console.error('Failed to fetch trips:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch trips');
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchTrips();
-  }, []);
+      // Fallback to localStorage if no URL param
+      if (typeof window !== 'undefined') {
+        return (
+          (localStorage.getItem('mapsLastFilter') as 'my' | 'shared' | null) ||
+          null
+        );
+      }
+      return null;
+    },
+  );
+  const isUpdatingURL = useRef(false);
 
-  // Refresh trips list
-  const refreshTrips = useCallback(async () => {
+  // Fetch user's own trips
+  const fetchTrips = useCallback(async () => {
     try {
       setError(null);
       const response = await fetch('/api/getTrips');
@@ -61,10 +61,139 @@ export default function MapsPage() {
         throw new Error(data.error || 'Failed to fetch trips');
       }
     } catch (error) {
-      console.error('Failed to refresh trips:', error);
-      setError(error instanceof Error ? error.message : 'Failed to refresh trips');
+      console.error('Failed to fetch trips:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch trips');
     }
   }, []);
+
+  // Fetch shared trips
+  const fetchSharedTrips = useCallback(async () => {
+    if (!session?.user?.id) return;
+
+    // Extract the raw Google ID from session (remove "google_" prefix)
+    const rawGoogleId = session.user.id.replace('google_', '');
+
+    const query = groq`*[_type == "user" && googleId == $googleId][0] {
+      sharedTrips[] {
+        _key,
+        addedAt,
+        trip-> {
+          _id,
+          name,
+          slug,
+          shareId,
+          image,
+          "user": user->{
+            _id,
+            name,
+            email
+          },
+          "campingSpotsCount": count(campingSpots),
+          "routesCount": count(routes)
+        }
+      }
+    }`;
+
+    const user = await client.fetch(query, {googleId: rawGoogleId});
+    setSharedTrips(user?.sharedTrips || []);
+  }, [session?.user?.id]);
+
+  // Load trip plans from Sanity on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        await fetchTrips();
+        await fetchSharedTrips();
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [fetchTrips, fetchSharedTrips]);
+
+  // Sync URL state with component state (only when URL changes externally)
+  useEffect(() => {
+    // Skip if we're making our own URL update
+    if (isUpdatingURL.current) {
+      isUpdatingURL.current = false;
+      return;
+    }
+
+    const urlFilter = searchParams.get('filter');
+
+    if (urlFilter) {
+      // Validate the filter value
+      if (['my', 'shared'].includes(urlFilter)) {
+        const newFilter = urlFilter as 'my' | 'shared';
+        if (newFilter !== selectedFilter) {
+          setSelectedFilter(newFilter);
+          // Update localStorage fallback
+          localStorage.setItem('mapsLastFilter', newFilter);
+        }
+      }
+    } else if (selectedFilter !== null) {
+      // URL has no filter, clear selection
+      setSelectedFilter(null);
+      localStorage.removeItem('mapsLastFilter');
+    }
+  }, [searchParams, selectedFilter]);
+
+  const handleFilterChange = (filter: 'my' | 'shared' | null) => {
+    setSelectedFilter(filter);
+
+    // Mark that we're updating the URL ourselves
+    isUpdatingURL.current = true;
+
+    if (filter) {
+      // Update URL with filter parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('filter', filter);
+      router.push(`?${newSearchParams.toString()}`);
+
+      // Save to localStorage as fallback
+      localStorage.setItem('mapsLastFilter', filter);
+    } else {
+      // Remove filter from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('filter');
+      router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : '/maps');
+
+      // Remove from localStorage
+      localStorage.removeItem('mapsLastFilter');
+    }
+  };
+
+  const handleRemoveSharedTrip = async (tripId: string) => {
+    try {
+      const response = await fetch('/api/removeSharedTrip', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({tripId}),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove shared trip');
+      }
+
+      await fetchSharedTrips();
+    } catch (error) {
+      console.error('Error removing shared trip:', error);
+      alert('Failed to remove shared trip. Please try again.');
+    }
+  };
+
+  // Refresh trips list
+  const refreshTrips = useCallback(async () => {
+    await fetchTrips();
+  }, [fetchTrips]);
 
   // Helper function to calculate route distance using Haversine formula
   const calculateRouteDistance = (waypoints: Array<{lat: number; lng: number}>): number => {
@@ -126,7 +255,7 @@ export default function MapsPage() {
     [router],
   );
 
-  if (isLoading && tripPlans.length === 0) {
+  if (isLoading && tripPlans.length === 0 && sharedTrips.length === 0) {
     return (
       <ProtectedRoute>
         <main className="container mx-auto min-h-screen p-16">
@@ -159,88 +288,125 @@ export default function MapsPage() {
             </div>
           )}
 
-          {tripPlans.length === 0 ? (
+          {tripPlans.length === 0 && sharedTrips.length === 0 ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
               Create your first trip to start planning adventures.
             </div>
           ) : (
-            <div className="space-y-2">
-              {tripPlans.map((plan) => (
-                <div
-                  key={plan._id}
-                  className="product-map flex items-center justify-between cursor-pointer"
-                  onClick={() => handleOpenTrip(plan._id)}
+            <>
+              <div className="flex gap-x-2 no-scrollbar my-1 p-2">
+                <button
+                  onClick={() => handleFilterChange(null)}
+                  className={`menu-category text-md ${selectedFilter === null ? 'menu-active' : ''}`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{plan.name}</h3>
-                    <div className="flex items-center gap-x-1 mt-1">
-                      {/* Total Distance */}
-                      {plan.routes && plan.routes.length > 0 && (
-                        <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                          {calculateTotalTripDistance(plan.routes).toFixed(1)} km
-                        </span>
-                      )}
+                  All
+                </button>
+                <button
+                  onClick={() => handleFilterChange('my')}
+                  className={`menu-category text-md ${selectedFilter === 'my' ? 'menu-active' : ''}`}
+                >
+                  My Maps
+                </button>
+                <button
+                  onClick={() => handleFilterChange('shared')}
+                  className={`menu-category text-md ${selectedFilter === 'shared' ? 'menu-active' : ''}`}
+                >
+                  Shared
+                </button>
+              </div>
 
-                      {/* Routes */}
-                      {plan.routesCount > 0 && (
-                        <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                          <Icon name="route" width={16} height={16} />
-                          {plan.routesCount}
-                        </span>
-                      )}
-
-                      {/* Spots by Category */}
-                      {(() => {
-                        const spotCounts = countSpotsByCategory(plan.campingSpots || []);
-                        return (
-                          <>
-                            {spotCounts.camp > 0 && (
-                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                <Icon name="tent" width={16} height={16} />
-                                {spotCounts.camp}
-                              </span>
-                            )}
-                            {spotCounts.fishing > 0 && (
-                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                <Icon name="fishing" width={16} height={16} />
-                                {spotCounts.fishing}
-                              </span>
-                            )}
-                            {spotCounts.viewpoint > 0 && (
-                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                <Icon name="viewpoint" width={16} height={16} />
-                                {spotCounts.viewpoint}
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingTrip(plan);
-                      }}
-                      className="button-ghost p-2 text-white rounded-md transition-colors"
-                      title="Edit trip"
-                    >
-                      <Icon name="edit" width={20} height={20} />
-                    </button>
-                    <DeleteTripButton
-                      tripId={plan._id}
-                      tripName={plan.name}
-                      onSuccess={() => {
-                        // Remove the trip from the list after successful deletion
-                        setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
-                      }}
+              {selectedFilter === 'shared' ? (
+                // Show shared trips
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
+                  {sharedTrips.map((sharedTrip, index) => (
+                    <SharedTripItem
+                      key={sharedTrip._key || `shared_${sharedTrip.trip._id}_${index}`}
+                      sharedTrip={sharedTrip}
+                      onRemove={handleRemoveSharedTrip}
                     />
-                  </div>
+                  ))}
+                </ul>
+              ) : (
+                // Show regular trips (filtered by 'my' or show all when null)
+                <div className="space-y-2">
+                  {tripPlans.map((plan) => (
+                    <div
+                      key={plan._id}
+                      className="product-map flex items-center justify-between cursor-pointer"
+                      onClick={() => handleOpenTrip(plan._id)}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{plan.name}</h3>
+                        <div className="flex items-center gap-x-1 mt-1">
+                          {/* Total Distance */}
+                          {plan.routes && plan.routes.length > 0 && (
+                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              {calculateTotalTripDistance(plan.routes).toFixed(1)} km
+                            </span>
+                          )}
+
+                          {/* Routes */}
+                          {plan.routesCount > 0 && (
+                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              <Icon name="route" width={16} height={16} />
+                              {plan.routesCount}
+                            </span>
+                          )}
+
+                          {/* Spots by Category */}
+                          {(() => {
+                            const spotCounts = countSpotsByCategory(plan.campingSpots || []);
+                            return (
+                              <>
+                                {spotCounts.camp > 0 && (
+                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                    <Icon name="tent" width={16} height={16} />
+                                    {spotCounts.camp}
+                                  </span>
+                                )}
+                                {spotCounts.fishing > 0 && (
+                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                    <Icon name="fishing" width={16} height={16} />
+                                    {spotCounts.fishing}
+                                  </span>
+                                )}
+                                {spotCounts.viewpoint > 0 && (
+                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                                    <Icon name="viewpoint" width={16} height={16} />
+                                    {spotCounts.viewpoint}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTrip(plan);
+                          }}
+                          className="button-ghost p-2 text-white rounded-md transition-colors"
+                          title="Edit trip"
+                        >
+                          <Icon name="edit" width={20} height={20} />
+                        </button>
+                        <DeleteTripButton
+                          tripId={plan._id}
+                          tripName={plan.name}
+                          onSuccess={() => {
+                            // Remove the trip from the list after successful deletion
+                            setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
 
@@ -259,5 +425,13 @@ export default function MapsPage() {
         )}
       </main>
     </ProtectedRoute>
+  );
+}
+
+export default function MapsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MapsPageContent />
+    </Suspense>
   );
 }

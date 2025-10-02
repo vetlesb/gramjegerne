@@ -51,6 +51,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
   const [isDockVisible, setIsDockVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   // Map toolbar visibility states
   const [showRoutes, setShowRoutes] = useState(true);
@@ -124,6 +125,44 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Duplicate trip to user's own trips
+  const handleDuplicateTrip = async () => {
+    if (!session?.user?.id) {
+      // Redirect to sign in if not authenticated
+      router.push('/auth/signin');
+      return;
+    }
+
+    try {
+      setIsDuplicating(true);
+      const response = await fetch('/api/duplicateTrip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({tripId: trip._id}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`Failed to duplicate trip: ${errorData.error || response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Navigate to the new duplicated trip
+      router.push(`/maps/${data.trip._id}`);
+    } catch (error) {
+      console.error('Error duplicating trip:', error);
+      alert(
+        `Failed to duplicate trip: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+      );
+    } finally {
+      setIsDuplicating(false);
     }
   };
 
@@ -255,9 +294,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
             <div className="flex items-center gap-3">
               <div>
                 <h2 className="lg:text-2xl text-lg text-accent font-medium">{trip.name}</h2>
-                {trip.user && (
-                  <p className="text-sm text-white/70">by {trip.user.name}</p>
-                )}
+                {trip.user && <p className="text-sm text-white/70">by {trip.user.name}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -355,8 +392,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
                             )}
                             <div className="flex flex-wrap mt-2">
                               <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
-                                {spot.coordinates.lat.toFixed(4)},{' '}
-                                {spot.coordinates.lng.toFixed(4)}
+                                {spot.coordinates.lat.toFixed(4)}, {spot.coordinates.lng.toFixed(4)}
                               </span>
                             </div>
                           </div>
@@ -405,19 +441,29 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
           )}
         </div>
 
-        {/* Sticky Bottom Save Button */}
+        {/* Sticky Bottom Action Buttons */}
         <div className="p-6 bg-background border-t border-white/10">
           {session?.user?.id ? (
-            <button
-              onClick={handleSaveToTrips}
-              disabled={isSaving || isSaved}
-              className={`w-full text-lg flex items-center justify-center gap-2 py-3 ${
-                isSaved ? 'button-secondary' : 'button-primary'
-              }`}
-            >
-              <Icon name={isSaved ? 'check' : 'add'} width={20} height={20} />
-              {isSaving ? 'Saving...' : isSaved ? 'Saved to My Maps' : 'Save to My Maps'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveToTrips}
+                disabled={isSaving || isSaved}
+                className={`flex-1 text-lg flex items-center justify-center gap-2 py-3 ${
+                  isSaved ? 'button-secondary' : 'button-primary'
+                }`}
+              >
+                <Icon name={isSaved ? 'check' : 'add'} width={20} height={20} />
+                {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
+              </button>
+              <button
+                onClick={handleDuplicateTrip}
+                disabled={isDuplicating}
+                className="flex-1 button-secondary text-lg flex items-center justify-center gap-2 py-3"
+              >
+                <Icon name="duplicate" width={20} height={20} />
+                {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+              </button>
+            </div>
           ) : (
             <button
               onClick={() => router.push('/auth/signin')}

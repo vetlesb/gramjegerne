@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {TripDocument, CampingSpot, Route, SpotCategory} from '@/types';
+import {TripShareButton} from '@/components/TripShareButton';
 
 // Dynamically import TripMap to avoid SSR issues with Leaflet
 const TripMap = dynamicImport(() => import('@/components/TripMap'), {
@@ -510,6 +511,12 @@ export default function TripViewPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {/* Share Button */}
+                <TripShareButton
+                  tripId={tripPlan._id}
+                  shareId={tripPlan.shareId}
+                  tripName={tripPlan.name}
+                />
                 {/* Mobile Close Dock Button */}
                 <button
                   onClick={() => setIsDockVisible(false)}
