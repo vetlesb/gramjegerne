@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a new slug
-    const baseSlug = originalTrip.slug.current;
+    const baseSlug = originalTrip.slug?.current || originalTrip.name?.toLowerCase().replace(/\s+/g, '-') || 'trip';
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const newSlug = `${baseSlug}-copy-${timestamp}-${randomSuffix}`;
