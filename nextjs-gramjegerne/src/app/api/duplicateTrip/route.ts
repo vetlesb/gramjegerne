@@ -1,8 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
-import {authOptions} from '@/app/api/auth/[...nextauth]/auth';
+import {authOptions} from '../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
-import {nanoid} from 'nanoid';
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +56,9 @@ export async function POST(request: NextRequest) {
 
     // Create a new slug
     const baseSlug = originalTrip.slug.current;
-    const newSlug = `${baseSlug}-${nanoid(6)}`;
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const newSlug = `${baseSlug}-copy-${timestamp}-${randomSuffix}`;
 
     // Create the new trip document
     const newTrip = {
@@ -96,13 +97,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error duplicating trip:', error);
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return NextResponse.json({
-      error: 'Failed to duplicate trip',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, {status: 500});
+    return NextResponse.json({error: 'Internal server error'}, {status: 500});
   }
 }
