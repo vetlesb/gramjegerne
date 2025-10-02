@@ -15,7 +15,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
   const generateShareId = async (): Promise<string> => {
     try {
       const response = await fetch('/api/updateTrip', {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -29,7 +29,9 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate share link');
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`Failed to generate share link: ${errorData.error || response.statusText}`);
       }
 
       const data = await response.json();
