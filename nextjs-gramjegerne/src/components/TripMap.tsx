@@ -33,6 +33,7 @@ interface TripMapProps {
   isDrawingRoute?: boolean;
   isAddingSpot?: boolean;
   onRoutePointAdd?: (coordinates: Coordinates) => void;
+  isReadOnly?: boolean; // New prop for read-only mode
   // Toolbar visibility controls
   showRoutes?: boolean;
   showCampSpots?: boolean;
@@ -63,6 +64,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       isDrawingRoute = false,
       isAddingSpot = false,
       onRoutePointAdd,
+      isReadOnly = false, // New prop with default value
       // Toolbar controls
       showRoutes = true,
       showCampSpots = true,
@@ -724,8 +726,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Remove existing click handlers
       map.off('click');
 
-      // Add click handler for adding new spots (only when not drawing routes)
-      if (onMapClick && !isDrawingRoute) {
+      // Add click handler for adding new spots (only when not drawing routes and not read-only)
+      if (onMapClick && !isDrawingRoute && !isReadOnly) {
         map.on('click', (e) => {
           // Clear search results when clicking on map
           handleMapClick();
@@ -742,7 +744,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           handleMapClick();
         });
       }
-    }, [onMapClick, isMapReady, isDrawingRoute, handleMapClick]);
+    }, [onMapClick, isMapReady, isDrawingRoute, isReadOnly, handleMapClick]);
 
     // Add camping spots to map
     useEffect(() => {
@@ -845,8 +847,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           closeButton: false,
         });
 
-        // Add click handler (disabled during route drawing)
-        if (onSpotClick && !isDrawingRoute) {
+        // Add click handler (disabled during route drawing and in read-only mode)
+        if (onSpotClick && !isDrawingRoute && !isReadOnly) {
           marker.on('click', () => onSpotClick(spot));
         }
 
@@ -857,6 +859,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       isMapReady,
       onSpotClick,
       isDrawingRoute,
+      isReadOnly,
       showCampSpots,
       showFishingSpots,
       showViewpointSpots,
@@ -912,15 +915,15 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             closeButton: false,
           });
 
-          // Add click handler (disabled during route drawing)
-          if (onRouteClick && !isDrawingRoute) {
+          // Add click handler (disabled during route drawing and in read-only mode)
+          if (onRouteClick && !isDrawingRoute && !isReadOnly) {
             polyline.on('click', () => onRouteClick(route));
           }
 
           polyline.addTo(map);
         });
       }
-    }, [routes, isMapReady, onRouteClick, isDrawingRoute, showRoutes]);
+    }, [routes, isMapReady, onRouteClick, isDrawingRoute, isReadOnly, showRoutes]);
 
     // Handle route drawing mode
     useEffect(() => {

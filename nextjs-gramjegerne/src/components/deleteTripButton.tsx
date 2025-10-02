@@ -63,7 +63,7 @@ export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: Dele
           event.preventDefault(); // Prevents any default behavior
           setIsDialogOpen(true);
         }}
-        title="Delete trip"
+        title="Delete map"
       >
         <Icon name="delete" width={20} height={20} />
       </button>
@@ -72,7 +72,7 @@ export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: Dele
         <DialogContent className="dialog gap-y-8" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal">
-              Are you sure you want to delete the trip?
+              Are you sure you want to delete the map?
             </DialogTitle>
           </DialogHeader>
           <div className="mb-4 text-lg">
