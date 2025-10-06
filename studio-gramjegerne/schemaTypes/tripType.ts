@@ -86,6 +86,39 @@ const routeFields = [
     initialValue: '#FF0000',
     validation: (Rule) => Rule.required(),
   }),
+  defineField({
+    name: 'elevationGain',
+    type: 'number',
+    title: 'Elevation Gain (meters)',
+    description: 'Total elevation gain for this route in meters',
+  }),
+  defineField({
+    name: 'elevationProfile',
+    type: 'object',
+    title: 'Elevation Profile',
+    fields: [
+      defineField({
+        name: 'totalAscent',
+        type: 'number',
+        title: 'Total Ascent (m)',
+      }),
+      defineField({
+        name: 'totalDescent',
+        type: 'number',
+        title: 'Total Descent (m)',
+      }),
+      defineField({
+        name: 'minElevation',
+        type: 'number',
+        title: 'Minimum Elevation (m)',
+      }),
+      defineField({
+        name: 'maxElevation',
+        type: 'number',
+        title: 'Maximum Elevation (m)',
+      }),
+    ],
+  }),
 ];
 
 const fields = [

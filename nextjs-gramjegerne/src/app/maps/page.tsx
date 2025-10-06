@@ -23,27 +23,22 @@ function MapsPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState<'my' | 'shared' | null>(
-    () => {
-      // Initialize from URL or localStorage fallback
-      const urlFilter = searchParams.get('filter');
-      if (urlFilter) {
-        // Validate the filter value
-        if (['my', 'shared'].includes(urlFilter)) {
-          return urlFilter as 'my' | 'shared';
-        }
+  const [selectedFilter, setSelectedFilter] = useState<'my' | 'shared' | null>(() => {
+    // Initialize from URL or localStorage fallback
+    const urlFilter = searchParams.get('filter');
+    if (urlFilter) {
+      // Validate the filter value
+      if (['my', 'shared'].includes(urlFilter)) {
+        return urlFilter as 'my' | 'shared';
       }
+    }
 
-      // Fallback to localStorage if no URL param
-      if (typeof window !== 'undefined') {
-        return (
-          (localStorage.getItem('mapsLastFilter') as 'my' | 'shared' | null) ||
-          null
-        );
-      }
-      return null;
-    },
-  );
+    // Fallback to localStorage if no URL param
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('mapsLastFilter') as 'my' | 'shared' | null) || null;
+    }
+    return null;
+  });
   const isUpdatingURL = useRef(false);
   const [duplicatingTripId, setDuplicatingTripId] = useState<string | null>(null);
 
@@ -210,13 +205,13 @@ function MapsPageContent() {
           console.error('API Error:', errorData);
         } catch (jsonError) {
           console.error('Failed to parse error response as JSON:', jsonError);
-          errorData = { error: response.statusText };
+          errorData = {error: response.statusText};
         }
         throw new Error(`Failed to duplicate trip: ${errorData.error || response.statusText}`);
       }
 
       await response.json();
-      
+
       // Show success toast and stay on the page
       toast.success(`${tripName} duplicated successfully!`, {
         duration: 3000,
@@ -273,6 +268,13 @@ function MapsPageContent() {
   ): number => {
     return routes.reduce((total, route) => {
       return total + calculateRouteDistance(route.waypoints);
+    }, 0);
+  };
+
+  // Calculate total elevation gain from all routes
+  const calculateTotalElevationGain = (routes: Array<{elevationGain?: number}>): number => {
+    return routes.reduce((total, route) => {
+      return total + (route.elevationGain || 0);
     }, 0);
   };
 
@@ -379,7 +381,9 @@ function MapsPageContent() {
                       }}
                     >
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{sharedTrip.trip.name}</h3>
+                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">
+                          {sharedTrip.trip.name}
+                        </h3>
                         <div className="flex items-center gap-x-1 mt-1">
                           {/* User */}
                           <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
@@ -445,7 +449,9 @@ function MapsPageContent() {
                       onClick={() => handleOpenTrip(plan._id)}
                     >
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">{plan.name}</h3>
+                        <h3 className="text-lg md:text-xl text-accent mb-2 truncate">
+                          {plan.name}
+                        </h3>
                         <div className="flex items-center gap-x-1 mt-1">
                           {/* Total Distance */}
                           {plan.routes && plan.routes.length > 0 && (
@@ -453,6 +459,15 @@ function MapsPageContent() {
                               {calculateTotalTripDistance(plan.routes).toFixed(1)} km
                             </span>
                           )}
+
+                          {/* Total Elevation Gain */}
+                          {plan.routes &&
+                            plan.routes.length > 0 &&
+                            calculateTotalElevationGain(plan.routes) > 0 && (
+                              <span className="tag w-fit items-center gap-x-1 flex flex-wrap bg-accent/20 text-accent">
+                                ↗ {calculateTotalElevationGain(plan.routes)}m
+                              </span>
+                            )}
 
                           {/* Routes */}
                           {plan.routesCount > 0 && (

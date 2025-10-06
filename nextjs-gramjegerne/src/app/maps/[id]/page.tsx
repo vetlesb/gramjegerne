@@ -286,17 +286,64 @@ export default function TripViewPage() {
   }, [currentRoute]);
 
   // Finish route
-  const handleFinishRoute = useCallback(() => {
+  const handleFinishRoute = useCallback(async () => {
     if (!currentRoute || !tripPlan || currentRoute.waypoints.length < 2) return;
 
-    const updatedPlan = {
-      ...tripPlan,
-      routes: [...tripPlan.routes, currentRoute],
-    };
+    try {
+      // Calculate elevation for the route
+      const response = await fetch('/api/calculateElevation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          waypoints: currentRoute.waypoints,
+        }),
+      });
 
-    saveTripPlan(updatedPlan);
-    setCurrentRoute(null);
-    setIsDrawingRoute(false);
+      let routeWithElevation = currentRoute;
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.success) {
+          routeWithElevation = {
+            ...currentRoute,
+            elevationGain: data.elevationProfile.elevationGain,
+            elevationProfile: {
+              totalAscent: data.elevationProfile.totalAscent,
+              totalDescent: data.elevationProfile.totalDescent,
+              minElevation: data.elevationProfile.minElevation,
+              maxElevation: data.elevationProfile.maxElevation,
+            },
+          };
+        } else {
+          console.warn('Failed to calculate elevation:', data.error);
+        }
+      } else {
+        console.warn('Failed to calculate elevation: API request failed');
+      }
+
+      const updatedPlan = {
+        ...tripPlan,
+        routes: [...tripPlan.routes, routeWithElevation],
+      };
+
+      saveTripPlan(updatedPlan);
+      setCurrentRoute(null);
+      setIsDrawingRoute(false);
+    } catch (error) {
+      console.error('Error calculating elevation:', error);
+      // Still save the route without elevation data
+      const updatedPlan = {
+        ...tripPlan,
+        routes: [...tripPlan.routes, currentRoute],
+      };
+
+      saveTripPlan(updatedPlan);
+      setCurrentRoute(null);
+      setIsDrawingRoute(false);
+    }
   }, [currentRoute, tripPlan, saveTripPlan]);
 
   // Cancel route drawing
@@ -332,19 +379,69 @@ export default function TripViewPage() {
   );
 
   // Save current route
-  const handleSaveRoute = useCallback(() => {
+  const handleSaveRoute = useCallback(async () => {
     if (!tripPlan || !currentRoute) return;
 
-    const updatedPlan = {
-      ...tripPlan,
-      routes: (tripPlan.routes || []).map((route) =>
-        route._key === currentRoute._key ? currentRoute : route,
-      ),
-    };
+    try {
+      // Calculate elevation for the updated route
+      const response = await fetch('/api/calculateElevation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          waypoints: currentRoute.waypoints,
+        }),
+      });
 
-    saveTripPlan(updatedPlan);
-    setCurrentRoute(null);
-    setIsDrawingRoute(false);
+      let routeWithElevation = currentRoute;
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          routeWithElevation = {
+            ...currentRoute,
+            elevationGain: data.elevationProfile.elevationGain,
+            elevationProfile: {
+              totalAscent: data.elevationProfile.totalAscent,
+              totalDescent: data.elevationProfile.totalDescent,
+              minElevation: data.elevationProfile.minElevation,
+              maxElevation: data.elevationProfile.maxElevation,
+            },
+          };
+        } else {
+          console.warn('Failed to calculate elevation:', data.error);
+        }
+      } else {
+        console.warn('Failed to calculate elevation: API request failed');
+      }
+
+      const updatedPlan = {
+        ...tripPlan,
+        routes: (tripPlan.routes || []).map((route) =>
+          route._key === currentRoute._key ? routeWithElevation : route,
+        ),
+      };
+
+      saveTripPlan(updatedPlan);
+      setCurrentRoute(null);
+      setIsDrawingRoute(false);
+      setIsEditingRoute(false);
+    } catch (error) {
+      console.error('Error calculating elevation:', error);
+      // Still save the route without elevation data
+      const updatedPlan = {
+        ...tripPlan,
+        routes: (tripPlan.routes || []).map((route) =>
+          route._key === currentRoute._key ? currentRoute : route,
+        ),
+      };
+
+      saveTripPlan(updatedPlan);
+      setCurrentRoute(null);
+      setIsDrawingRoute(false);
+      setIsEditingRoute(false);
+    }
   }, [tripPlan, currentRoute, saveTripPlan]);
 
   // Cancel route editing
@@ -658,14 +755,19 @@ export default function TripViewPage() {
                               <h4 className="font-medium text-white truncate">{route.name}</h4>
                             </button>
                             <div className="flex flex-wrap gap-1 mt-2">
-                              <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
-                                {route.waypoints.length} waypoints
-                              </span>
                               {route.waypoints.length >= 2 && (
                                 <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                   {calculateRouteDistance(route.waypoints).toFixed(1)}km
                                 </span>
                               )}
+                              {route.elevationGain && route.elevationGain > 0 && (
+                                <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
+                                  ↗ {route.elevationGain}m
+                                </span>
+                              )}
+                              <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
+                                {route.waypoints.length} waypoints
+                              </span>
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
