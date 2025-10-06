@@ -438,7 +438,7 @@ export default function TripViewPage() {
   if (!tripPlan) {
     return (
       <ProtectedRoute>
-        <div className="w-full h-screen flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center">
           <div className="text-center text-white/50">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
             <p>Loading map...</p>
@@ -450,7 +450,7 @@ export default function TripViewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen w-screen flex flex-col lg:flex-row relative">
+      <div className="h-screen w-screen mt-0 sm:mt-0 flex flex-col lg:flex-row absolute">
         {/* Main Content - Full screen on mobile */}
         <div className="flex-1 relative h-full overflow-hidden">
           <TripMap
