@@ -4,6 +4,7 @@ import type {Metadata} from 'next';
 export const metadata: Metadata = {
   title: 'Gramjegerne',
   description: 'For your next trip',
+
   viewport: {
     width: 'device-width',
     initialScale: 1,

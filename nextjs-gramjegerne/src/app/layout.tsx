@@ -36,6 +36,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith('/auth/');
   const isTripViewPage = pathname?.startsWith('/maps/') && pathname !== '/maps';
+  const isTestPage = pathname?.startsWith('/test');
   const isSharedMapPage = pathname?.startsWith('/share/map/');
 
   return (
@@ -43,9 +44,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
           <Providers>
-            {!isAuthPage && !isTripViewPage && !isSharedMapPage && <Navbar />}
+            {!isAuthPage && !isTripViewPage && !isSharedMapPage && !isTestPage && <Navbar />}
             {children}
-            {!isTripViewPage && !isSharedMapPage && (
+            {!isTripViewPage && !isSharedMapPage && !isTestPage && (
               <ProtectedRoute>
                 <div className="flex flex-col md:flex-row justify-between">
                   <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">

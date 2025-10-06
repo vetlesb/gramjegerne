@@ -78,7 +78,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
       onClick={handleShare}
       disabled={isGeneratingLink}
       className="button-ghost p-2 text-white rounded-md transition-colors"
-      title="Share trip"
+      title="Share map"
     >
       {isGeneratingLink ? (
         <div className="animate-spin w-5 h-5 border border-accent border-t-transparent rounded-full" />

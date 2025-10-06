@@ -953,7 +953,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     }, [isDrawingRoute, isMapReady, onRoutePointAdd]);
 
     return (
-      <div className="w-full h-full min-h-[300px] lg:min-h-[600px] overflow-hidden border border-white/10 relative">
+      <div className="w-full h-full min-h-[300px] lg:min-h-[600px] border border-white/10">
         <div ref={mapRef} className="w-full h-full min-h-[300px] lg:min-h-[600px]" />
 
         {/* Error Display */}
@@ -978,7 +978,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
               value={searchQuery}
               onChange={handleSearchInput}
               placeholder="Search"
-              className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-sm lg:text-base"
+              className="w-full py-2 px-3 pr-10 lg:p-3 lg:pr-10 backdrop-blur-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent shadow-lg text-md lg:text-base"
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -1021,7 +1021,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           )}
         </div>
 
-        {/* Status Bar */}
+        {/* Status Bar - Commented out for cleaner UI */}
+
         <div className="absolute bottom-4 left-4 z-[1000]">
           <div className="bg-dimmed backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
             <div className="text-xs text-white/70">
