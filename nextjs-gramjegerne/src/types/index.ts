@@ -141,6 +141,13 @@ export interface Route {
     lng: number;
   }>;
   color: string;
+  elevationGain?: number; // Total elevation gain in meters
+  elevationProfile?: {
+    totalAscent: number;
+    totalDescent: number;
+    minElevation: number;
+    maxElevation: number;
+  };
 }
 
 export interface TripDocument {
@@ -178,6 +185,7 @@ export interface TripListItem {
   routesCount: number;
   routes: Array<{
     waypoints: Array<{lat: number; lng: number}>;
+    elevationGain?: number;
   }>;
   campingSpots: Array<{
     category: SpotCategory;
