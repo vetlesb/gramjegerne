@@ -711,15 +711,15 @@ export default function TripViewPage() {
                                 onClick={() => handleZoomToSpot(spot)}
                                 className="text-left w-full hover:underline"
                               >
-                                <h4 className="font-medium text-white truncate">{spot.name}</h4>
+                                <h4 className="font-medium text-primary truncate">{spot.name}</h4>
                               </button>
                               {spot.description && (
-                                <p className="text-sm text-white mt-1 line-clamp-2">
+                                <p className="text-sm text-primary mt-1 line-clamp-2">
                                   {spot.description}
                                 </p>
                               )}
                               <div className="flex flex-wrap mt-2">
-                                <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
+                                <span className="text-xs bg-white/10 text-primary px-2 py-1 rounded">
                                   {spot.coordinates.lat.toFixed(4)},{' '}
                                   {spot.coordinates.lng.toFixed(4)}
                                 </span>
@@ -870,47 +870,49 @@ export default function TripViewPage() {
 
         {/* Camping Spot Editor Dialog */}
         <Dialog open={editingSpot !== null} onOpenChange={() => setEditingSpot(null)}>
-          <DialogContent className="max-w-md z-[9999] bg-dimmed">
+          <DialogContent className="max-w-md z-[9999] bg-dimmed rounded-lg border-0">
             <DialogHeader>
-              <DialogTitle>Edit Camping Spot</DialogTitle>
+              <DialogTitle>Edit Spot</DialogTitle>
             </DialogHeader>
 
             <div className="flex flex-col gap-4 bg-dimmed">
               <label className="flex flex-col gap-2">
-                <span className="text-white/70">Spot Name</span>
+                <span className="text-primary">Spot Name</span>
                 <input
                   type="text"
                   value={editingSpot?.name || ''}
                   onChange={(e) =>
                     editingSpot && setEditingSpot({...editingSpot, name: e.target.value})
                   }
-                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
+                  className="w-full p-3 bg-white/5 rounded-lg text-white"
+                  style={{fontSize: '16px'}}
                   autoFocus
                 />
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-white/70">Description (optional)</span>
+                <span className="text-white">Description (optional)</span>
                 <textarea
                   value={editingSpot?.description || ''}
                   onChange={(e) =>
                     editingSpot && setEditingSpot({...editingSpot, description: e.target.value})
                   }
                   rows={3}
-                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none resize-none"
+                  className="w-full p-3 bg-white/5 rounded-lg text-white resize-none"
+                  style={{fontSize: '16px'}}
                   placeholder="Add notes about this camping spot..."
                 />
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-white/70">Category</span>
+                <span className="text-primary">Category</span>
                 <select
                   value={editingSpot?.category || 'camp'}
                   onChange={(e) =>
                     editingSpot &&
                     setEditingSpot({...editingSpot, category: e.target.value as SpotCategory})
                   }
-                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
+                  className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-primary focus:border-accent focus:outline-none"
                 >
                   <option value="camp">Camp</option>
                   <option value="fishing">Fishing water</option>
@@ -920,7 +922,7 @@ export default function TripViewPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="flex flex-col gap-2">
-                  <span className="text-white/70">Latitude</span>
+                  <span className="text-primary">Latitude</span>
                   <input
                     type="number"
                     step="0.000001"
@@ -935,12 +937,12 @@ export default function TripViewPage() {
                         },
                       })
                     }
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-primary focus:border-accent focus:outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-2">
-                  <span className="text-white/70">Longitude</span>
+                  <span className="text-primary">Longitude</span>
                   <input
                     type="number"
                     step="0.000001"
@@ -955,21 +957,21 @@ export default function TripViewPage() {
                         },
                       })
                     }
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none"
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-primary focus:border-accent focus:outline-none"
                   />
                 </label>
               </div>
             </div>
 
-            <DialogFooter className="mt-6">
-              <button
-                onClick={() => editingSpot && handleUpdateSpot(editingSpot)}
-                className="button-primary flex-1"
-              >
-                Save Changes
-              </button>
+            <DialogFooter className="mt-6 flex-row flex gap-x-2">
               <button onClick={() => setEditingSpot(null)} className="button-secondary flex-1">
                 Cancel
+              </button>
+              <button
+                onClick={() => editingSpot && handleUpdateSpot(editingSpot)}
+                className="button-primary-accent flex-1"
+              >
+                Save Changes
               </button>
             </DialogFooter>
           </DialogContent>
@@ -1014,12 +1016,13 @@ export default function TripViewPage() {
               {/* Route Name Input */}
               <div className="mb-4">
                 <label className="flex flex-col gap-2">
-                  <span className="text-sm text-white/70">Route Name</span>
+                  <span className="text-sm text-primary">Route Name</span>
                   <input
                     type="text"
                     value={currentRoute.name}
                     onChange={(e) => setCurrentRoute({...currentRoute, name: e.target.value})}
-                    className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-accent focus:outline-none text-sm"
+                    className="w-full p-3 bg-white/5 rounded-lg text-primary"
+                    style={{fontSize: '16px'}}
                     placeholder="Enter route name..."
                   />
                 </label>
@@ -1030,33 +1033,33 @@ export default function TripViewPage() {
                 {isEditingRoute ? (
                   <>
                     <button
-                      onClick={handleSaveRoute}
-                      disabled={currentRoute.waypoints.length < 2}
-                      className="button-primary w-full text-lg flex items-center justify-center gap-2 py-1"
-                    >
-                      Save
-                    </button>
-                    <button
                       onClick={handleCancelRouteEdit}
                       className="button-secondary w-full text-lg flex items-center justify-center gap-2 py-1"
                     >
                       Cancel
                     </button>
+                    <button
+                      onClick={handleSaveRoute}
+                      disabled={currentRoute.waypoints.length < 2}
+                      className="button-primary-accent w-full text-lg flex items-center justify-center gap-2 py-1"
+                    >
+                      Save
+                    </button>
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={handleFinishRoute}
-                      disabled={currentRoute.waypoints.length < 2}
-                      className="button-secondary w-full text-lg flex items-center justify-center gap-2 py-1"
-                    >
-                      Finish Route
-                    </button>
                     <button
                       onClick={handleCancelRoute}
                       className="button-secondary w-full text-lg flex items-center justify-center gap-2 py-1"
                     >
                       Cancel Route
+                    </button>
+                    <button
+                      onClick={handleFinishRoute}
+                      disabled={currentRoute.waypoints.length < 2}
+                      className="button-primary-accent w-full text-lg flex items-center justify-center gap-2 py-1"
+                    >
+                      Finish Route
                     </button>
                   </>
                 )}
