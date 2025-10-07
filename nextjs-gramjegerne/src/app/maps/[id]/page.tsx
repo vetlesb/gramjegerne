@@ -289,8 +289,22 @@ export default function TripViewPage() {
   const handleFinishRoute = useCallback(async () => {
     if (!currentRoute || !tripPlan || currentRoute.waypoints.length < 2) return;
 
+    // Optimistic update: Show route immediately in UI with calculating placeholder
+    const routeWithCalculatingPlaceholder = {
+      ...currentRoute,
+      elevationGain: -1, // Use -1 as a flag for "calculating"
+    };
+
+    const optimisticUpdatedPlan = {
+      ...tripPlan,
+      routes: [...tripPlan.routes, routeWithCalculatingPlaceholder],
+    };
+    setTripPlan(optimisticUpdatedPlan);
+    setCurrentRoute(null);
+    setIsDrawingRoute(false);
+
+    // Calculate elevation in background and update when ready
     try {
-      // Calculate elevation for the route
       const response = await fetch('/api/calculateElevation', {
         method: 'POST',
         headers: {
@@ -301,13 +315,12 @@ export default function TripViewPage() {
         }),
       });
 
-      let routeWithElevation = currentRoute;
-
       if (response.ok) {
         const data = await response.json();
 
         if (data.success) {
-          routeWithElevation = {
+          // Update the route with elevation data
+          const routeWithElevation = {
             ...currentRoute,
             elevationGain: data.elevationProfile.elevationGain,
             elevationProfile: {
@@ -317,32 +330,29 @@ export default function TripViewPage() {
               maxElevation: data.elevationProfile.maxElevation,
             },
           };
+
+          // Update both local state and save to Sanity
+          const finalUpdatedPlan = {
+            ...tripPlan,
+            routes: [...tripPlan.routes, routeWithElevation],
+          };
+
+          setTripPlan(finalUpdatedPlan);
+          saveTripPlan(finalUpdatedPlan);
         } else {
           console.warn('Failed to calculate elevation:', data.error);
+          // Still save the route without elevation data
+          saveTripPlan(optimisticUpdatedPlan);
         }
       } else {
         console.warn('Failed to calculate elevation: API request failed');
+        // Still save the route without elevation data
+        saveTripPlan(optimisticUpdatedPlan);
       }
-
-      const updatedPlan = {
-        ...tripPlan,
-        routes: [...tripPlan.routes, routeWithElevation],
-      };
-
-      saveTripPlan(updatedPlan);
-      setCurrentRoute(null);
-      setIsDrawingRoute(false);
     } catch (error) {
       console.error('Error calculating elevation:', error);
       // Still save the route without elevation data
-      const updatedPlan = {
-        ...tripPlan,
-        routes: [...tripPlan.routes, currentRoute],
-      };
-
-      saveTripPlan(updatedPlan);
-      setCurrentRoute(null);
-      setIsDrawingRoute(false);
+      saveTripPlan(optimisticUpdatedPlan);
     }
   }, [currentRoute, tripPlan, saveTripPlan]);
 
@@ -760,11 +770,16 @@ export default function TripViewPage() {
                                   {calculateRouteDistance(route.waypoints).toFixed(1)}km
                                 </span>
                               )}
-                              {route.elevationGain && route.elevationGain > 0 && (
+                              {route.elevationGain === -1 ? (
+                                <span className="text-xs bg-accent text-secondary px-2 py-1 rounded flex items-center gap-1">
+                                  <div className="animate-spin w-3 h-3 border border-secondary border-t-transparent rounded-full"></div>
+                                  Calculating...
+                                </span>
+                              ) : route.elevationGain && route.elevationGain > 0 ? (
                                 <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                   ↗ {route.elevationGain}m
                                 </span>
-                              )}
+                              ) : null}
                               <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
                                 {route.waypoints.length} waypoints
                               </span>
