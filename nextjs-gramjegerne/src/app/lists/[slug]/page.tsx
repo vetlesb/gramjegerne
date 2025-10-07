@@ -1068,7 +1068,10 @@ export default function ListPage() {
                     {/* Name and tags container */}
                     <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <div className="flex flex-col gap-y-2 min-w-0">
-                        <h2 className="text-xl text-accent truncate" title={listItem.item?.name}>
+                        <h2
+                          className="text-xl text-accent truncate pr-2"
+                          title={listItem.item?.name}
+                        >
                           {listItem.item?.name || 'Unnamed Item'}
                         </h2>
                         <div className="flex flex-wrap gap-y-1 shrink-0 gap-x-1">
