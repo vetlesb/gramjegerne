@@ -46,6 +46,9 @@ interface TripMapProps {
   // Mobile dock control
   isDockVisible?: boolean;
   onToggleDock?: () => void;
+  // Add button callbacks
+  onStartAddingSpot?: () => void;
+  onStartAddingRoute?: () => void;
 }
 
 export interface TripMapRef {
@@ -77,6 +80,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Mobile dock control
       isDockVisible,
       onToggleDock,
+      // Add button callbacks
+      onStartAddingSpot,
+      onStartAddingRoute,
     },
     ref,
   ) => {
@@ -578,6 +584,94 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             if (popover) popover.style.display = 'none';
           });
 
+          // Add button with popover (only show if not in read-only mode)
+          if (!isReadOnly) {
+            const addBtnContainer = L.DomUtil.create('div', '', div);
+            addBtnContainer.style.position = 'relative';
+            addBtnContainer.style.marginBottom = '4px';
+
+            const addBtn = L.DomUtil.create('button', '', addBtnContainer);
+            addBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM11 11V7H13V11H17V13H13V17H11V13H7V11H11Z" fill="currentColor"/>
+</svg>`;
+            addBtn.title = 'Add spot or route';
+            addBtn.className = 'button-ghost !w-8 !h-8 !p-0 flex items-center justify-center';
+
+            // Create add popover
+            const addPopover = L.DomUtil.create('div', '');
+            document.body.appendChild(addPopover);
+            addPopover.style.cssText = `
+              position: fixed; 
+              background: var(--bg-primary); border: 1px solid var(--bg-dimmed); border-radius: 8px;
+              padding: 8px; min-width: 140px; display: none; z-index: 1010;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            `;
+
+            // Add Spot button
+            const addSpotBtn = L.DomUtil.create('button', '', addPopover);
+            addSpotBtn.textContent = 'Add Spot';
+            addSpotBtn.className = 'button-ghost !w-full !text-left !text-sm !mb-1 !py-2 !px-3';
+            addSpotBtn.style.cssText = `
+              display: block; border: none; cursor: pointer;
+            `;
+
+            L.DomEvent.on(addSpotBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              // Trigger add spot mode
+              if (onStartAddingSpot && !isDrawingRoute) {
+                onStartAddingSpot();
+                addPopover.style.display = 'none';
+              }
+            });
+
+            // Add Route button
+            const addRouteBtn = L.DomUtil.create('button', '', addPopover);
+            addRouteBtn.textContent = 'Add Route';
+            addRouteBtn.className = 'button-ghost !w-full !text-left !text-sm !mb-1 !py-2 !px-3';
+            addRouteBtn.style.cssText = `
+              display: block; border: none; cursor: pointer;
+            `;
+
+            L.DomEvent.on(addRouteBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              // Trigger add route mode
+              if (onStartAddingRoute && !isAddingSpot && !isDrawingRoute) {
+                onStartAddingRoute();
+                addPopover.style.display = 'none';
+              }
+            });
+
+            // Toggle add popover on button click
+            L.DomEvent.on(addBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+
+              const isVisible = addPopover.style.display === 'block';
+
+              if (!isVisible) {
+                // Position popover relative to button
+                const btnRect = addBtn.getBoundingClientRect();
+                addPopover.style.top = `${btnRect.top}px`;
+                addPopover.style.left = `${btnRect.left - 150}px`; // 140px width + 10px margin
+                addPopover.style.display = 'block';
+              } else {
+                addPopover.style.display = 'none';
+              }
+            });
+
+            // Hide add popover when clicking elsewhere
+            document.addEventListener('click', function () {
+              if (addPopover) addPopover.style.display = 'none';
+            });
+
+            // Store reference for cleanup
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (div as any)._addPopoverCleanup = () => {
+              if (addPopover && document.body.contains(addPopover)) {
+                document.body.removeChild(addPopover);
+              }
+            };
+          }
+
           // Mobile dock toggle button (only show on mobile and if onToggleDock is provided)
           if (onToggleDock) {
             const dockBtn = L.DomUtil.create('button', '', div);
@@ -616,66 +710,32 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 </svg>
 `;
             routesBtn.title = 'Toggle routes';
-            routesBtn.className = `${showRoutes ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            routesBtn.className = `${showRoutes ? 'button-primary-accent' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
             L.DomEvent.on(routesBtn, 'click', function (e) {
               L.DomEvent.stopPropagation(e);
               onToggleRoutes?.();
             });
           }
 
-          // Check if we have camping spots
-          const hasCampSpots =
-            campingSpots && campingSpots.some((spot) => spot.category === 'camp');
+          // Check if we have any camping spots
+          const hasAnySpots = campingSpots && campingSpots.length > 0;
 
-          // Camp spots toggle (only show if there are camp spots)
-          if (hasCampSpots) {
-            const campBtn = L.DomUtil.create('button', '', div);
-            campBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M14.8359 2.5L12.8818 5.88379L21.3203 20.5L19.5879 21.5L11.7266 7.88379L3.86621 21.5L2.13379 20.5L10.5723 5.88281L8.61914 2.5L10.3506 1.5L11.7266 3.88379L13.1035 1.5L14.8359 2.5Z" fill="currentColor"/>
-</svg>
-`;
-            campBtn.title = 'Toggle camp spots';
-            campBtn.className = `${showCampSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
-            L.DomEvent.on(campBtn, 'click', function (e) {
-              L.DomEvent.stopPropagation(e);
-              onToggleCampSpots?.();
-            });
-          }
-
-          // Check if we have fishing spots
-          const hasFishingSpots =
-            campingSpots && campingSpots.some((spot) => spot.category === 'fishing');
-
-          // Fishing spots toggle (only show if there are fishing spots)
-          if (hasFishingSpots) {
-            const fishingBtn = L.DomUtil.create('button', '', div);
-            fishingBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M8.88477 6.00977C12.3125 6.17206 15.0403 8.35368 17.4443 10.5547L21.6572 6.34277V17.6572L17.4443 13.4443C15.0402 15.6455 12.3127 17.8279 8.88477 17.9902L8.47656 18C4.89986 18 2 15.3137 2 12C2 8.68629 4.89986 6 8.47656 6L8.88477 6.00977ZM8.47656 8C5.85785 8 4 9.93195 4 12C4 14.068 5.85785 16 8.47656 16C10.1373 15.9999 11.6607 15.3759 13.1855 14.3428C14.1784 13.67 15.101 12.8738 16.0273 12.0273L16 12L16.0273 11.9717C15.1012 11.1254 14.1782 10.3298 13.1855 9.65723C11.6607 8.62406 10.1373 8.00009 8.47656 8Z" fill="currentColor"/>
-</svg>
-`;
-            fishingBtn.title = 'Toggle fishing spots';
-            fishingBtn.className = `${showFishingSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
-            L.DomEvent.on(fishingBtn, 'click', function (e) {
-              L.DomEvent.stopPropagation(e);
-              onToggleFishingSpots?.();
-            });
-          }
-
-          // Check if we have viewpoint spots
-          const hasViewpointSpots =
-            campingSpots && campingSpots.some((spot) => spot.category === 'viewpoint');
-
-          // Viewpoint spots toggle (only show if there are viewpoint spots)
-          if (hasViewpointSpots) {
-            const viewpointBtn = L.DomUtil.create('button', '', div);
-            viewpointBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          // All spots toggle (only show if there are any spots)
+          if (hasAnySpots) {
+            const spotsBtn = L.DomUtil.create('button', '', div);
+            spotsBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M12 2C15.866 2 19 5.41126 19 9.61914L18.9883 10.0996C18.757 15.0265 15.0094 18.7245 12 22C8.99062 18.7245 5.243 15.0265 5.01172 10.0996L5 9.61914C5 5.41126 8.13401 2 12 2ZM12 4C9.39475 4 7 6.3529 7 9.61914C7.00002 11.6723 7.76642 13.5356 8.99512 15.3643C9.86438 16.6579 10.9066 17.8522 12 19.0479C13.0934 17.8522 14.1356 16.6579 15.0049 15.3643C16.2336 13.5356 17 11.6723 17 9.61914C17 6.3529 14.6052 4 12 4ZM12 6C13.6569 6 15 7.34315 15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6Z" fill="currentColor"/>
 </svg>
 `;
-            viewpointBtn.title = 'Toggle viewpoint spots';
-            viewpointBtn.className = `${showViewpointSpots ? 'button-primary' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
-            L.DomEvent.on(viewpointBtn, 'click', function (e) {
+            spotsBtn.title = 'Toggle all spots';
+            // Button is active if any spot category is visible
+            const anySpotVisible = showCampSpots || showFishingSpots || showViewpointSpots;
+            spotsBtn.className = `${anySpotVisible ? 'button-primary-accent' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(spotsBtn, 'click', function (e) {
               L.DomEvent.stopPropagation(e);
+              // Toggle all spot categories together
+              onToggleCampSpots?.();
+              onToggleFishingSpots?.();
               onToggleViewpointSpots?.();
             });
           }
@@ -697,6 +757,13 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         if (popover && document.body.contains(popover)) {
           document.body.removeChild(popover);
         }
+        // Clean up add popover if it exists
+        const toolbarContainer = toolbar?.getContainer();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (toolbarContainer && (toolbarContainer as any)._addPopoverCleanup) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (toolbarContainer as any)._addPopoverCleanup();
+        }
       };
     }, [
       isMapReady,
@@ -715,6 +782,11 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleDock,
       isGettingLocation,
       handleGetLocation,
+      isAddingSpot,
+      isDrawingRoute,
+      isReadOnly,
+      onStartAddingRoute,
+      onStartAddingSpot,
     ]);
 
     // Handle map click events separately to prevent map recreation

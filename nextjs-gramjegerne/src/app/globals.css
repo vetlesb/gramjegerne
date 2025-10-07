@@ -289,7 +289,6 @@ li.product-list:hover {
   background-color: var(--bg-dimmed);
   border-radius: 8px;
   padding: 1rem;
-  margin-bottom: 8px;
   box-shadow: none;
   border: 0px;
 }
@@ -685,7 +684,7 @@ select {
     padding: 1rem;
   }
   .nav {
-    padding: 1rem;
+    padding: 0.25rem 1rem;
   }
 
   #hidden {

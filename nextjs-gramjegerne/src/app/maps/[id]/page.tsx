@@ -557,7 +557,7 @@ export default function TripViewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen w-screen mt-0 sm:mt-0 flex flex-col lg:flex-row absolute">
+      <div className="h-ios w-screen flex flex-col lg:flex-row relative">
         {/* Main Content - Full screen on mobile */}
         <div className="flex-1 relative h-full overflow-hidden">
           <TripMap
@@ -583,6 +583,8 @@ export default function TripViewPage() {
             onToggleViewpointSpots={() => setShowViewpoints(!showViewpoints)}
             isDockVisible={isDockVisible}
             onToggleDock={() => setIsDockVisible(!isDockVisible)}
+            onStartAddingSpot={handleStartAddingSpot}
+            onStartAddingRoute={handleStartRoute}
           />
 
           {/* Back Button - Top Left */}
@@ -841,12 +843,12 @@ export default function TripViewPage() {
           </div>
 
           {/* Sticky Bottom Add Button */}
-          <div className="p-6 bg-background border-t border-white/10">
+          <div className="p-4 bg-background border-t border-white/10">
             {activeTab === 'locations' ? (
               <button
                 onClick={handleStartAddingSpot}
                 disabled={isDrawingRoute}
-                className="button-primary w-full text-lg flex items-center justify-center gap-2 py-3"
+                className="button-primary-accent w-full text-lg flex items-center justify-center gap-2 py-3"
                 title="New location"
               >
                 <Icon name="add" width={20} height={20} />
@@ -856,7 +858,7 @@ export default function TripViewPage() {
               <button
                 onClick={handleStartRoute}
                 disabled={isAddingSpot || isDrawingRoute}
-                className="button-primary w-full text-lg flex items-center justify-center gap-2 py-3"
+                className="button-primary-accent w-full text-lg flex items-center justify-center gap-2 py-3"
                 title="New route"
               >
                 <Icon name="add" width={20} height={20} />
