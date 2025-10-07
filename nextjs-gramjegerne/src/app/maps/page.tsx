@@ -274,7 +274,11 @@ function MapsPageContent() {
   // Calculate total elevation gain from all routes
   const calculateTotalElevationGain = (routes: Array<{elevationGain?: number}>): number => {
     return routes.reduce((total, route) => {
-      return total + (route.elevationGain || 0);
+      // Skip routes that are calculating (elevationGain === -1) or have no elevation data
+      if (route.elevationGain && route.elevationGain > 0) {
+        return total + route.elevationGain;
+      }
+      return total;
     }, 0);
   };
 
@@ -449,6 +453,13 @@ function MapsPageContent() {
                             <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
                               <Icon name="route" width={16} height={16} />
                               {plan.routesCount}
+                            </span>
+                          )}
+                          {/* Campings */}
+                          {plan.campingSpotsCount > 0 && (
+                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
+                              <Icon name="viewpoint" width={16} height={16} />
+                              {plan.campingSpotsCount}
                             </span>
                           )}
                         </div>
