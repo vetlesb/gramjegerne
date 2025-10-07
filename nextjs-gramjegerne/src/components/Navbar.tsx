@@ -34,7 +34,7 @@ export function Navbar() {
           w-full md:w-auto
           flex-col md:flex-row
           absolute md:relative
-          top-16 md:top-auto
+          top-12 md:top-auto
           left-0 md:left-auto
           bg-background md:bg-transparent
           p-4 md:p-0
