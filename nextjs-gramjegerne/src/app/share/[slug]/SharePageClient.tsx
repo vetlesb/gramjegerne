@@ -453,7 +453,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
       <div className="flex flex-col gap-y-4 mb-8">
         <div className="flex flex-col gap-y-2">
           <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
-          <div className="flex flex-wrap gap-x-1">
+          <div className="flex flex-wrap gap-x-2 gap-y-2">
             {list.user?.name && (
               <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
                 <Icon name="user" width={16} height={16} />
@@ -528,7 +528,7 @@ export default function SharePageClient({list}: SharePageClientProps) {
       {/* Overview Section */}
       {selectedCategory === null && !showOnBodyOnly && (
         <>
-          <div className="grid grid-cols-3 gap-x-2">
+          <div className="grid grid-cols-2 gap-x-2">
             <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
               <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
                 <span className="border-1 border-accent rounded-full p-1">

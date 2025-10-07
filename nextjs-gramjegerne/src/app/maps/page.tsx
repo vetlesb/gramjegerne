@@ -278,23 +278,6 @@ function MapsPageContent() {
     }, 0);
   };
 
-  // Helper function to count spots by category
-  const countSpotsByCategory = (campingSpots: Array<{category: string}>) => {
-    const counts = {
-      camp: 0,
-      fishing: 0,
-      viewpoint: 0,
-    };
-
-    campingSpots.forEach((spot) => {
-      if (spot.category === 'camp') counts.camp++;
-      else if (spot.category === 'fishing') counts.fishing++;
-      else if (spot.category === 'viewpoint') counts.viewpoint++;
-    });
-
-    return counts;
-  };
-
   // Open trip for editing
   const handleOpenTrip = useCallback(
     (planId: string) => {
@@ -398,14 +381,6 @@ function MapsPageContent() {
                               {sharedTrip.trip.routesCount}
                             </span>
                           )}
-
-                          {/* Spots */}
-                          {sharedTrip.trip.campingSpotsCount > 0 && (
-                            <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                              <Icon name="location" width={16} height={16} />
-                              {sharedTrip.trip.campingSpotsCount} spots
-                            </span>
-                          )}
                         </div>
                       </div>
 
@@ -476,33 +451,6 @@ function MapsPageContent() {
                               {plan.routesCount}
                             </span>
                           )}
-
-                          {/* Spots by Category */}
-                          {(() => {
-                            const spotCounts = countSpotsByCategory(plan.campingSpots || []);
-                            return (
-                              <>
-                                {spotCounts.camp > 0 && (
-                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                    <Icon name="tent" width={16} height={16} />
-                                    {spotCounts.camp}
-                                  </span>
-                                )}
-                                {spotCounts.fishing > 0 && (
-                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                    <Icon name="fishing" width={16} height={16} />
-                                    {spotCounts.fishing}
-                                  </span>
-                                )}
-                                {spotCounts.viewpoint > 0 && (
-                                  <span className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                                    <Icon name="viewpoint" width={16} height={16} />
-                                    {spotCounts.viewpoint}
-                                  </span>
-                                )}
-                              </>
-                            );
-                          })()}
                         </div>
                       </div>
 
