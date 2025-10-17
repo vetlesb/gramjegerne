@@ -991,3 +991,33 @@ input[type='checkbox']:checked::after {
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+
+/* Animated Icon Toggle Component */
+.animated-icon-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.animated-icon-toggle:hover {
+  background-color: var(--bg-dimmed-hover);
+}
+
+.animated-icon-toggle.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.animated-icon-toggle.disabled:hover {
+  background-color: transparent;
+}
+
+.animated-icon-toggle__icon {
+  transition:
+    width 0.15s cubic-bezier(1, 0, 1, 1),
+    height 0.15s cubic-bezier(1, 0, 1, 1);
+  color: var(--fg-primary);
+}
