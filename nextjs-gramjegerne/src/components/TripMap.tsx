@@ -3,6 +3,7 @@ import {useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallbac
 import * as L from 'leaflet';
 import {CampingSpot, Route} from '@/types';
 import {useDebounce} from '@/hooks/useDebounce';
+import CompassWidget from './CompassWidget';
 
 // Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as {_getIconUrl?: string})._getIconUrl;
@@ -43,6 +44,9 @@ interface TripMapProps {
   onToggleCampSpots?: () => void;
   onToggleFishingSpots?: () => void;
   onToggleViewpointSpots?: () => void;
+  // Compass control
+  showCompass?: boolean;
+  onToggleCompass?: () => void;
   // Mobile dock control
   isDockVisible?: boolean;
   onToggleDock?: () => void;
@@ -77,6 +81,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleCampSpots,
       onToggleFishingSpots,
       onToggleViewpointSpots,
+      // Compass control
+      showCompass = false, // Default to hidden
+      onToggleCompass,
       // Mobile dock control
       isDockVisible,
       onToggleDock,
@@ -699,6 +706,20 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             handleGetLocation();
           });
 
+          // Compass toggle button
+          if (onToggleCompass) {
+            const compassBtn = L.DomUtil.create('button', '', div);
+            compassBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fillRule="evenodd" clipRule="evenodd" d="M20 22L12 17.9062L4 22L12 2L20 22ZM7.83887 17.7881L11.0889 16.126H12.9111L16.1602 17.7881L12 7.38672L7.83887 17.7881Z" fill="currentColor"/>
+</svg>`;
+            compassBtn.title = 'Toggle compass';
+            compassBtn.className = `${showCompass ? 'button-primary-accent' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(compassBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleCompass?.();
+            });
+          }
+
           // Check if we have any routes
           const hasRoutes = routes && routes.length > 0;
 
@@ -778,6 +799,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleCampSpots,
       onToggleFishingSpots,
       onToggleViewpointSpots,
+      showCompass,
+      onToggleCompass,
       isDockVisible,
       onToggleDock,
       isGettingLocation,
@@ -1093,28 +1116,30 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           )}
         </div>
 
-        {/* Status Bar - Commented out for cleaner UI */}
+        {/* Compass Widget */}
+        {showCompass && <CompassWidget className="absolute bottom-4 left-4 z-[1000]" />}
 
-        <div className="absolute bottom-4 left-4 z-[1000]">
-          <div className="bg-dimmed backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
-            <div className="text-xs text-white/70">
-              {!isMapReady ? (
-                <span className="text-yellow-400">Loading map...</span>
-              ) : tilesLoading > 0 ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin w-3 h-3 border border-accent border-t-transparent rounded-full"></div>
-                  <span className="text-accent">Loading tiles... ({tilesLoading} remaining)</span>
-                </div>
-              ) : isDrawingRoute ? (
-                <span className="text-accent">Click to add route waypoints</span>
-              ) : isAddingSpot ? (
-                <span className="text-accent">Click to place camping spot</span>
-              ) : (
-                <span>Press &quot;New Spot&quot; or &quot;New Route&quot; to start</span>
-              )}
+        {/* Status Bar - Only show when there's actual status to display */}
+        {(!isMapReady || tilesLoading > 0 || isDrawingRoute || isAddingSpot) && (
+          <div className="absolute bottom-4 left-4 z-[1000]">
+            <div className="bg-dimmed backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+              <div className="text-xs text-white/70">
+                {!isMapReady ? (
+                  <span className="text-yellow-400">Loading map...</span>
+                ) : tilesLoading > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin w-3 h-3 border border-accent border-t-transparent rounded-full"></div>
+                    <span className="text-accent">Loading tiles... ({tilesLoading} remaining)</span>
+                  </div>
+                ) : isDrawingRoute ? (
+                  <span className="text-accent">Click to add route waypoints</span>
+                ) : isAddingSpot ? (
+                  <span className="text-accent">Click to place camping spot</span>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   },

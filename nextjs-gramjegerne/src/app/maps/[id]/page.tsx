@@ -57,6 +57,7 @@ export default function TripViewPage() {
   const [showCamps, setShowCamps] = useState(true);
   const [showFishing, setShowFishing] = useState(true);
   const [showViewpoints, setShowViewpoints] = useState(true);
+  const [showCompass, setShowCompass] = useState(false); // Default to hidden
 
   // Spot category filter for dock
   const [spotCategoryFilter, setSpotCategoryFilter] = useState<
@@ -581,6 +582,9 @@ export default function TripViewPage() {
             onToggleCampSpots={() => setShowCamps(!showCamps)}
             onToggleFishingSpots={() => setShowFishing(!showFishing)}
             onToggleViewpointSpots={() => setShowViewpoints(!showViewpoints)}
+            // Compass control
+            showCompass={showCompass}
+            onToggleCompass={() => setShowCompass(!showCompass)}
             isDockVisible={isDockVisible}
             onToggleDock={() => setIsDockVisible(!isDockVisible)}
             onStartAddingSpot={handleStartAddingSpot}
