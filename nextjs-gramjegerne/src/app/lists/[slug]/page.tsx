@@ -759,8 +759,8 @@ export default function ListPage() {
                                 className="rounded-md h-full w-full object-cover"
                                 src={urlFor(item.image).url()}
                                 alt={`Bilde av ${item?.name || 'item'}`}
-                                width={16}
-                                height={16}
+                                width={96}
+                                height={96}
                               />
                             ) : (
                               <div className="h-16 w-16 flex items-center placeholder_image">
@@ -812,7 +812,7 @@ export default function ListPage() {
                 <button
                   onClick={handleSaveChanges}
                   disabled={tempSelectedItems.length === 0}
-                  className="button-primary-accent"
+                  className="button-primary-accent flex-1 mt-4"
                 >
                   {tempSelectedItems.length === 0
                     ? 'Add'
@@ -820,11 +820,7 @@ export default function ListPage() {
                       ? 'Add 1 item'
                       : `Add ${tempSelectedItems.length} items`}
                 </button>
-                <DialogClose asChild>
-                  <button type="button" className="button-secondary">
-                    Close
-                  </button>
-                </DialogClose>
+                <DialogClose asChild></DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
