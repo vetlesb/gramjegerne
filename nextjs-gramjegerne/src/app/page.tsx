@@ -62,6 +62,10 @@ function IndexPageContent() {
   });
   const [loading, setLoading] = useState(true);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [itemUsageInfo, setItemUsageInfo] = useState<{
+    itemName: string;
+    lists: Array<{_id: string; name: string}>;
+  } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
@@ -249,9 +253,28 @@ function IndexPageContent() {
     }
   }
 
+  async function handleDeleteClick(itemId: string) {
+    setErrorMessage(null);
+    try {
+      // Fetch which lists contain this item
+      const response = await fetch(`/api/checkItemUsage?itemId=${itemId}`);
+      if (!response.ok) {
+        throw new Error('Failed to check item usage');
+      }
+
+      const data = await response.json();
+      setItemUsageInfo(data);
+      setItemToDelete(itemId);
+    } catch (error: unknown) {
+      console.error('Error checking item usage:', error);
+      setErrorMessage('Failed to check item usage');
+    }
+  }
+
   async function confirmDeleteItem() {
     if (!itemToDelete) return;
     setIsLoadingDelete(true);
+    setErrorMessage(null);
     try {
       const response = await fetch(`/api/deleteItem?itemId=${itemToDelete}`, {
         method: 'DELETE',
@@ -264,27 +287,7 @@ function IndexPageContent() {
 
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemToDelete));
       setItemToDelete(null);
-    } catch (error: unknown) {
-      console.error('Error deleting item:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Kunne ikke slette utstyr');
-    } finally {
-      setIsLoadingDelete(false);
-    }
-  }
-
-  async function confirmDeleteItemDesktop(itemId: string) {
-    setIsLoadingDelete(true);
-    try {
-      const response = await fetch(`/api/deleteItem?itemId=${itemId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Kunne ikke slette utstyr');
-      }
-
-      setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
+      setItemUsageInfo(null);
     } catch (error: unknown) {
       console.error('Error deleting item:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Kunne ikke slette utstyr');
@@ -580,49 +583,15 @@ function IndexPageContent() {
                         >
                           <Icon name="edit" width={24} height={24} fill="#EAFFE2" />
                         </button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <button
-                              className="button-ghost flex gap-x-2 h-fit align-middle"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
-                            </button>
-                          </DialogTrigger>
-                          <DialogContent className="dialog gap-y-8">
-                            <DialogHeader>
-                              <DialogTitle className="text-xl font-normal text-accent">
-                                Are you sure you want to delete &quot;{item.name}
-                                &quot;?
-                              </DialogTitle>
-                            </DialogHeader>
-
-                            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
-
-                            <DialogFooter className="gap-y-4 gap-x-1">
-                              <button
-                                className="button-primary-accent"
-                                onClick={() => confirmDeleteItemDesktop(item._id)}
-                                disabled={isLoadingDelete}
-                              >
-                                {isLoadingDelete ? 'Sletter...' : 'Slett'}
-                              </button>
-                              <DialogClose asChild>
-                                <button
-                                  type="button"
-                                  className="button-secondary"
-                                  onClick={() => {
-                                    setErrorMessage('');
-                                  }}
-                                >
-                                  Avbryt
-                                </button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                        <button
+                          className="button-ghost flex gap-x-2 h-fit align-middle"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(item._id);
+                          }}
+                        >
+                          <Icon name="delete" width={24} height={24} fill="#EAFFE2" />
+                        </button>
                       </div>
 
                       {/* Mobile menu button */}
@@ -652,7 +621,7 @@ function IndexPageContent() {
                               className="flex items-center gap-x-2 w-full px-4 py-2 hover:bg-white/5"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setItemToDelete(item._id);
+                                handleDeleteClick(item._id);
                                 setActiveMenuId(null);
                               }}
                             >
@@ -682,7 +651,7 @@ function IndexPageContent() {
                           className="button-trans"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setItemToDelete(item._id);
+                            handleDeleteClick(item._id);
                           }}
                           title="Delete item"
                         >
@@ -827,9 +796,23 @@ function IndexPageContent() {
           <DialogContent className="dialog gap-y-8">
             <DialogHeader>
               <DialogTitle className="text-xl font-normal text-accent">
-                Are you sure you want to delete &quot;
-                {items.find((item) => item._id === itemToDelete)?.name}
-                &quot;?
+                {itemUsageInfo && itemUsageInfo.lists.length > 0 ? (
+                  <>
+                    {itemUsageInfo.itemName} is in these lists, do you still want to delete it?
+                    <ul className="mt-4 space-y-2 text-base font-normal">
+                      {itemUsageInfo.lists.map((list) => (
+                        <li
+                          key={list._id}
+                          className="text-primary text-lg p-2 bg-dimmed-hover rounded-md"
+                        >
+                          {list.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <>Are you sure you want to delete &quot;{itemUsageInfo?.itemName}&quot;?</>
+                )}
               </DialogTitle>
             </DialogHeader>
 
@@ -848,6 +831,7 @@ function IndexPageContent() {
                 className="button-secondary"
                 onClick={() => {
                   setItemToDelete(null);
+                  setItemUsageInfo(null);
                   setErrorMessage('');
                 }}
               >

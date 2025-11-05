@@ -1,9 +1,8 @@
 import {NextResponse} from 'next/server';
 import {client} from '@/lib/sanity';
-import {handleApiError} from '@/lib/errorHandler';
 import {getUserSession} from '@/lib/auth-helpers';
 
-export async function DELETE(request: Request) {
+export async function GET(request: Request) {
   try {
     const session = await getUserSession();
 
@@ -12,6 +11,7 @@ export async function DELETE(request: Request) {
         status: 401,
       });
     }
+
     const {searchParams} = new URL(request.url);
     const itemId = searchParams.get('itemId');
 
@@ -21,7 +21,10 @@ export async function DELETE(request: Request) {
 
     // Verify item belongs to user
     const item = await client.fetch(
-      `*[_type == "item" && _id == $itemId && user._ref == $userId][0]`,
+      `*[_type == "item" && _id == $itemId && user._ref == $userId][0]{
+        _id,
+        name
+      }`,
       {itemId, userId: session.user.id},
     );
 
@@ -33,29 +36,24 @@ export async function DELETE(request: Request) {
     const lists = await client.fetch(
       `*[_type == "list" && user._ref == $userId && references($itemId)]{
         _id,
-        items
+        name,
+        slug
       }`,
       {itemId, userId: session.user.id},
     );
 
-    // Remove the item from all lists before deleting
-    if (lists.length > 0) {
-      const transaction = client.transaction();
-
-      lists.forEach((list: {_id: string; items: Array<{item: {_ref: string}}>}) => {
-        const updatedItems = list.items.filter((listItem) => listItem.item._ref !== itemId);
-        transaction.patch(list._id, {
-          set: {items: updatedItems},
-        });
-      });
-
-      await transaction.commit();
-    }
-
-    // Now delete the item
-    await client.delete(itemId);
-    return NextResponse.json({message: 'Item deleted successfully'}, {status: 200});
+    return NextResponse.json({
+      itemName: item.name,
+      lists: lists,
+    });
   } catch (error: unknown) {
-    return handleApiError(error, 'Error deleting item:', 'Kunne ikke slette utstyr.');
+    console.error('Error checking item usage:', error);
+    return NextResponse.json(
+      {
+        message: error instanceof Error ? error.message : 'Failed to check item usage',
+      },
+      {status: 500},
+    );
   }
 }
+
