@@ -49,6 +49,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateName, setDuplicateName] = useState('');
 
   const handleClick = () => {
     router.push(`/lists/${list.slug?.current}`);
@@ -62,6 +63,10 @@ export function ListItem({list, onDelete}: ListItemProps) {
   };
 
   const handleDuplicate = async () => {
+    if (!duplicateName.trim()) {
+      return;
+    }
+
     try {
       setIsDuplicating(true);
       const response = await fetch('/api/duplicateList', {
@@ -71,6 +76,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
         },
         body: JSON.stringify({
           listId: list._id,
+          name: duplicateName.trim(),
         }),
       });
 
@@ -79,6 +85,7 @@ export function ListItem({list, onDelete}: ListItemProps) {
       }
 
       setShowDuplicateDialog(false);
+      setDuplicateName('');
       if (onDelete) {
         await onDelete(); // This will refresh the lists
       }
@@ -230,23 +237,52 @@ export function ListItem({list, onDelete}: ListItemProps) {
         </div>
       </li>
 
-      <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+      <Dialog
+        open={showDuplicateDialog}
+        onOpenChange={(open) => {
+          setShowDuplicateDialog(open);
+          if (!open) {
+            setDuplicateName('');
+          } else {
+            setDuplicateName(`${list.name} (kopi)`);
+          }
+        }}
+      >
         <DialogContent className="dialog p-4 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-accent font-normal">Dupliser liste</DialogTitle>
+            <DialogTitle className="text-2xl text-accent font-normal">Duplicate list</DialogTitle>
           </DialogHeader>
 
-          <p className="py-4">Are you sure you want to duplicate the list?</p>
+          <div className="py-4 flex flex-col gap-y-4">
+            <label className="flex flex-col gap-y-2 text-lg">
+              Title
+              <input
+                className="w-full max-w-full p-4"
+                type="text"
+                value={duplicateName}
+                onChange={(e) => setDuplicateName(e.target.value)}
+                placeholder={`${list.name} (kopi)`}
+                required
+                autoFocus
+              />
+            </label>
+          </div>
 
           <DialogFooter>
             <button
               onClick={handleDuplicate}
               className="button-primary-accent"
-              disabled={isDuplicating}
+              disabled={isDuplicating || !duplicateName.trim()}
             >
               {isDuplicating ? 'Duplicating...' : 'Duplicate'}
             </button>
-            <button onClick={() => setShowDuplicateDialog(false)} className="button-secondary">
+            <button
+              onClick={() => {
+                setShowDuplicateDialog(false);
+                setDuplicateName('');
+              }}
+              className="button-secondary"
+            >
               Cancel
             </button>
           </DialogFooter>

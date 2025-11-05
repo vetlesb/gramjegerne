@@ -1117,7 +1117,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         </div>
 
         {/* Compass Widget */}
-        {showCompass && <CompassWidget className="absolute bottom-4 left-4 z-[1000]" />}
+        {showCompass && <CompassWidget className="absolute border-0 bottom-4 left-4 z-[1000]" />}
 
         {/* Status Bar - Only show when there's actual status to display */}
         {(!isMapReady || tilesLoading > 0 || isDrawingRoute || isAddingSpot) && (

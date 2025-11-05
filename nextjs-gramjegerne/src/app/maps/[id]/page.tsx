@@ -44,6 +44,7 @@ export default function TripViewPage() {
   const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
   const [isEditingRoute, setIsEditingRoute] = useState<boolean>(false);
   const [editingSpot, setEditingSpot] = useState<CampingSpot | null>(null);
+  const [isPendingSpot, setIsPendingSpot] = useState(false); // Track if spot is not yet saved
   const mapRef = useRef<TripMapRef>(null);
   const router = useRouter();
   const params = useParams();
@@ -152,9 +153,6 @@ export default function TripViewPage() {
     (coordinates: Coordinates) => {
       if (!tripPlan) return;
 
-      // Preserve current map view
-      const currentView = mapRef.current?.getCurrentView();
-
       const newSpot: CampingSpot = {
         _key: Date.now().toString(),
         name: `Camping Spot ${(tripPlan.campingSpots?.length || 0) + 1}`,
@@ -163,23 +161,12 @@ export default function TripViewPage() {
         category: 'camp' as SpotCategory,
       };
 
-      const updatedPlan = {
-        ...tripPlan,
-        campingSpots: [...(tripPlan.campingSpots || []), newSpot],
-      };
-
-      saveTripPlan(updatedPlan);
+      // Don't save yet - just show the dialog
       setEditingSpot(newSpot);
+      setIsPendingSpot(true); // Mark as pending (not yet saved)
       setIsAddingSpot(false);
-
-      // Restore map view after adding spot
-      if (currentView) {
-        setTimeout(() => {
-          mapRef.current?.restoreView(currentView);
-        }, 100);
-      }
     },
-    [tripPlan, saveTripPlan],
+    [tripPlan],
   );
 
   // Update camping spot
@@ -731,7 +718,10 @@ export default function TripViewPage() {
                             </div>
                             <div className="flex gap-1 flex-shrink-0">
                               <button
-                                onClick={() => setEditingSpot(spot)}
+                                onClick={() => {
+                                  setEditingSpot(spot);
+                                  setIsPendingSpot(false); // Editing existing spot, not pending
+                                }}
                                 className="button-ghost p-1.5 min-w-0"
                                 title="Edit spot"
                               >
@@ -873,10 +863,16 @@ export default function TripViewPage() {
         </div>
 
         {/* Camping Spot Editor Dialog */}
-        <Dialog open={editingSpot !== null} onOpenChange={() => setEditingSpot(null)}>
+        <Dialog
+          open={editingSpot !== null}
+          onOpenChange={() => {
+            setEditingSpot(null);
+            setIsPendingSpot(false);
+          }}
+        >
           <DialogContent className="max-w-md z-[9999] bg-dimmed rounded-lg border-0">
             <DialogHeader>
-              <DialogTitle>Edit Spot</DialogTitle>
+              <DialogTitle>{isPendingSpot ? 'Add Spot' : 'Edit Spot'}</DialogTitle>
             </DialogHeader>
 
             <div className="flex flex-col gap-4 bg-dimmed">
@@ -968,14 +964,36 @@ export default function TripViewPage() {
             </div>
 
             <DialogFooter className="mt-6 flex-row flex gap-x-2">
-              <button onClick={() => setEditingSpot(null)} className="button-secondary flex-1">
+              <button
+                onClick={() => {
+                  setEditingSpot(null);
+                  setIsPendingSpot(false);
+                }}
+                className="button-secondary flex-1"
+              >
                 Cancel
               </button>
               <button
-                onClick={() => editingSpot && handleUpdateSpot(editingSpot)}
+                onClick={() => {
+                  if (!editingSpot || !tripPlan) return;
+
+                  if (isPendingSpot) {
+                    // This is a new spot - save it to the trip plan
+                    const updatedPlan = {
+                      ...tripPlan,
+                      campingSpots: [...(tripPlan.campingSpots || []), editingSpot],
+                    };
+                    saveTripPlan(updatedPlan);
+                    setIsPendingSpot(false);
+                  } else {
+                    // This is an existing spot - update it
+                    handleUpdateSpot(editingSpot);
+                  }
+                  setEditingSpot(null);
+                }}
                 className="button-primary-accent flex-1"
               >
-                Save Changes
+                {isPendingSpot ? 'Save' : 'Save Changes'}
               </button>
             </DialogFooter>
           </DialogContent>

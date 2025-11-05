@@ -386,10 +386,10 @@ export default function ListPage() {
   function handleDialogOpenChange(isOpen: boolean) {
     setIsDialogOpen(isOpen);
     if (isOpen) {
-      setTempSelectedItems(
-        selectedItems.map((item) => item.item).filter((item): item is Item => item !== null),
-      );
+      setTempSelectedItems([]); // Clear temp selection when dialog opens
       setDialogSearchQuery(''); // Clear dialog search query when dialog opens
+    } else {
+      setTempSelectedItems([]); // Clear temp selection when dialog closes
     }
   }
 
@@ -812,9 +812,13 @@ export default function ListPage() {
                 <button
                   onClick={handleSaveChanges}
                   disabled={tempSelectedItems.length === 0}
-                  className="button-primary"
+                  className="button-primary-accent"
                 >
-                  Add to list
+                  {tempSelectedItems.length === 0
+                    ? 'Add'
+                    : tempSelectedItems.length === 1
+                      ? 'Add 1 item'
+                      : `Add ${tempSelectedItems.length} items`}
                 </button>
                 <DialogClose asChild>
                   <button type="button" className="button-secondary">
