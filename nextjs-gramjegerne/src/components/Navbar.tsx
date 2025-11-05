@@ -61,21 +61,6 @@ export function Navbar() {
                 </li>
                 <li
                   className={
-                    pathname === '/maps'
-                      ? 'menu-active flex text-center'
-                      : 'menu-item flex text-center'
-                  }
-                >
-                  <Link
-                    className="text-lg block w-full"
-                    href="/maps"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Maps
-                  </Link>
-                </li>
-                <li
-                  className={
                     pathname === '/lists'
                       ? 'menu-active flex text-center'
                       : 'menu-item flex text-center'
@@ -87,6 +72,21 @@ export function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Lists
+                  </Link>
+                </li>
+                <li
+                  className={
+                    pathname === '/maps'
+                      ? 'menu-active flex text-center'
+                      : 'menu-item flex text-center'
+                  }
+                >
+                  <Link
+                    className="text-lg block w-full"
+                    href="/maps"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Maps
                   </Link>
                 </li>
               </ul>

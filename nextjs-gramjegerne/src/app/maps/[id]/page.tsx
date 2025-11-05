@@ -74,8 +74,8 @@ export default function TripViewPage() {
       // Navigate back to the specific packing list
       router.push(`/lists/${listSlug}`);
     } else {
-      // Default navigation to maps
-      router.push('/maps');
+      // Default navigation to gear page
+      router.push('/');
     }
   }, [router, searchParams]);
 
@@ -582,7 +582,7 @@ export default function TripViewPage() {
           <button
             onClick={handleBackNavigation}
             className="absolute top-4 left-4 z-[1001] bg-dimmed backdrop-blur-sm rounded-lg p-3 hover:bg-dimmed shadow-lg transition-all duration-200"
-            title={searchParams.get('from') === 'list' ? 'Back to packing list' : 'Back to maps'}
+            title={searchParams.get('from') === 'list' ? 'Back to packing list' : 'Back to gear'}
           >
             <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
           </button>
@@ -603,7 +603,16 @@ export default function TripViewPage() {
         >
           {/* Header Section - Fixed */}
           <div className="px-6 pt-6 flex-shrink-0">
-            {/* Trip Header with Back Button */}
+            {/* Back to Maps Button */}
+            <button
+              onClick={() => router.push('/maps')}
+              className="flex items-center gap-2 text-white/70 hover:text-accent transition-colors mb-3"
+            >
+              <Icon name="chevrondown" width={16} height={16} className="rotate-90" />
+              <span className="text-sm">Back to Maps</span>
+            </button>
+
+            {/* Trip Header with Share and Close Buttons */}
             <div className="flex items-center bg-primary justify-between mb-2 lg:mb-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <div>

@@ -89,7 +89,7 @@ export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDi
         onOpenChange(open);
       }}
     >
-      <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+      <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar z-[9999]">
         <DialogHeader>
           <DialogTitle className="text-2xl text-accent font-normal pb-4">Edit Trip</DialogTitle>
         </DialogHeader>
