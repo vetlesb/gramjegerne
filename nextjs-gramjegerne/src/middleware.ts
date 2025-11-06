@@ -13,6 +13,14 @@ export default withAuth(
         if (req.nextUrl.pathname.startsWith('/share')) {
           return true;
         }
+        // Allow access to shared lists with ?shared=true query parameter
+        if (req.nextUrl.pathname.startsWith('/lists/') && req.nextUrl.searchParams.get('shared') === 'true') {
+          return true;
+        }
+        // Allow access to shared maps with ?share=[shareId] query parameter
+        if (req.nextUrl.pathname === '/maps' && req.nextUrl.searchParams.get('share')) {
+          return true;
+        }
         // Require authentication for all other routes
         return !!token;
       },

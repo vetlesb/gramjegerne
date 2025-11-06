@@ -2,7 +2,7 @@
 import {toast} from 'sonner';
 
 export function ShareButton({slug}: {slug: string}) {
-  const shareUrl = `${window.location.origin}/share/${slug}`;
+  const shareUrl = `${window.location.origin}/lists/${slug}?shared=true`;
 
   async function handleShare() {
     // Only copy to clipboard, no native share dialog

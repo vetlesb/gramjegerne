@@ -18,15 +18,25 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   const showLoader = useDelayedLoader(isLoading, 300);
 
   const pathname = usePathname();
+  
+  // Helper function to check if current URL is a public share
+  const checkIsPublicShare = () => {
+    if (typeof window === 'undefined') return false;
+    const searchParams = new URLSearchParams(window.location.search);
+    return pathname.startsWith('/share') || 
+      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true') ||
+      (pathname === '/maps' && searchParams.get('share'));
+  };
 
   useEffect(() => {
-    // Check if current route is a public share link
-    const searchParams = new URLSearchParams(window.location.search);
-    const isPublicShare = 
-      pathname.startsWith('/share') || 
-      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true');
-
-    if (!isPublicShare && status === 'unauthenticated' && !hasRedirected) {
+    // Don't do anything while loading or if already redirected
+    if (status !== 'unauthenticated' || hasRedirected) return;
+    
+    // Check if this is a public share - don't redirect if it is
+    const isPublicShare = checkIsPublicShare();
+    
+    // Only redirect if NOT a public share
+    if (!isPublicShare) {
       setHasRedirected(true);
       router.replace('/auth/signin');
     }
@@ -47,10 +57,7 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
 
   // Allow public share links without session
   if (!session) {
-    const searchParams = new URLSearchParams(window.location.search);
-    const isPublicShare = 
-      pathname.startsWith('/share') || 
-      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true');
+    const isPublicShare = checkIsPublicShare();
     
     if (!isPublicShare) {
       return null;
