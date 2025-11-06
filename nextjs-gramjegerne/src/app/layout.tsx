@@ -38,15 +38,20 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   const isMapsPage = pathname === '/maps' || pathname?.startsWith('/maps/');
   const isTestPage = pathname?.startsWith('/test');
   const isSharedMapPage = pathname?.startsWith('/share/map/');
+  
+  // Check if this is a shared list (new consolidated URL)
+  const isSharedListPage = typeof window !== 'undefined' && 
+    pathname?.startsWith('/lists/') && 
+    new URLSearchParams(window.location.search).get('shared') === 'true';
 
   return (
     <html lang="en">
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
           <Providers>
-            {!isAuthPage && !isMapsPage && !isSharedMapPage && !isTestPage && <Navbar />}
+            {!isAuthPage && !isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && <Navbar />}
             {children}
-            {!isMapsPage && !isSharedMapPage && !isTestPage && (
+            {!isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && (
               <ProtectedRoute>
                 <div className="flex flex-col md:flex-row justify-between">
                   <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
