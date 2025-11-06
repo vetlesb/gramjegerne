@@ -61,6 +61,48 @@ export function LIST_QUERY(slug: string) {
 }`;
 }
 
+export function SHARED_LIST_QUERY(slug: string) {
+  /* groq */
+  const parsedSlug = decodeURIComponent(slug);
+  return /* groq */ `*[_type == "list" && slug.current == "${parsedSlug}"][0] {
+  _id,
+  name,
+  days,
+  weight,
+  participants,
+  image,
+  "user": user->{
+    _id,
+    name,
+    email
+  },
+  "connectedTrip": connectedTrip->{
+    _id,
+    name,
+    slug
+  },
+  "items": items[] {
+    _key,
+    _type,
+    quantity,
+	  checked,
+    onBody,
+    "item": item->{
+      _id,
+      name,
+      weight,
+      image,
+      calories,
+      size,
+      "category": category->{
+        _id,
+        title
+      }
+    }
+  }
+}`;
+}
+
 export type CategoryTotal = {
   id: string;
   count: number;
@@ -126,6 +168,11 @@ export interface List {
   participants: number;
   days: number;
   items: ListItem[];
+  user?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   connectedTrip?: {
     _id: string;
     name: string;

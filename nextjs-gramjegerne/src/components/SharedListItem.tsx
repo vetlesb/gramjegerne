@@ -22,7 +22,7 @@ export function SharedListItem({sharedList, onRemove}: SharedListItemProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/share/${sharedList.list.slug.current}`);
+    router.push(`/lists/${sharedList.list.slug.current}?shared=true`);
   };
 
   const handleRemove = async () => {

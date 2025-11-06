@@ -20,7 +20,13 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!pathname.startsWith('/share') && status === 'unauthenticated' && !hasRedirected) {
+    // Check if current route is a public share link
+    const searchParams = new URLSearchParams(window.location.search);
+    const isPublicShare = 
+      pathname.startsWith('/share') || 
+      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true');
+
+    if (!isPublicShare && status === 'unauthenticated' && !hasRedirected) {
       setHasRedirected(true);
       router.replace('/auth/signin');
     }
@@ -39,8 +45,16 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
     return null;
   }
 
+  // Allow public share links without session
   if (!session) {
-    return null;
+    const searchParams = new URLSearchParams(window.location.search);
+    const isPublicShare = 
+      pathname.startsWith('/share') || 
+      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true');
+    
+    if (!isPublicShare) {
+      return null;
+    }
   }
 
   return <>{children}</>;
