@@ -84,9 +84,9 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
       {controlledOpen === undefined && (
         <button
           onClick={() => handleOpenChange(true)}
-          className="button-create text-md flex items-center gap-2"
+          className="button-primary-accent w-full text-lg flex items-center justify-center gap-2 py-3"
         >
-          Add
+          New Map
         </button>
       )}
 
@@ -99,7 +99,7 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
           handleOpenChange(open);
         }}
       >
-        <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+        <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar z-[9999]">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal pb-4">Add new map</DialogTitle>
           </DialogHeader>
