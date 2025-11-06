@@ -76,6 +76,7 @@ function MapsPageContent() {
         _type,
         name,
         slug,
+        defaultTileLayer,
         campingSpots[] {
           _key,
           name,
@@ -150,6 +151,7 @@ function MapsPageContent() {
         name,
         slug,
         shareId,
+        defaultTileLayer,
         campingSpots[] {
           _key,
           name,
@@ -194,6 +196,7 @@ function MapsPageContent() {
         name,
         slug,
         shareId,
+        defaultTileLayer,
         campingSpots[] {
           _key,
           name,
@@ -845,6 +848,7 @@ function MapsPageContent() {
             ref={mapRef}
             campingSpots={mapData.campingSpots}
             routes={currentRoute ? [...mapData.routes, currentRoute] : mapData.routes}
+            defaultTileLayer={isViewMode && selectedTripData ? (selectedTripData.defaultTileLayer || 'Kartverket Raster') : 'Kartverket Raster'}
             onSpotClick={() => {
               // Just show the popup - no zoom (handled by TripMap component)
             }}

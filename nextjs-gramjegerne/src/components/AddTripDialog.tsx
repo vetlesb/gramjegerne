@@ -47,6 +47,7 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
         },
         body: JSON.stringify({
           name: tripName.trim(),
+          defaultTileLayer: 'Kartverket Raster',
         }),
       });
 

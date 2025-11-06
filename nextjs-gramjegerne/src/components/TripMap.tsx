@@ -36,6 +36,7 @@ interface TripMapProps {
   onRoutePointAdd?: (coordinates: Coordinates) => void;
   isReadOnly?: boolean; // New prop for read-only mode
   autoFitBounds?: boolean; // Whether to auto-fit map to content
+  defaultTileLayer?: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap'; // Default map style for this trip
   // Toolbar visibility controls
   showRoutes?: boolean;
   showCampSpots?: boolean;
@@ -76,6 +77,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onRoutePointAdd,
       isReadOnly = false, // New prop with default value
       autoFitBounds = true, // Default to true for backwards compatibility
+      defaultTileLayer = 'Kartverket Raster', // Default map style
       // Toolbar controls
       showRoutes = true,
       showCampSpots = true,
@@ -106,9 +108,49 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [currentLayer, setCurrentLayer] = useState('Kartverket Raster');
+    const [currentLayer, setCurrentLayer] = useState(defaultTileLayer);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocationMarker, setUserLocationMarker] = useState<L.Marker | null>(null);
+
+    // Update currentLayer and switch map tiles when defaultTileLayer prop changes
+    useEffect(() => {
+      setCurrentLayer(defaultTileLayer);
+      
+      // Switch the actual map layer
+      const map = mapInstanceRef.current;
+      if (map && isMapReady) {
+        // Remove current tile layer
+        map.eachLayer((layer) => {
+          if (layer instanceof L.TileLayer) {
+            map.removeLayer(layer);
+          }
+        });
+        
+        // Add new layer
+        const baseMaps: Record<string, L.TileLayer> = {
+          'Kartverket Raster': L.tileLayer(
+            'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
+            {
+              attribution: '© Kartverket',
+              maxZoom: 18,
+            },
+          ),
+          'ESRI Satellite': L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            {
+              attribution: '© Esri',
+              maxZoom: 19,
+            },
+          ),
+          'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+          }),
+        };
+        
+        baseMaps[defaultTileLayer].addTo(map);
+      }
+    }, [defaultTileLayer, isMapReady]);
 
     // Search for places using OpenStreetMap Nominatim API
     const searchPlaces = useCallback(async (query: string) => {
@@ -379,8 +421,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         }),
       };
 
-      // Add default layer (Kartverket Raster)
-      baseMaps['Kartverket Raster'].addTo(map);
+      // Add default layer from prop
+      baseMaps[defaultTileLayer].addTo(map);
 
       // Add layer control (but hide it - we'll use our custom toolbar)
       const layerControl = L.control.layers(baseMaps);
@@ -553,11 +595,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
           `;
 
-          const layerOptions = [
-            {key: 'Kartverket Raster', label: 'NO Topo'},
-            {key: 'OpenTopoMap', label: 'TopoMap'},
+          const layerOptions: Array<{key: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap'; label: string}> = [
+            {key: 'Kartverket Raster', label: 'Kartverket Raster'},
             {key: 'ESRI Satellite', label: 'Satellite'},
-            {key: 'OpenStreetMap', label: 'Street'},
+            {key: 'OpenStreetMap', label: 'Street Map'},
           ];
 
           layerOptions.forEach((option) => {

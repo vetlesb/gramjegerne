@@ -19,6 +19,7 @@ interface EditTripDialogProps {
 
 export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDialogProps) {
   const [tripName, setTripName] = useState('');
+  const [defaultTileLayer, setDefaultTileLayer] = useState<'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap'>('Kartverket Raster');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -27,13 +28,15 @@ export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDi
   useEffect(() => {
     if (open) {
       setTripName(trip.name);
+      setDefaultTileLayer(trip.defaultTileLayer || 'Kartverket Raster');
       setError(null);
       setSuccessMessage(null);
     }
-  }, [open, trip.name]);
+  }, [open, trip.name, trip.defaultTileLayer]);
 
   const resetForm = () => {
     setTripName(trip.name);
+    setDefaultTileLayer(trip.defaultTileLayer || 'Kartverket Raster');
     setError(null);
     setSuccessMessage(null);
   };
@@ -52,6 +55,7 @@ export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDi
           tripId: trip._id,
           updates: {
             name: tripName.trim(),
+            defaultTileLayer,
           },
         }),
       });
@@ -114,6 +118,21 @@ export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDi
                 />
               </label>
             </div>
+            
+            <div className="flex flex-col">
+              <label className="flex flex-col gap-y-2 text-lg">
+                Default Map Style
+                <select
+                  className="w-full max-w-full p-4"
+                  value={defaultTileLayer}
+                  onChange={(e) => setDefaultTileLayer(e.target.value as 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap')}
+                >
+                  <option value="Kartverket Raster">NO Topo (Kartverket)</option>
+                  <option value="ESRI Satellite">Satellite (ESRI)</option>
+                  <option value="OpenStreetMap">Street Map (OSM)</option>
+                </select>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -126,7 +145,7 @@ export function EditTripDialog({trip, open, onOpenChange, onSuccess}: EditTripDi
           <button
             onClick={handleSaveTrip}
             className="button-primary-accent"
-            disabled={isSubmitting || !tripName.trim() || tripName.trim() === trip.name}
+            disabled={isSubmitting || !tripName.trim() || (tripName.trim() === trip.name && defaultTileLayer === (trip.defaultTileLayer || 'Kartverket Raster'))}
           >
             {isSubmitting ? 'Updating...' : 'Update'}
           </button>
