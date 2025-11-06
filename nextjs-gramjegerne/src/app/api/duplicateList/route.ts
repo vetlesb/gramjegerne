@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       newSlug = `${newSlug}-${nanoid(6)}`;
     }
 
-    // Create the new list document
+    // Create the new list document with unchecked items
     const newList = {
       _type: 'list',
       name: name.trim(),
@@ -62,7 +62,10 @@ export async function POST(request: Request) {
       days: originalList.days,
       participants: originalList.participants,
       image: originalList.image,
-      items: originalList.items,
+      items: originalList.items?.map((item: {_key: string; _type: string; item: {_ref: string}; checked?: boolean; quantity?: number; categoryOverride?: {_ref: string}}) => ({
+        ...item,
+        checked: false, // Reset packed/checked status for duplicated list
+      })) || [],
       user: {
         _type: 'reference',
         _ref: session.user.id,
