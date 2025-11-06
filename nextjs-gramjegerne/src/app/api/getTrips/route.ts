@@ -28,6 +28,7 @@ export async function GET() {
       description,
       startDate,
       endDate,
+      defaultTileLayer,
       "campingSpotsCount": count(campingSpots),
       "routesCount": count(routes),
       "routes": routes[]{waypoints, elevationGain},

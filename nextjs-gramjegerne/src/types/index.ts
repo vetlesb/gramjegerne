@@ -167,6 +167,7 @@ export interface TripDocument {
   };
   shareId?: string;
   isShared?: boolean;
+  defaultTileLayer?: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap';
   _createdAt: string;
   _updatedAt: string;
 }
@@ -190,6 +191,7 @@ export interface TripListItem {
   campingSpots: Array<{
     category: SpotCategory;
   }>;
+  defaultTileLayer?: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap';
   _createdAt: string;
   _updatedAt: string;
 }
