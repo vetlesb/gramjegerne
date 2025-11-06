@@ -53,7 +53,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
         currentShareId = await generateShareId();
       }
 
-      const shareUrl = `${window.location.origin}/share/map/${currentShareId}`;
+      const shareUrl = `${window.location.origin}/maps?share=${currentShareId}`;
 
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);

@@ -35,6 +35,7 @@ interface TripMapProps {
   isAddingSpot?: boolean;
   onRoutePointAdd?: (coordinates: Coordinates) => void;
   isReadOnly?: boolean; // New prop for read-only mode
+  autoFitBounds?: boolean; // Whether to auto-fit map to content
   // Toolbar visibility controls
   showRoutes?: boolean;
   showCampSpots?: boolean;
@@ -58,6 +59,8 @@ interface TripMapProps {
 export interface TripMapRef {
   getCurrentView: () => {center: {lat: number; lng: number}; zoom: number} | null;
   restoreView: (view: {center: {lat: number; lng: number}; zoom: number}) => void;
+  zoomToCoordinates: (lat: number, lng: number, zoom?: number) => void;
+  zoomToBounds: (coordinates: Array<{lat: number; lng: number}>) => void;
 }
 
 const TripMap = forwardRef<TripMapRef, TripMapProps>(
@@ -72,6 +75,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       isAddingSpot = false,
       onRoutePointAdd,
       isReadOnly = false, // New prop with default value
+      autoFitBounds = true, // Default to true for backwards compatibility
       // Toolbar controls
       showRoutes = true,
       showCampSpots = true,
@@ -173,8 +177,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         setUserLocationMarker(marker);
 
-        // Center map on user location
-        map.setView([lat, lng], 15);
+        // Center map on user location with smooth zoom (same as spot zoom)
+        map.flyTo([lat, lng], 14, {
+          duration: 0.5,
+        });
       },
       [userLocationMarker],
     );
@@ -274,6 +280,23 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           if (!mapInstanceRef.current) return;
           const map = mapInstanceRef.current;
           map.setView([view.center.lat, view.center.lng], view.zoom);
+        },
+        zoomToCoordinates: (lat: number, lng: number, zoom: number = 14) => {
+          if (!mapInstanceRef.current) return;
+          const map = mapInstanceRef.current;
+          map.flyTo([lat, lng], zoom, {
+            duration: 0.5,
+          });
+        },
+        zoomToBounds: (coordinates: Array<{lat: number; lng: number}>) => {
+          if (!mapInstanceRef.current || coordinates.length === 0) return;
+          const map = mapInstanceRef.current;
+          const bounds = L.latLngBounds(coordinates.map(c => [c.lat, c.lng] as [number, number]));
+          map.flyToBounds(bounds, {
+            padding: [50, 50],
+            maxZoom: 16,
+            duration: 0.5,
+          });
         },
       }),
       [],
@@ -455,6 +478,38 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
     // ^ Intentionally empty - we only want auto-fit on initial load, not when content changes
+
+    // Auto-fit map when camping spots or routes change (only if enabled)
+    useEffect(() => {
+      if (!mapInstanceRef.current || !isMapReady || !autoFitBounds) return;
+
+      const currentMap = mapInstanceRef.current;
+
+      // Collect all coordinates from spots and routes
+      const spotCoordinates = campingSpots
+        .filter((spot) => spot?.coordinates?.lat && spot?.coordinates?.lng)
+        .map((spot) => [spot.coordinates.lat, spot.coordinates.lng]);
+      
+      const routeCoordinates = routes
+        .filter((route) => route?.waypoints && route.waypoints.length > 0)
+        .flatMap((route) => route.waypoints.map((wp) => [wp.lat, wp.lng]));
+      
+      const allCoordinates = [...spotCoordinates, ...routeCoordinates];
+
+      if (allCoordinates.length > 0) {
+        // Fit map to show all content with padding
+        const bounds = L.latLngBounds(allCoordinates as [number, number][]);
+        currentMap.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 16, // Don't zoom in too much for single points
+          animate: true,
+          duration: 0.5,
+        });
+      } else {
+        // Default view for empty trips (center on Norway)
+        currentMap.setView([61.5, 9], 6);
+      }
+    }, [campingSpots, routes, isMapReady, autoFitBounds]);
 
     // Create toolbar after map is ready (separate from map initialization)
     useEffect(() => {
