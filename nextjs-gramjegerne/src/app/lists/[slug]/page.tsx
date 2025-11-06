@@ -310,12 +310,18 @@ export default function ListPage() {
   async function handleRemoveFromList(itemToRemove: Item) {
     if (!list) return;
 
+    // Store previous state for rollback
+    const previousItems = selectedItems;
+
     try {
       const updatedItems = selectedItems.filter(
         (listItem) => listItem.item?._id !== itemToRemove._id,
       );
 
-      // Update through API route
+      // Optimistic update: Update UI immediately
+      setSelectedItems(updatedItems);
+
+      // Update through API route in background
       const response = await fetch('/api/updateList', {
         method: 'PUT',
         headers: {
@@ -330,9 +336,9 @@ export default function ListPage() {
       if (!response.ok) {
         throw new Error('Failed to update list');
       }
-
-      setSelectedItems(updatedItems);
     } catch (error) {
+      // Rollback on failure
+      setSelectedItems(previousItems);
       console.error('Failed to remove item:', error);
       alert('Failed to remove item. Please try again.');
     }
@@ -553,6 +559,10 @@ export default function ListPage() {
   // Add these handler functions
   const handleSaveChanges = async () => {
     if (!list) return;
+
+    // Store previous state for rollback
+    const previousItems = selectedItems;
+
     try {
       // Create a Map to store unique items by their item._id
       const uniqueItems = new Map();
@@ -581,6 +591,12 @@ export default function ListPage() {
       // Convert Map back to array
       const cleanedItems = Array.from(uniqueItems.values());
 
+      // Optimistic update: Update UI immediately
+      setSelectedItems(cleanedItems);
+      setTempSelectedItems([]);
+      setIsDialogOpen(false);
+
+      // Update through API in background
       const response = await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -591,11 +607,10 @@ export default function ListPage() {
       });
 
       if (!response.ok) throw new Error('Failed to update list');
-
-      setSelectedItems(cleanedItems);
-      setTempSelectedItems([]);
-      setIsDialogOpen(false);
     } catch (error) {
+      // Rollback on failure
+      setSelectedItems(previousItems);
+      setIsDialogOpen(true); // Reopen dialog so user can try again
       console.error('Failed to save changes:', error);
       alert('Failed to save changes. Please try again.');
     }
@@ -605,12 +620,15 @@ export default function ListPage() {
   const handleCheckboxChange = async (itemKey: string, checked: boolean) => {
     if (!list) return;
 
+    // Store previous state for rollback
+    const previousItems = selectedItems;
+
     // Create a new array with the updated item
     const updatedItems = selectedItems.map((item) =>
       item._key === itemKey ? {...item, checked} : item,
     );
 
-    // Update the state immediately for optimistic UI
+    // Optimistic update: Update UI immediately
     setSelectedItems(updatedItems);
 
     try {
@@ -626,12 +644,10 @@ export default function ListPage() {
       if (!response.ok) {
         throw new Error('Failed to update list');
       }
-
-      // No need to update state again since we did it optimistically
     } catch (error) {
+      // Rollback on failure
+      setSelectedItems(previousItems);
       console.error('Failed to update item:', error);
-      // Revert the optimistic update on error
-      setSelectedItems(selectedItems);
       alert('Failed to update item. Please try again.');
     }
   };
@@ -639,7 +655,17 @@ export default function ListPage() {
   const handleQuantityChange = async (itemKey: string, newQuantity: number) => {
     if (!list || newQuantity < 0.1) return;
 
-    // Set pending quantity immediately for optimistic update
+    // Store previous state for rollback
+    const previousItems = selectedItems;
+    const previousPendingQuantities = {...pendingQuantities};
+
+    // Update selectedItems immediately for weight calculations
+    const updatedItems = selectedItems.map((item) =>
+      item._key === itemKey ? {...item, quantity: newQuantity} : item,
+    );
+
+    // Optimistic update: Update UI immediately
+    setSelectedItems(updatedItems);
     setPendingQuantities((prev) => ({
       ...prev,
       [itemKey]: newQuantity,
@@ -653,10 +679,6 @@ export default function ListPage() {
     });
 
     try {
-      const updatedItems = selectedItems.map((item) =>
-        item._key === itemKey ? {...item, quantity: newQuantity} : item,
-      );
-
       const response = await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -667,16 +689,12 @@ export default function ListPage() {
       });
 
       if (!response.ok) throw new Error('Failed to update list');
-      setSelectedItems(updatedItems);
     } catch (error) {
+      // Rollback on failure
+      setSelectedItems(previousItems);
+      setPendingQuantities(previousPendingQuantities);
       console.error('Failed to update quantity:', error);
       alert('Failed to update quantity. Please try again.');
-      // Revert pending quantity on error
-      setPendingQuantities((prev) => {
-        const newPending = {...prev};
-        delete newPending[itemKey];
-        return newPending;
-      });
     }
   };
 
