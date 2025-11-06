@@ -46,43 +46,27 @@ export function Navbar() {
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto menu-collapse">
             {session && (
               <ul className="text-xl flex flex-col md:flex-row gap-4 md:gap-x-2 w-full md:w-auto pt-8 md:pt-0 min-h-screen md:min-h-0">
-                <li
-                  className={
-                    pathname === '/' ? 'menu-active flex text-center' : 'menu-item flex text-center'
-                  }
-                >
+                <li>
                   <Link
-                    className="text-lg block w-full"
+                    className={`text-lg block w-full ${pathname === '/' ? 'menu-active' : 'menu-item'}`}
                     href="/"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Gear
                   </Link>
                 </li>
-                <li
-                  className={
-                    pathname === '/lists'
-                      ? 'menu-active flex text-center'
-                      : 'menu-item flex text-center'
-                  }
-                >
+                <li>
                   <Link
-                    className="text-lg block w-full"
+                    className={`text-lg block w-full ${pathname === '/lists' ? 'menu-active' : 'menu-item'}`}
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Lists
                   </Link>
                 </li>
-                <li
-                  className={
-                    pathname === '/maps'
-                      ? 'menu-active flex text-center'
-                      : 'menu-item flex text-center'
-                  }
-                >
+                <li>
                   <Link
-                    className="text-lg block w-full"
+                    className={`text-lg block w-full ${pathname === '/maps' ? 'menu-active' : 'menu-item'}`}
                     href="/maps"
                     onClick={() => setIsMenuOpen(false)}
                   >

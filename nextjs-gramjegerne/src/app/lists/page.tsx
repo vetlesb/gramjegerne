@@ -7,6 +7,7 @@ import {useSession} from 'next-auth/react';
 import {groq} from 'next-sanity';
 import {useCallback, useEffect, useState, useMemo, useRef, Suspense} from 'react';
 import {useSearchParams, useRouter} from 'next/navigation';
+import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {AddListDialog} from '../../components/addListDialog';
 import {ListItem} from '../../components/ListItem';
 import {SharedListItem} from '../../components/SharedListItem';
@@ -17,6 +18,8 @@ function ListsPageContent() {
   const router = useRouter();
   const [lists, setLists] = useState<ListDocument[]>([]);
   const [sharedLists, setSharedLists] = useState<SharedListReference[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const showLoader = useDelayedLoader(isLoading, 300);
   const [selectedFilter, setSelectedFilter] = useState<'planned' | 'completed' | 'shared' | null>(
     () => {
       // Initialize from URL or localStorage fallback
@@ -112,8 +115,13 @@ function ListsPageContent() {
   }, [session?.user?.id]);
 
   useEffect(() => {
-    fetchLists();
-    fetchSharedLists();
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchLists(), fetchSharedLists()]);
+      setIsLoading(false);
+    };
+
+    loadData();
 
     // Subscribe to real-time updates
     if (!session?.user?.id) return;
@@ -240,7 +248,11 @@ function ListsPageContent() {
         <div className="flex flex-col gap-y-4">
           <AddListDialog onSuccess={fetchLists} />
 
-          {lists.length === 0 && sharedLists.length === 0 ? (
+          {showLoader ? (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-accent"></div>
+            </div>
+          ) : isLoading ? null : lists.length === 0 && sharedLists.length === 0 ? ( // Still loading but not showing spinner yet - don't show empty state
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
               Create a list to hunt the lightest backpack for next trip.
             </div>
