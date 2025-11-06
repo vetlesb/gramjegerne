@@ -1,6 +1,7 @@
 'use client';
 import {useState, useCallback, useEffect, useRef, Suspense} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
+import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {DeleteTripButton} from '@/components/deleteTripButton';
 import {EditTripDialog} from '@/components/EditTripDialog';
 import {AddTripDialog} from '@/components/AddTripDialog';
@@ -35,6 +36,7 @@ function MapsPageContent() {
   const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
   const [sharedTrips, setSharedTrips] = useState<SharedTripReference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const showLoader = useDelayedLoader(isLoading, 300); // Only show loader after 300ms
   const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<'my' | 'shared'>('my');
   const [duplicatingTripId, setDuplicatingTripId] = useState<string | null>(null);
@@ -829,7 +831,7 @@ function MapsPageContent() {
   const isEditMode = Boolean(selectedTripId && selectedTripData && !isSharedMode);
   const isViewMode = Boolean((selectedTripId || shareId) && selectedTripData); // Edit or shared
 
-  if (isLoading && tripPlans.length === 0 && sharedTrips.length === 0) {
+  if (showLoader && tripPlans.length === 0 && sharedTrips.length === 0) {
     return (
       <ProtectedRoute>
         <main className="w-full h-screen flex items-center justify-center bg-primary">

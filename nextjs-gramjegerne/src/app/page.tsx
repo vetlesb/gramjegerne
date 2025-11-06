@@ -14,6 +14,7 @@ import {useSession} from 'next-auth/react';
 import Image from 'next/image';
 import {useEffect, useMemo, useState, Suspense, useRef} from 'react';
 import {useSearchParams, useRouter} from 'next/navigation';
+import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {EditItemForm} from '../components/EditItemForm';
 import NewItemForm from '../components/NewItemForm';
 import {
@@ -61,6 +62,7 @@ function IndexPageContent() {
     return null;
   });
   const [loading, setLoading] = useState(true);
+  const showLoader = useDelayedLoader(loading, 300);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [itemUsageInfo, setItemUsageInfo] = useState<{
     itemName: string;
@@ -365,16 +367,18 @@ function IndexPageContent() {
     return [...categories].sort((a: Category, b: Category) => a.title.localeCompare(b.title, 'nb'));
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner className="w-8 h-8 text-accent" />
-      </div>
-    );
-  }
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
+        {showLoader ? (
+          <div className="flex items-center justify-center min-h-[80vh]">
+            <LoadingSpinner className="w-8 h-8 text-accent" />
+          </div>
+        ) : loading ? (
+          // Still loading but not showing spinner yet - show empty container to maintain layout
+          <div className="min-h-[80vh]" />
+        ) : (
+          <>
         <div className="flex flex-row space-between overflow-y-auto no-scrollbar pb-8 p-1 gap-x-2">
           <div className="flex flex-row space-between gap-y-4 gap-x-2 w-full">
             {/* New Item Dialog */}
@@ -862,6 +866,8 @@ function IndexPageContent() {
             )}
           </DialogContent>
         </Dialog>
+        </>
+        )}
       </main>
     </ProtectedRoute>
   );

@@ -8,6 +8,7 @@ import {useSession} from 'next-auth/react';
 import Image from 'next/image';
 import {usePathname, useSearchParams, useRouter} from 'next/navigation';
 import {useCallback, useEffect, useMemo, useState, useRef} from 'react';
+import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {
   Dialog,
   DialogClose,
@@ -73,6 +74,7 @@ export default function ListPage() {
   const pathname = usePathname();
   const listSlug = pathname?.split('/')[2];
   const [isLoading, setIsLoading] = useState(false);
+  const showLoader = useDelayedLoader(isLoading, 300); // Only show loader after 300ms
   const [error, setError] = useState<string | null>(null);
 
   // Add state for optimistic updates
@@ -533,7 +535,7 @@ export default function ListPage() {
     );
   }
 
-  if (isLoading) {
+  if (showLoader) {
     return (
       <ProtectedRoute>
         <main className="container mx-auto min-h-screen p-16">
