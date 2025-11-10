@@ -48,7 +48,7 @@ export function Navbar() {
               <ul className="text-xl flex flex-col md:flex-row gap-4 md:gap-x-2 w-full md:w-auto pt-8 md:pt-0 min-h-screen md:min-h-0">
                 <li>
                   <Link
-                    className={`text-lg block w-full ${pathname === '/' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname === '/' ? 'menu-active' : 'menu-item'}`}
                     href="/"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -57,7 +57,7 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
-                    className={`text-lg block w-full ${pathname === '/lists' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname === '/lists' ? 'menu-active' : 'menu-item'}`}
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -66,7 +66,7 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
-                    className={`text-lg block w-full ${pathname === '/maps' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname === '/maps' ? 'menu-active' : 'menu-item'}`}
                     href="/maps"
                     onClick={() => setIsMenuOpen(false)}
                   >
