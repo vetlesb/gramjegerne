@@ -10,7 +10,7 @@ export default function SharePage() {
     // Redirect to the unified list page with shared mode
     if (slug) {
       redirect(`/lists/${slug}?shared=true`);
-    }
+      }
   }, [slug]);
 
   return <div>Redirecting...</div>;

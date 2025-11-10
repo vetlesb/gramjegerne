@@ -31,6 +31,7 @@ import {ViewpointIcon} from './icons/ViewpointIcon';
 import {RouteIcon} from './icons/RouteIcon';
 import {TentIcon} from './icons/TentIcon';
 import {ListIcon} from './icons/ListIcon';
+import {ScaleIcon} from './icons/ScaleIcon';
 // Import other icons as needed
 
 // Define a mapping from icon names to components
@@ -67,6 +68,7 @@ const iconMap = {
   route: RouteIcon,
   tent: TentIcon,
   list: ListIcon,
+  scale: ScaleIcon,
 };
 
 type IconName = keyof typeof iconMap;

@@ -334,6 +334,9 @@ function MapsPageContent() {
   // Compass toggle (shared between both modes)
   const [showCompass, setShowCompass] = useState(false);
 
+  // Distance grid toggle (shared between both modes)
+  const [showGrid, setShowGrid] = useState(false);
+
   // Edit mode - active tab and category filter
   const [activeTab, setActiveTab] = useState<'locations' | 'routes'>('locations');
   const [spotCategoryFilter, setSpotCategoryFilter] = useState<'all' | 'camp' | 'fishing' | 'viewpoint'>('all');
@@ -862,7 +865,7 @@ function MapsPageContent() {
             isAddingSpot={isAddingSpot && !isSharedMode}
             isDrawingRoute={isDrawingRoute && !isSharedMode}
             isReadOnly={!isEditMode || isSharedMode}
-            autoFitBounds={isViewMode && !isDrawingRoute && !isAddingSpot} // Auto-fit in view/edit mode, not when creating
+            autoFitBounds={isViewMode} // Auto-fit only on initial trip load
             showRoutes={isEditMode ? showRoutes : showAllRoutes}
             showCampSpots={isEditMode ? showCamps : showAllSpots}
             showFishingSpots={isEditMode ? showFishing : showAllSpots}
@@ -873,6 +876,8 @@ function MapsPageContent() {
             onToggleViewpointSpots={isEditMode ? () => setShowViewpoints(!showViewpoints) : () => setShowAllSpots(!showAllSpots)}
             showCompass={showCompass}
             onToggleCompass={() => setShowCompass(!showCompass)}
+            showGrid={showGrid}
+            onToggleGrid={() => setShowGrid(!showGrid)}
             isDockVisible={isDockVisible}
             onToggleDock={() => setIsDockVisible(!isDockVisible)}
             onStartAddingSpot={isEditMode ? handleStartAddingSpot : undefined}
