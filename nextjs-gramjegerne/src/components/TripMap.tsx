@@ -49,6 +49,9 @@ interface TripMapProps {
   // Compass control
   showCompass?: boolean;
   onToggleCompass?: () => void;
+  // Distance grid control
+  showGrid?: boolean;
+  onToggleGrid?: () => void;
   // Mobile dock control
   isDockVisible?: boolean;
   onToggleDock?: () => void;
@@ -90,6 +93,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Compass control
       showCompass = false, // Default to hidden
       onToggleCompass,
+      // Distance grid control
+      showGrid = false, // Default to hidden
+      onToggleGrid,
       // Mobile dock control
       isDockVisible,
       onToggleDock,
@@ -111,11 +117,12 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [currentLayer, setCurrentLayer] = useState(defaultTileLayer);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocationMarker, setUserLocationMarker] = useState<L.Marker | null>(null);
+    const gridScaleLabelRef = useRef<L.Control | null>(null);
 
     // Update currentLayer and switch map tiles when defaultTileLayer prop changes
     useEffect(() => {
       setCurrentLayer(defaultTileLayer);
-      
+
       // Switch the actual map layer
       const map = mapInstanceRef.current;
       if (map && isMapReady) {
@@ -125,7 +132,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             map.removeLayer(layer);
           }
         });
-        
+
         // Add new layer
         const baseMaps: Record<string, L.TileLayer> = {
           'Kartverket Raster': L.tileLayer(
@@ -142,12 +149,12 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
               maxZoom: 19,
             },
           ),
-          'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          OpenStreetMap: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
           }),
         };
-        
+
         baseMaps[defaultTileLayer].addTo(map);
       }
     }, [defaultTileLayer, isMapReady]);
@@ -333,7 +340,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         zoomToBounds: (coordinates: Array<{lat: number; lng: number}>) => {
           if (!mapInstanceRef.current || coordinates.length === 0) return;
           const map = mapInstanceRef.current;
-          const bounds = L.latLngBounds(coordinates.map(c => [c.lat, c.lng] as [number, number]));
+          const bounds = L.latLngBounds(coordinates.map((c) => [c.lat, c.lng] as [number, number]));
           map.flyToBounds(bounds, {
             padding: [50, 50],
             maxZoom: 16,
@@ -521,21 +528,32 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
     // ^ Intentionally empty - we only want auto-fit on initial load, not when content changes
 
-    // Auto-fit map when camping spots or routes change (only if enabled)
+    // Auto-fit map ONLY on initial load (when autoFitBounds is true and map first becomes ready)
+    const hasAutoFittedRef = useRef(false);
+    const prevAutoFitBoundsRef = useRef(autoFitBounds);
+
+    // Reset auto-fit flag when switching between trips (autoFitBounds changes)
+    if (prevAutoFitBoundsRef.current !== autoFitBounds) {
+      hasAutoFittedRef.current = false;
+      prevAutoFitBoundsRef.current = autoFitBounds;
+    }
+
     useEffect(() => {
       if (!mapInstanceRef.current || !isMapReady || !autoFitBounds) return;
+      if (hasAutoFittedRef.current) return; // Only run once per trip
 
+      hasAutoFittedRef.current = true;
       const currentMap = mapInstanceRef.current;
 
       // Collect all coordinates from spots and routes
       const spotCoordinates = campingSpots
         .filter((spot) => spot?.coordinates?.lat && spot?.coordinates?.lng)
         .map((spot) => [spot.coordinates.lat, spot.coordinates.lng]);
-      
+
       const routeCoordinates = routes
         .filter((route) => route?.waypoints && route.waypoints.length > 0)
         .flatMap((route) => route.waypoints.map((wp) => [wp.lat, wp.lng]));
-      
+
       const allCoordinates = [...spotCoordinates, ...routeCoordinates];
 
       if (allCoordinates.length > 0) {
@@ -552,6 +570,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         currentMap.setView([61.5, 9], 6);
       }
     }, [campingSpots, routes, isMapReady, autoFitBounds]);
+    // Note: This effect only runs ONCE when the map first loads with content
 
     // Create toolbar after map is ready (separate from map initialization)
     useEffect(() => {
@@ -595,7 +614,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
           `;
 
-          const layerOptions: Array<{key: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap'; label: string}> = [
+          const layerOptions: Array<{
+            key: 'Kartverket Raster' | 'ESRI Satellite' | 'OpenStreetMap';
+            label: string;
+          }> = [
             {key: 'Kartverket Raster', label: 'Kartverket Raster'},
             {key: 'ESRI Satellite', label: 'Satellite'},
             {key: 'OpenStreetMap', label: 'Street Map'},
@@ -816,6 +838,20 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             });
           }
 
+          // Distance grid toggle button
+          if (onToggleGrid) {
+            const gridBtn = L.DomUtil.create('button', '', div);
+            gridBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fillRule="evenodd" clipRule="evenodd" d="M8 6H11V2H13V6H16V2H18V6H22V8H18V11H22V13H18V16H22V18H18V22H16V18H13V22H11V18H8V22H6V18H2V16H6V13H2V11H6V8H2V6H6V2H8V6ZM8 16H11V13H8V16ZM13 16H16V13H13V16ZM8 11H11V8H8V11ZM13 11H16V8H13V11Z" fill="currentColor"/>
+</svg>`;
+            gridBtn.title = 'Toggle distance grid';
+            gridBtn.className = `${showGrid ? 'button-primary-accent' : 'button-ghost'} !w-8 !h-8 !p-0 flex items-center justify-center`;
+            L.DomEvent.on(gridBtn, 'click', function (e) {
+              L.DomEvent.stopPropagation(e);
+              onToggleGrid?.();
+            });
+          }
+
           // Check if we have any routes
           const hasRoutes = routes && routes.length > 0;
 
@@ -897,6 +933,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onToggleViewpointSpots,
       showCompass,
       onToggleCompass,
+      showGrid,
+      onToggleGrid,
       isDockVisible,
       onToggleDock,
       isGettingLocation,
@@ -907,6 +945,218 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       onStartAddingRoute,
       onStartAddingSpot,
     ]);
+
+    // Calculate grid spacing based on zoom level
+    const getGridSpacing = useCallback((zoom: number): {meters: number; label: string} => {
+      // Adjust grid spacing based on zoom level to maintain usable grid
+      if (zoom >= 15) return {meters: 500, label: '500 m'};
+      if (zoom >= 13) return {meters: 1000, label: '1 km'};
+      if (zoom >= 11) return {meters: 2000, label: '2 km'};
+      if (zoom >= 9) return {meters: 5000, label: '5 km'};
+      return {meters: 10000, label: '10 km'};
+    }, []);
+
+    // Canvas overlay for grid (bypasses Leaflet's lazy rendering)
+    const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    // Calculate map scale (e.g., 1:50,000) based on zoom and latitude
+    const calculateMapScale = useCallback((zoom: number, latitude: number): string => {
+      // At zoom level z, the world is 256 * 2^z pixels wide
+      // 360 degrees longitude = 256 * 2^z pixels
+      // At latitude lat, 1 degree longitude = 111320 * cos(lat) meters
+      // So 1 pixel = (360 / (256 * 2^z)) * 111320 * cos(lat) meters
+
+      // At 96 DPI (standard), 1 cm = 37.8 pixels
+      const pixelsPerCm = 37.8;
+      const degreesPerPixel = 360 / (256 * Math.pow(2, zoom));
+      const metersPerDegree = 111320 * Math.cos((latitude * Math.PI) / 180);
+      const metersPerPixel = degreesPerPixel * metersPerDegree;
+      const metersPerCm = metersPerPixel * pixelsPerCm;
+
+      // Scale = 1 : (ground distance in cm / screen distance in cm)
+      // = 1 : (metersPerCm * 100 / 1)
+      const scale = Math.round(metersPerCm * 100);
+
+      // Format with thousand separators
+      return scale.toLocaleString('en-US');
+    }, []);
+
+    // Function to draw/update the grid on canvas
+    const drawGrid = useCallback(() => {
+      const map = mapInstanceRef.current;
+      if (!map || !isMapReady) return;
+
+      // Get or create canvas overlay
+      if (!gridCanvasRef.current) {
+        const mapContainer = map.getContainer();
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '400'; // Above tiles, below overlays
+        mapContainer.appendChild(canvas);
+        gridCanvasRef.current = canvas;
+      }
+
+      const canvas = gridCanvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Set canvas size to match map container
+      const size = map.getSize();
+      canvas.width = size.x;
+      canvas.height = size.y;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Get zoom and scale info for label (needed even when grid is off)
+      const zoom = map.getZoom();
+      const {meters, label} = getGridSpacing(zoom);
+      const centerLat = map.getCenter().lat;
+      const mapScale = calculateMapScale(zoom, centerLat);
+
+      // Create scale label if it doesn't exist (needed for visibility control)
+      if (!gridScaleLabelRef.current) {
+        const GridScaleControl = L.Control.extend({
+          options: {
+            position: 'bottomright',
+          },
+          onAdd: function () {
+            const div = L.DomUtil.create('div', 'grid-scale-label');
+            div.style.cssText = `
+              background: var(--bg-primary);
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 400;
+              color: var(--fg-accent);
+              box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+              z-index: 1000;
+              pointer-events: none;
+              transition: opacity 0.2s ease;
+            `;
+            return div;
+          },
+        });
+
+        const scaleLabel = new GridScaleControl();
+        scaleLabel.addTo(map);
+        gridScaleLabelRef.current = scaleLabel;
+      }
+
+      // If grid is off, just clear canvas and update label visibility, then return
+      if (!showGrid) {
+        // Update scale label visibility (hide it)
+        const labelElement = gridScaleLabelRef.current.getContainer();
+        if (labelElement) {
+          labelElement.style.opacity = '0';
+        }
+        return;
+      }
+
+      // Get map bounds
+      const bounds = map.getBounds();
+
+      // Calculate grid lines based on meters
+      const metersPerDegreeLat = 111320;
+      const metersPerDegreeLng = 111320 * Math.cos((centerLat * Math.PI) / 180);
+
+      const latSpacing = meters / metersPerDegreeLat;
+      const lngSpacing = meters / metersPerDegreeLng;
+
+      // Calculate start positions (align to grid)
+      const startLat = Math.floor(bounds.getSouth() / latSpacing) * latSpacing;
+      const startLng = Math.floor(bounds.getWest() / lngSpacing) * lngSpacing;
+
+      // Set canvas drawing style - subtle gray
+      ctx.strokeStyle = '#1F261C'; // Gray-500
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.2;
+
+      // Draw horizontal lines (latitude)
+      for (let lat = startLat; lat <= bounds.getNorth(); lat += latSpacing) {
+        const westPoint = map.latLngToContainerPoint([lat, bounds.getWest()]);
+        const eastPoint = map.latLngToContainerPoint([lat, bounds.getEast()]);
+
+        ctx.beginPath();
+        ctx.moveTo(westPoint.x, westPoint.y);
+        ctx.lineTo(eastPoint.x, eastPoint.y);
+        ctx.stroke();
+      }
+
+      // Draw vertical lines (longitude)
+      for (let lng = startLng; lng <= bounds.getEast(); lng += lngSpacing) {
+        const southPoint = map.latLngToContainerPoint([bounds.getSouth(), lng]);
+        const northPoint = map.latLngToContainerPoint([bounds.getNorth(), lng]);
+
+        ctx.beginPath();
+        ctx.moveTo(southPoint.x, southPoint.y);
+        ctx.lineTo(northPoint.x, northPoint.y);
+        ctx.stroke();
+      }
+
+      // Update scale label visibility and text (grid is on)
+      // Extract number and unit from label (e.g., "1 km" → "1" and "km", "500 m" → "500" and "m")
+      const labelMatch = label.match(/^(\d+)\s*(km|m)$/);
+      const gridNumber = labelMatch ? labelMatch[1] : label;
+      const gridUnit = labelMatch ? labelMatch[2] : '';
+
+      const labelElement = gridScaleLabelRef.current.getContainer();
+      if (labelElement) {
+        labelElement.style.opacity = '1';
+        labelElement.innerHTML = `Grid: ${gridNumber} × ${gridNumber} ${gridUnit} | Scale: 1:${mapScale}`;
+      }
+    }, [isMapReady, getGridSpacing, showGrid, calculateMapScale]);
+
+    // Draw grid initially and update on zoom/pan
+    const lastZoomRef = useRef<number | null>(null);
+
+    useEffect(() => {
+      if (!mapInstanceRef.current || !isMapReady) return;
+
+      const map = mapInstanceRef.current;
+
+      // Draw initial grid when map is ready
+      map.whenReady(() => {
+        drawGrid();
+        lastZoomRef.current = map.getZoom();
+      });
+
+      // Update grid on zoom/pan
+      const handleMapChange = () => {
+        const currentZoom = map.getZoom();
+        const {meters: currentSpacing} = getGridSpacing(currentZoom);
+        const {meters: lastSpacing} = getGridSpacing(lastZoomRef.current || currentZoom);
+
+        // Only redraw if spacing changed (different zoom level bracket) or on pan
+        if (currentSpacing !== lastSpacing) {
+          drawGrid();
+          lastZoomRef.current = currentZoom;
+        } else {
+          // Just pan/move - redraw to extend grid lines
+          drawGrid();
+        }
+      };
+
+      map.on('moveend', handleMapChange);
+      map.on('zoomend', handleMapChange);
+
+      return () => {
+        map.off('moveend', handleMapChange);
+        map.off('zoomend', handleMapChange);
+      };
+    }, [isMapReady, drawGrid, getGridSpacing]);
+
+    // Update grid when visibility changes
+    useEffect(() => {
+      if (mapInstanceRef.current && isMapReady) {
+        drawGrid();
+      }
+    }, [showGrid, isMapReady, drawGrid]);
 
     // Handle map click events separately to prevent map recreation
     useEffect(() => {
