@@ -8,6 +8,7 @@ import {useSession} from 'next-auth/react';
 import Image from 'next/image';
 import {usePathname, useSearchParams, useRouter} from 'next/navigation';
 import {useCallback, useEffect, useMemo, useState, useRef} from 'react';
+import {toast} from 'sonner';
 import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {
   Dialog,
@@ -404,6 +405,12 @@ export default function ListPage() {
       // Optimistic update: Update UI immediately
       setSelectedItems(updatedItems);
 
+      // Show toast notification
+      toast.success('Item removed from list', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+
       // Update through API route in background
       const response = await fetch('/api/updateList', {
         method: 'PUT',
@@ -423,7 +430,10 @@ export default function ListPage() {
       // Rollback on failure
       setSelectedItems(previousItems);
       console.error('Failed to remove item:', error);
-      alert('Failed to remove item. Please try again.');
+      toast.error('Failed to remove item. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     }
   }
 
@@ -645,6 +655,7 @@ export default function ListPage() {
 
     // Store previous state for rollback
     const previousItems = selectedItems;
+    const itemsToAdd = tempSelectedItems.length;
 
     try {
       // Create a Map to store unique items by their item._id
@@ -679,6 +690,15 @@ export default function ListPage() {
       setTempSelectedItems([]);
       setIsDialogOpen(false);
 
+      // Show toast notification
+      toast.success(
+        itemsToAdd === 1 ? '1 item added to the list' : `${itemsToAdd} items added to the list`,
+        {
+          duration: 3000,
+          position: 'bottom-center',
+        },
+      );
+
       // Update through API in background
       const response = await fetch('/api/updateList', {
         method: 'PUT',
@@ -695,7 +715,10 @@ export default function ListPage() {
       setSelectedItems(previousItems);
       setIsDialogOpen(true); // Reopen dialog so user can try again
       console.error('Failed to save changes:', error);
-      alert('Failed to save changes. Please try again.');
+      toast.error('Failed to add items. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     }
   };
 
@@ -784,11 +807,25 @@ export default function ListPage() {
   // Handle updating item onBody status
   const handleItemOnBodyChange = async (itemKey: string, onBody: boolean) => {
     if (!list) return;
-    try {
-      const updatedItems = selectedItems.map((item) =>
-        item._key === itemKey ? {...item, onBody} : item,
-      );
 
+    // Store previous state for rollback
+    const previousItems = selectedItems;
+
+    // Create updated items
+    const updatedItems = selectedItems.map((item) =>
+      item._key === itemKey ? {...item, onBody} : item,
+    );
+
+    // Optimistic update: Update UI immediately
+    setSelectedItems(updatedItems);
+
+    // Show toast notification
+    toast.success(onBody ? 'Item set as on body' : 'Item removed from on body', {
+      duration: 3000,
+      position: 'bottom-center',
+    });
+
+    try {
       const response = await fetch('/api/updateList', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -799,10 +836,14 @@ export default function ListPage() {
       });
 
       if (!response.ok) throw new Error('Failed to update list');
-      setSelectedItems(updatedItems);
     } catch (error) {
+      // Rollback on failure
+      setSelectedItems(previousItems);
       console.error('Failed to update onBody status:', error);
-      alert('Failed to update onBody status. Please try again.');
+      toast.error('Failed to update on body status. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     }
   };
 
