@@ -23,7 +23,7 @@
     "format": "pnpm prettier --write \"**/*.{ts,tsx,js,jsx,json,jsonc}\""
   },
   "devDependencies": {
-    "prettier": "^3.7.3"
+    "prettier": "^3.7.4"
   },
   "prettier": {
     "printWidth": 100,
