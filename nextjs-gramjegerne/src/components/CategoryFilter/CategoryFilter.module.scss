@@ -1,0 +1,9 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.categoryFilter {
+  @include flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-sm $spacing-md $spacing-sm;
+  overflow-x: auto;
+  @include hide-scrollbar;
+}

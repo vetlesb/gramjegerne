@@ -1,0 +1,56 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.tag {
+  @include flex-center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background-color: var(--bg-primary);
+  border-radius: $border-radius-sm;
+  font-size: $font-size-md;
+  color: var(--fg-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ============================================
+// Sizes
+// ============================================
+
+.tag--md {
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-md;
+}
+
+.tag--sm {
+  padding: $spacing-xs $spacing-xs;
+  font-size: $font-size-sm;
+}
+
+// Responsive tags adapt to screen size
+.tag--responsive {
+  @include mobile {
+    padding: $spacing-xs $spacing-xs;
+    font-size: $font-size-sm;
+  }
+}
+
+// ============================================
+// Variants
+// ============================================
+
+.tag--primary {
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+}
+
+// ============================================
+// Elements
+// ============================================
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  flex-shrink: 0;
+}

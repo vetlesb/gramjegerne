@@ -71,7 +71,7 @@ const iconMap = {
   scale: ScaleIcon,
 };
 
-type IconName = keyof typeof iconMap;
+export type IconName = keyof typeof iconMap;
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   name: IconName;

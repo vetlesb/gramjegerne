@@ -35,6 +35,21 @@ import {
   type ListItem,
 } from './utils';
 
+const DETAIL_GRID = 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1';
+
+function PlaceholderImage({size = 16}: {size?: number}) {
+  return (
+    <div className={`h-${size} w-${size} flex items-center justify-center placeholder_image`}>
+      <svg width="16" height="16" viewBox="0 0 29 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
+          fill="#EAFFE2"
+        />
+      </svg>
+    </div>
+  );
+}
+
 export default function ListPage() {
   const {data: session} = useSession();
   const searchParams = useSearchParams();
@@ -276,71 +291,43 @@ export default function ListPage() {
     checkIfSaved();
   }, [checkIfSaved]);
 
-  // Handle category filter changes
+  const updateUrlAndStorage = (params: {set?: Record<string, string>, remove?: string[]}) => {
+    isUpdatingURL.current = true;
+    const newSearchParams = new URLSearchParams(searchParams);
+    params.remove?.forEach(key => {
+      newSearchParams.delete(key);
+      localStorage.removeItem(key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody');
+    });
+    Object.entries(params.set || {}).forEach(([key, value]) => {
+      newSearchParams.set(key, value);
+      localStorage.setItem(key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody', value);
+    });
+    router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname);
+  };
+
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
-    setShowOnBodyOnly(false); // Disable onBody filter when selecting category
-
-    // Mark that we're updating the URL ourselves
-    isUpdatingURL.current = true;
+    setShowOnBodyOnly(false);
 
     if (categoryId) {
-      // Find the category and convert to slug for URL
       const category = categories.find((cat) => cat._id === categoryId);
       if (category) {
-        const categorySlug = categoryToSlug(category.title);
-
-        // Update URL with category slug parameter
-        const newSearchParams = new URLSearchParams(searchParams);
-        newSearchParams.set('category', categorySlug);
-        newSearchParams.delete('onBody'); // Remove onBody when selecting category
-        router.push(`?${newSearchParams.toString()}`);
-
-        // Save to localStorage as fallback
+        updateUrlAndStorage({set: {category: categoryToSlug(category.title)}, remove: ['onBody']});
         localStorage.setItem('packingListLastCategory', categoryId);
-        localStorage.removeItem('packingListLastOnBody');
       }
     } else {
-      // Remove category from URL
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('category');
-      router.push(
-        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
-      );
-
-      // Remove from localStorage
-      localStorage.removeItem('packingListLastCategory');
+      updateUrlAndStorage({remove: ['category']});
     }
   };
 
-  // Handle onBody filter changes
   const handleOnBodyChange = (onBody: boolean) => {
     setShowOnBodyOnly(onBody);
-    setSelectedCategory(null); // Disable category filter when selecting onBody
-
-    // Mark that we're updating the URL ourselves
-    isUpdatingURL.current = true;
+    setSelectedCategory(null);
 
     if (onBody) {
-      // Update URL with onBody parameter
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set('onBody', 'true');
-      newSearchParams.delete('category'); // Remove category when selecting onBody
-      router.push(`?${newSearchParams.toString()}`);
-
-      // Save to localStorage as fallback
-      localStorage.setItem('packingListLastOnBody', 'true');
-      localStorage.removeItem('packingListLastCategory');
+      updateUrlAndStorage({set: {onBody: 'true'}, remove: ['category']});
     } else {
-      // Remove onBody from URL
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('onBody');
-      router.push(
-        newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
-      );
-
-      // Remove from localStorage
-      localStorage.removeItem('packingListLastOnBody');
+      updateUrlAndStorage({remove: ['onBody']});
     }
   };
 
@@ -936,20 +923,7 @@ export default function ListPage() {
                                   height={96}
                               />
                             ) : (
-                              <div className="h-16 w-16 flex items-center placeholder_image">
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 29 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
-                                    fill="#EAFFE2"
-                                  />
-                                </svg>
-                              </div>
+                              <PlaceholderImage size={16} />
                             )}
                           </div>
                           <div className="flex flex-col gap-y-1">
@@ -1101,7 +1075,7 @@ export default function ListPage() {
                   <div className="product">
                     <div className="flex flex-col gap-y-2 pt-2">
                       <p className="text-md sm:text-xl pb-8">Detailed overview</p>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-4">
+                      <div className={`${DETAIL_GRID} border-b border-white/5 pb-4`}>
                         <p className="text-md sm:text-xl text-accent">Category</p>
                         <p className="text-md sm:text-xl text-accent">Weight</p>
                         <p className="text-md sm:text-xl text-accent">Calories</p>
@@ -1111,7 +1085,7 @@ export default function ListPage() {
                           total.id !== 'on-body' && (
                             <div
                               key={total.id}
-                              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2"
+                              className={`${DETAIL_GRID} border-b border-white/5 pb-2`}
                             >
                               <p className="text-md sm:text-xl">
                                 {total.title}{' '}
@@ -1136,7 +1110,7 @@ export default function ListPage() {
                           (total) => total.id === 'on-body',
                         );
                         return (
-                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 border-b border-white/5 pb-2">
+                          <div className={`${DETAIL_GRID} border-b border-white/5 pb-2`}>
                             <p className="text-md sm:text-xl text-accent">On body</p>
                             <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                               {formatWeight(onBodyCategory?.weightOnBody || 0)}
@@ -1152,7 +1126,7 @@ export default function ListPage() {
 
                       {/* Grand total section */}
                       <div>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1 pb-2">
+                        <div className={`${DETAIL_GRID} pb-2`}>
                           <p className="text-md sm:text-xl text-accent">Backpack</p>
                           <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
                             {formatWeight(grandTotal.weight)}
@@ -1201,9 +1175,7 @@ export default function ListPage() {
         {/* Show filtered items when either category is selected OR showOnBodyOnly is true */}
         {(selectedCategory || showOnBodyOnly) && (
           <ul className="flex flex-col divide-y divide-white/5">
-            {filteredItemsForList.map((listItem) => {
-              console.log('Rendering item:', listItem);
-              return (
+            {filteredItemsForList.map((listItem) => (
                 <li
                   key={listItem._key}
                   onClick={
@@ -1227,20 +1199,7 @@ export default function ListPage() {
                           height={64}
                         />
                       ) : (
-                        <div className="h-16 w-16 flex items-center justify-center placeholder_image">
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 29 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
-                              fill="#EAFFE2"
-                            />
-                          </svg>
-                        </div>
+                        <PlaceholderImage size={16} />
                       )}
                     </div>
 
@@ -1381,8 +1340,7 @@ export default function ListPage() {
                     )}
                   </div>
                 </li>
-              );
-            })}
+            ))}
           </ul>
         )}
       </main>

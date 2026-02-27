@@ -1,0 +1,165 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.overviewStats {
+  @include card;
+  margin-bottom: $spacing-sm;
+
+}
+
+// ============================================
+// Compact Layout (Gear page)
+// ============================================
+
+.compact {
+  @include flex-start;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+  
+  @include desktop {
+    gap: $spacing-lg;
+  }
+}
+
+.stat {
+  @include flex-start;
+  gap: $spacing-sm;
+  font-size: $font-size-md;
+  color: var(--fg-accent);
+  
+  @include desktop {
+    font-size: $font-size-md;
+  }
+}
+
+// ============================================
+// Hero Layout (Packing list overview)
+// ============================================
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+  
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include desktop {
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-xl;
+  }
+}
+
+.heroCard {
+  @include card;
+  display: grid;
+  gap: $spacing-md;
+  
+  @include desktop-lg {
+    gap: $spacing-lg $spacing-2xl;
+  }
+}
+
+.heroLabel {
+  @include flex-start;
+  gap: $spacing-sm;
+  font-size: $font-size-md;
+  
+  @include desktop {
+    font-size: $font-size-xl;
+  }
+}
+
+.heroIcon {
+  border: 1px solid var(--fg-accent);
+  border-radius: $border-radius-full;
+  padding: $spacing-xs;
+}
+
+.heroValue {
+  font-size: $font-size-2xl;
+  font-weight: 700;
+  color: var(--fg-accent);
+  font-variant-numeric: tabular-nums;
+  
+  @include tablet {
+    font-size: $font-size-4xl;
+  }
+  
+  @include desktop {
+    font-size: $font-size-6xl;
+  }
+  
+  @include desktop-lg {
+    font-size: $font-size-8xl;
+  }
+}
+
+// ============================================
+// Detailed Layout (Category breakdown)
+// ============================================
+
+.detailed {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.detailedContent {
+  display: grid;
+  gap: $spacing-md;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-xs;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: $font-size-md;
+  color: var(--fg-accent);
+  
+  @include tablet {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  @include desktop {
+    font-size: $font-size-xl;
+  }
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-xs;
+  padding-bottom: $spacing-sm;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: $font-size-md;
+  color: var(--fg-primary);
+  font-variant-numeric: tabular-nums;
+  
+  @include tablet {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  @include desktop {
+    font-size: $font-size-xl;
+  }
+  
+  &--total {
+    border-bottom: none;
+    color: var(--fg-accent);
+    font-weight: 500;
+    padding-top: $spacing-sm;
+  }
+}
+
+.categoryName {
+  color: var(--fg-accent);
+}

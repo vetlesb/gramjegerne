@@ -1,0 +1,76 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.iconButton {
+  @include flex-center;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+  flex-shrink: 0;
+  font-family: inherit;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @include focus-ring;
+}
+
+// ============================================
+// Sizes
+// ============================================
+
+.iconButton--md {
+  padding: $spacing-sm;
+  width: 32px;
+  height: 32px;
+}
+
+.iconButton--lg {
+  padding: $spacing-md;
+  width: 56px;
+  height: 56px;
+}
+
+// ============================================
+// Variants
+// ============================================
+
+.iconButton--primary {
+  background-color: var(--bg-accent);
+  color: var(--fg-secondary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-accent-hover);
+  }
+}
+
+.iconButton--secondary {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-dimmed-hover);
+  }
+}
+
+.iconButton--ghost {
+  background-color: transparent;
+  color: var(--fg-primary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-dimmed-hover);
+  }
+}
+
+.iconButton--trans {
+  background-color: var(--bg-25);
+  color: var(--fg-primary);
+  -webkit-backdrop-filter: blur(12.5px);
+  backdrop-filter: blur(12.5px);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-50);
+  }
+}

@@ -1,0 +1,91 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.button {
+  @include flex-center;
+  gap: $spacing-xs;
+  border: none;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-md;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+  flex-shrink: 0;
+  font-family: inherit;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @include focus-ring;
+}
+
+// ============================================
+// Sizes
+// ============================================
+
+.button--md {
+  padding: $spacing-sm;
+}
+
+.button--lg {
+  padding: $spacing-md;
+}
+
+.button--icon-only {
+  padding: $spacing-sm;
+}
+
+.button--with-icon {
+  gap: $spacing-xs;
+}
+
+// ============================================
+// Variants
+// ============================================
+
+.button--primary {
+  background-color: var(--bg-accent);
+  color: var(--fg-secondary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-accent-hover);
+  }
+}
+
+.button--secondary {
+  background-color: var(--bg-dimmed);
+  color: var(--fg-primary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-dimmed-hover);
+  }
+}
+
+.button--ghost {
+  background-color: transparent;
+  color: var(--fg-primary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-dimmed-hover);
+  }
+}
+
+.button--trans {
+  background-color: var(--bg-25);
+  color: var(--fg-primary);
+  -webkit-backdrop-filter: blur(12.5px);
+  backdrop-filter: blur(12.5px);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-50);
+  }
+}
+
+// ============================================
+// Icon
+// ============================================
+
+.icon {
+  flex-shrink: 0;
+}

@@ -1,0 +1,64 @@
+// ============================================
+// Theme Variables (CSS Custom Properties)
+// For runtime theming - only import in globals.scss
+// DO NOT import in CSS modules (causes "not pure" error)
+// ============================================
+
+:root[data-theme='green'] {
+  // Background colors
+  --bg-primary: #1f261c;
+  --bg-primary-hover: #1c2219;
+  --bg-secondary: #ffffff;
+  --bg-dimmed: #272e23;
+  --bg-dimmed-hover: #222a1f;
+  --bg-accent: #b4ed9f;
+  --bg-accent-hover: #95db7b;
+  --bg-checked: #343e2f;
+  --bg-25: rgba(23, 38, 28, 0.25);
+  --bg-50: rgba(23, 38, 28, 0.5);
+  
+  // Foreground colors
+  --fg-primary: #eaffe2;
+  --fg-secondary: #1f261c;
+  --fg-dimmed: #272e23;
+  --fg-accent: #b4ed9f;
+  
+  // Border radius
+  --radius: 8px;
+}
+
+:root[data-theme='light-green'] {
+  --bg-primary: #e6f1e4;
+  --bg-primary-hover: #f0f8ef;
+  --bg-secondary: #ffffff;
+  --bg-dimmed: #d8e7d5;
+  --bg-dimmed-hover: #d3e4d0;
+  --bg-accent: #d9e7d5;
+  --bg-accent-hover: #3d6b4a;
+  --bg-checked: #d3e4d0;
+  --fg-primary: #1a2e1f;
+  --fg-secondary: #1a2e1f;
+  --fg-dimmed: #3a473f;
+  --fg-accent: #3d6b4a;
+  --bg-25: rgba(230, 241, 228, 0.25);
+  --bg-50: rgba(230, 241, 228, 0.5);
+  --radius: 8px;
+}
+
+:root[data-theme='yellow'] {
+  --bg-primary: #262419;
+  --bg-primary-hover: #221f16;
+  --bg-secondary: #fffae2;
+  --bg-dimmed: #363223;
+  --bg-dimmed-hover: #302b1f;
+  --bg-accent: #ffe883;
+  --bg-accent-hover: #dbcc7b;
+  --bg-checked: #4c4730;
+  --fg-primary: #fffae2;
+  --fg-secondary: #262419;
+  --fg-dimmed: #363223;
+  --fg-accent: #ffe883;
+  --bg-25: rgba(38, 36, 25, 0.25);
+  --bg-50: rgba(38, 36, 25, 0.5);
+  --radius: 8px;
+}

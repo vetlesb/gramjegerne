@@ -18,12 +18,12 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   const showLoader = useDelayedLoader(isLoading, 300);
 
   const pathname = usePathname();
-  
+
   // Helper function to check if current URL is a public share
   const checkIsPublicShare = () => {
     if (typeof window === 'undefined') return false;
     const searchParams = new URLSearchParams(window.location.search);
-    return pathname.startsWith('/share') || 
+    return pathname.startsWith('/share') ||
       (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true') ||
       (pathname === '/maps' && searchParams.get('share'));
   };
@@ -31,10 +31,15 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   useEffect(() => {
     // Don't do anything while loading or if already redirected
     if (status !== 'unauthenticated' || hasRedirected) return;
-    
+
     // Check if this is a public share - don't redirect if it is
-    const isPublicShare = checkIsPublicShare();
-    
+    if (typeof window === 'undefined') return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const isPublicShare =
+      pathname.startsWith('/share') ||
+      (pathname.startsWith('/lists/') && searchParams.get('shared') === 'true') ||
+      (pathname === '/maps' && searchParams.get('share'));
+
     // Only redirect if NOT a public share
     if (!isPublicShare) {
       setHasRedirected(true);

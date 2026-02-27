@@ -10,7 +10,7 @@ import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
 import {Toaster} from 'sonner';
 import Link from 'next/link';
-import './globals.css';
+import '@/styles/globals.scss';
 import {Providers} from './providers';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 

@@ -1,0 +1,63 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.filterButton {
+  @include flex-center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  height: 40px;
+  white-space: nowrap;
+  color: var(--fg-primary);
+  background-color: transparent;
+  border: 1px solid var(--fg-dimmed);
+  border-radius: $border-radius-full;
+  font-size: $font-size-md;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast, border-color $transition-fast;
+  flex-shrink: 0;
+  font-family: inherit;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-dimmed);
+    color: var(--fg-primary);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @include focus-ring;
+}
+
+// ============================================
+// Active State
+// ============================================
+
+.filterButton--active {
+  background-color: var(--bg-accent);
+  color: var(--fg-secondary);
+  border-color: var(--fg-accent);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-accent);
+    color: var(--fg-secondary);
+  }
+}
+
+// ============================================
+// Elements
+// ============================================
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  flex-shrink: 0;
+}
+
+.count {
+  font-size: $font-size-sm;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}

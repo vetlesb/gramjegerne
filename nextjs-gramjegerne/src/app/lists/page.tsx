@@ -9,8 +9,25 @@ import {useCallback, useEffect, useState, useMemo, useRef, Suspense} from 'react
 import {useSearchParams, useRouter} from 'next/navigation';
 import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {AddListDialog} from '../../components/addListDialog';
-import {ListItem} from '../../components/ListItem';
-import {SharedListItem} from '../../components/SharedListItem';
+import {ListCard} from '@/components/ListCard';
+import {CategoryFilter} from '@/components/CategoryFilter';
+import {ActionBar} from '@/components/ActionBar';
+import {DeleteListButton} from '../../components/deleteListButton';
+import {urlFor} from '@/sanity/images';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+type FilterType = 'planned' | 'completed' | 'shared' | null;
+const VALID_FILTERS = ['planned', 'completed', 'shared'] as const;
+
+function isValidFilter(value: string | null): value is 'planned' | 'completed' | 'shared' {
+  return value !== null && VALID_FILTERS.includes(value as (typeof VALID_FILTERS)[number]);
+}
 
 function ListsPageContent() {
   const {data: session} = useSession();
@@ -20,27 +37,22 @@ function ListsPageContent() {
   const [sharedLists, setSharedLists] = useState<SharedListReference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const showLoader = useDelayedLoader(isLoading, 300);
-  const [selectedFilter, setSelectedFilter] = useState<'planned' | 'completed' | 'shared' | null>(
-    () => {
-      // Initialize from URL or localStorage fallback
-      const urlFilter = searchParams.get('filter');
-      if (urlFilter) {
-        // Validate the filter value
-        if (['planned', 'completed', 'shared'].includes(urlFilter)) {
-          return urlFilter as 'planned' | 'completed' | 'shared';
-        }
-      }
-
-      // Fallback to localStorage if no URL param
-      if (typeof window !== 'undefined') {
-        return (
-          (localStorage.getItem('listsLastFilter') as 'planned' | 'completed' | 'shared' | null) ||
-          null
-        );
-      }
-      return null;
-    },
-  );
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('listsViewMode');
+      if (stored === 'list' || stored === 'grid') return stored;
+    }
+    return 'list'; // Default to list view
+  });
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>(() => {
+    const urlFilter = searchParams.get('filter');
+    if (isValidFilter(urlFilter)) return urlFilter;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('listsLastFilter');
+      if (isValidFilter(stored)) return stored;
+    }
+    return null;
+  });
   const isUpdatingURL = useRef(false);
 
   const fetchLists = useCallback(async () => {
@@ -74,15 +86,6 @@ function ListsPageContent() {
     }`;
 
     const data = await client.fetch(query, {userId: session.user.id});
-    console.log(
-      'Fetched lists with sorting:',
-      data.map((list: ListDocument) => ({
-        name: list.name,
-        completed: list.completed,
-        updatedAt: list._updatedAt,
-        createdAt: list._createdAt,
-      })),
-    );
     setLists(data);
   }, [session?.user?.id]);
 
@@ -139,54 +142,48 @@ function ListsPageContent() {
 
   // Sync URL state with component state (only when URL changes externally)
   useEffect(() => {
-    // Skip if we're making our own URL update
     if (isUpdatingURL.current) {
       isUpdatingURL.current = false;
       return;
     }
 
     const urlFilter = searchParams.get('filter');
-
-    if (urlFilter) {
-      // Validate the filter value
-      if (['planned', 'completed', 'shared'].includes(urlFilter)) {
-        const newFilter = urlFilter as 'planned' | 'completed' | 'shared';
-        if (newFilter !== selectedFilter) {
-          setSelectedFilter(newFilter);
-          // Update localStorage fallback
-          localStorage.setItem('listsLastFilter', newFilter);
-        }
+    if (isValidFilter(urlFilter)) {
+      if (urlFilter !== selectedFilter) {
+        setSelectedFilter(urlFilter);
+        localStorage.setItem('listsLastFilter', urlFilter);
       }
     } else if (selectedFilter !== null) {
-      // URL has no filter, clear selection
       setSelectedFilter(null);
       localStorage.removeItem('listsLastFilter');
     }
   }, [searchParams, selectedFilter]);
 
-  const handleFilterChange = (filter: 'planned' | 'completed' | 'shared' | null) => {
+  const handleFilterChange = (filter: FilterType) => {
     setSelectedFilter(filter);
-
-    // Mark that we're updating the URL ourselves
     isUpdatingURL.current = true;
 
+    const newSearchParams = new URLSearchParams(searchParams);
     if (filter) {
-      // Update URL with filter parameter
-      const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set('filter', filter);
-      router.push(`?${newSearchParams.toString()}`);
-
-      // Save to localStorage as fallback
       localStorage.setItem('listsLastFilter', filter);
     } else {
-      // Remove filter from URL
-      const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.delete('filter');
-      router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : '/lists');
-
-      // Remove from localStorage
       localStorage.removeItem('listsLastFilter');
     }
+    router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : '/lists');
+  };
+
+  const [showEditDialog, setShowEditDialog] = useState<ListDocument | null>(null);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState<ListDocument | null>(null);
+  const [duplicateName, setDuplicateName] = useState('');
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const handleViewModeChange = (mode: 'list' | 'grid') => {
+    setViewMode(mode);
+    localStorage.setItem('listsViewMode', mode);
   };
 
   const handleRemoveSharedList = async (listId: string) => {
@@ -210,103 +207,250 @@ function ListsPageContent() {
     }
   };
 
-  // Filter lists based on selection
   const filteredLists = useMemo(() => {
-    let result = lists;
+    let filtered: ListDocument[];
+    if (selectedFilter === 'planned') {
+      filtered = lists.filter((list) => !list.completed);
+    } else if (selectedFilter === 'completed') {
+      filtered = lists.filter((list) => list.completed);
+    } else {
+      filtered = [...lists];
+    }
 
-    // Apply client-side sorting as backup to ensure proper order
-    result = [...result].sort((a, b) => {
-      // First priority: planned (completed = false) before completed (completed = true)
+    // Always sort: planned first, then by update time (most recent first)
+    return filtered.sort((a, b) => {
+      // First, sort by completion status (planned before completed)
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
       }
+      // Then sort by update time (most recent first)
+      const aTime = new Date(a._updatedAt || a._createdAt).getTime();
+      const bTime = new Date(b._updatedAt || b._createdAt).getTime();
+      return bTime - aTime;
+    });
+  }, [lists, selectedFilter]);
 
-      // Second priority: most recently updated first
-      const aDate = a._updatedAt || a._createdAt;
-      const bDate = b._updatedAt || b._createdAt;
+  const handleDuplicate = async (list: ListDocument) => {
+    const name = `${list.name} (kopi)`;
+    setDuplicateName(name);
+    setShowDuplicateDialog(list);
+  };
 
-      if (aDate && bDate) {
-        return new Date(bDate).getTime() - new Date(aDate).getTime();
+  const confirmDuplicate = async () => {
+    if (!showDuplicateDialog || !duplicateName.trim()) return;
+
+    try {
+      setIsDuplicating(true);
+      const response = await fetch('/api/duplicateList', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          listId: showDuplicateDialog._id,
+          name: duplicateName.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to duplicate list');
       }
 
-      return 0;
-    });
+      setShowDuplicateDialog(null);
+      setDuplicateName('');
+      await fetchLists();
+    } catch (error) {
+      console.error('Error duplicating list:', error);
+      alert('Failed to duplicate list. Please try again.');
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
 
-    // Apply filters
-    if (selectedFilter === 'planned') {
-      return result.filter((list) => !list.completed);
-    }
-    if (selectedFilter === 'completed') {
-      return result.filter((list) => list.completed);
-    }
-    return result;
-  }, [lists, selectedFilter]);
+  // Create filter data (CategoryFilter will add "All" button automatically)
+  const filterCategories = useMemo(
+    () => [
+      {_id: 'planned', title: 'Planned'},
+      {_id: 'completed', title: 'Completed'},
+      {_id: 'shared', title: 'Shared'},
+    ],
+    [],
+  );
+
+  const selectedCategoryId = selectedFilter;
+
+  const handleCategoryChange = (categoryId: string | null) => {
+    const filter = categoryId as FilterType;
+    handleFilterChange(filter);
+  };
 
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
         <div className="flex flex-col gap-y-4">
-          <AddListDialog onSuccess={fetchLists} />
+          <ActionBar
+            mode="lists-overview"
+            onAddList={() => setIsAddDialogOpen(true)}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+          />
 
           {showLoader ? (
             <div className="flex items-center justify-center min-h-[50vh]">
               <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-accent"></div>
             </div>
-          ) : isLoading ? null : lists.length === 0 && sharedLists.length === 0 ? ( // Still loading but not showing spinner yet - don't show empty state
+          ) : isLoading ? null : lists.length === 0 && sharedLists.length === 0 ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
               Create a list to hunt the lightest backpack for next trip.
             </div>
           ) : (
             <>
-              <div className="flex gap-x-2 no-scrollbar my-1 p-2">
-                <button
-                  onClick={() => handleFilterChange(null)}
-                  className={`menu-category text-md ${selectedFilter === null ? 'menu-active' : ''}`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => handleFilterChange('planned')}
-                  className={`menu-category text-md ${selectedFilter === 'planned' ? 'menu-active' : ''}`}
-                >
-                  Planned
-                </button>
-                <button
-                  onClick={() => handleFilterChange('completed')}
-                  className={`menu-category text-md ${selectedFilter === 'completed' ? 'menu-active' : ''}`}
-                >
-                  Completed
-                </button>
-                <button
-                  onClick={() => handleFilterChange('shared')}
-                  className={`menu-category text-md ${selectedFilter === 'shared' ? 'menu-active' : ''}`}
-                >
-                  Shared
-                </button>
-              </div>
+              <CategoryFilter
+                categories={filterCategories}
+                selectedCategory={selectedCategoryId}
+                onCategorySelect={handleCategoryChange}
+              />
 
-              {selectedFilter === 'shared' ? (
-                // Show shared lists
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
-                  {sharedLists.map((sharedList, index) => (
-                    <SharedListItem
-                      key={sharedList._key || `shared_${sharedList.list._id}_${index}`}
-                      sharedList={sharedList}
-                      onRemove={handleRemoveSharedList}
-                    />
-                  ))}
-                </ul>
-              ) : (
-                // Show regular lists
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8">
-                  {filteredLists.map((list) => (
-                    <ListItem key={list._id} list={list} onDelete={fetchLists} />
-                  ))}
-                </ul>
-              )}
+              <ul
+                className={
+                  viewMode === 'list'
+                    ? 'flex flex-col gap-y-2'
+                    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8'
+                }
+              >
+                {selectedFilter === 'shared'
+                  ? sharedLists.map((sharedList, index) => (
+                      <ListCard
+                        key={sharedList._key || `shared_${sharedList.list._id}_${index}`}
+                        mode="shared"
+                        viewMode={viewMode}
+                        listId={sharedList.list._id}
+                        name={sharedList.list.name}
+                        slug={sharedList.list.slug.current}
+                        image={sharedList.list.image?.asset}
+                        ownerName={sharedList.list.user.name}
+                        onRemove={() => handleRemoveSharedList(sharedList.list._id)}
+                        imageUrlBuilder={(asset) => urlFor(asset)}
+                      />
+                    ))
+                  : filteredLists.map((list) => (
+                      <ListCard
+                        key={list._id}
+                        mode="owned"
+                        viewMode={viewMode}
+                        listId={list._id}
+                        name={list.name}
+                        slug={list.slug.current}
+                        image={list.image?.asset}
+                        completed={list.completed}
+                        participants={list.participants}
+                        days={list.days}
+                        items={list.items}
+                        onEdit={() => setShowEditDialog(list)}
+                        onDuplicate={() => handleDuplicate(list)}
+                        onDelete={() => setShowDeleteDialog(list._id)}
+                        imageUrlBuilder={(asset) => urlFor(asset)}
+                      />
+                    ))}
+              </ul>
             </>
           )}
         </div>
+
+        {/* Add List Dialog - controlled by ActionBar button */}
+        <AddListDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={fetchLists} />
+
+        {/* Edit List Dialog */}
+        {showEditDialog && (
+          <AddListDialog
+            open={!!showEditDialog}
+            onOpenChange={(open) => !open && setShowEditDialog(null)}
+            onSuccess={async () => {
+              await fetchLists();
+              setShowEditDialog(null);
+            }}
+            editList={showEditDialog}
+          />
+        )}
+
+        {/* Duplicate Dialog */}
+        <Dialog
+          open={!!showDuplicateDialog}
+          onOpenChange={(open) => {
+            if (!open) {
+              setShowDuplicateDialog(null);
+              setDuplicateName('');
+            }
+          }}
+        >
+          <DialogContent className="dialog p-4 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-accent font-normal">Duplicate list</DialogTitle>
+            </DialogHeader>
+
+            <div className="py-4 flex flex-col gap-y-4">
+              <label className="flex flex-col gap-y-2 text-lg">
+                Title
+                <input
+                  className="w-full max-w-full p-4"
+                  type="text"
+                  value={duplicateName}
+                  onChange={(e) => setDuplicateName(e.target.value)}
+                  placeholder={`${showDuplicateDialog?.name || ''} (kopi)`}
+                  required
+                  autoFocus
+                />
+              </label>
+            </div>
+
+            <DialogFooter>
+              <button
+                onClick={confirmDuplicate}
+                className="button-primary-accent"
+                disabled={isDuplicating || !duplicateName.trim()}
+              >
+                {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDuplicateDialog(null);
+                  setDuplicateName('');
+                }}
+                className="button-secondary"
+              >
+                Cancel
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Dialog */}
+        {showDeleteDialog && (
+          <Dialog open={!!showDeleteDialog} onOpenChange={() => setShowDeleteDialog(null)}>
+            <DialogContent className="dialog gap-y-8">
+              <DialogHeader>
+                <DialogTitle>Are you sure you want to delete this list?</DialogTitle>
+              </DialogHeader>
+              <DialogFooter>
+                <DeleteListButton
+                  listId={showDeleteDialog}
+                  listName={lists.find((l) => l._id === showDeleteDialog)?.name || ''}
+                  redirectTo="/lists"
+                  onSuccess={async () => {
+                    await fetchLists();
+                    setShowDeleteDialog(null);
+                  }}
+                />
+                <button
+                  onClick={() => setShowDeleteDialog(null)}
+                  className="button-secondary"
+                >
+                  Cancel
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </main>
     </ProtectedRoute>
   );

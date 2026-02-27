@@ -189,7 +189,7 @@ export function AddListDialog({
 
   return (
     <>
-      {!editList && (
+      {!editList && !controlledOpen && typeof controlledOpen === 'undefined' && (
         <div>
           <button
             onClick={() => handleOpenChange(true)}
