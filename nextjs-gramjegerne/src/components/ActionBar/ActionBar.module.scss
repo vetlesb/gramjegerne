@@ -8,7 +8,7 @@
   overflow-y: visible;
   @include hide-scrollbar;
   position: relative; /* Establish stacking context */
-  z-index: 50; /* Above content but below modals */
+  z-index: 10; /* Above content but below navigation */
 }
 
 // Desktop: Show all buttons in a row
@@ -36,7 +36,7 @@
 // More menu dropdown
 .moreMenu {
   position: relative;
-  z-index: 9999;
+  z-index: 20;
 }
 
 .moreMenuDropdown {
@@ -47,7 +47,7 @@
   border: 1px solid var(--fg-primary);
   border-radius: $border-radius-md;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
+  z-index: 20;
   min-width: 180px;
   overflow: hidden;
 }
