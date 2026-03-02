@@ -38,8 +38,8 @@
 .hero {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: $spacing-md;
-  margin-bottom: $spacing-md;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
   
   @include tablet {
     grid-template-columns: repeat(2, 1fr);
@@ -47,6 +47,7 @@
   
   @include desktop {
     grid-template-columns: repeat(2, 1fr);
+    margin-bottom: $spacing-md;
     gap: $spacing-md;
   }
 }
@@ -166,5 +167,5 @@
   color: var(--fg-accent);
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: $spacing-sm;
 }

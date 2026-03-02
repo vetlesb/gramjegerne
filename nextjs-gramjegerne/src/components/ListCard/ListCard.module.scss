@@ -113,13 +113,26 @@
 }
 
 .title {
-  font-size: $font-size-xl;
   color: var(--fg-accent);
   font-weight: 400;
   transition: opacity $transition-fast;
   
-  @include desktop {
-    font-size: $font-size-xl;
+  // Different sizes for grid vs list
+  .gridLayout & {
+    font-size: $font-size-2xl;
+    padding: 0 $spacing-sm;
+    
+    @include desktop {
+      font-size: $font-size-2xl;
+    }
+  }
+  
+  .listLayout & {
+    font-size: $font-size-lg;
+    
+    @include desktop {
+      font-size: $font-size-xl;
+    }
   }
 }
 

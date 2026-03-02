@@ -8,19 +8,23 @@ import styles from './ActionBar.module.scss';
 interface ActionBarProps {
   mode: 'gear' | 'list' | 'lists-overview' | 'shared-list';
 
+  // Shared props (gear & list modes)
+  viewMode?: 'list' | 'grid';
+  onViewModeChange?: (mode: 'list' | 'grid') => void;
+  sortBy?: 'name' | 'weight-low' | 'weight-high' | 'calories';
+  onSortChange?: (sortBy: 'name' | 'weight-low' | 'weight-high' | 'calories') => void;
+
   // Gear mode props
   onAddGear?: () => void;
   onManageCategories?: () => void;
   onExcel?: () => void;
-  viewMode?: 'list' | 'grid';
-  onViewModeChange?: (mode: 'list' | 'grid') => void;
 
   // List mode props (packing list detail)
   onAddToList?: () => void;
   onShare?: () => void;
   onViewMap?: () => void;
   connectedTripName?: string;
-  
+
   // Lists overview mode props
   onAddList?: () => void;
 
@@ -41,13 +45,17 @@ export function ActionBar({
   onShare,
   onViewMap,
   connectedTripName,
+  sortBy = 'name',
+  onSortChange,
   onAddList,
   onSaveToMyLists,
   isSaved,
   isSaving,
 }: ActionBarProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -55,16 +63,19 @@ export function ActionBar({
       if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
         setIsMoreMenuOpen(false);
       }
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
+        setIsSortMenuOpen(false);
+      }
     };
 
-    if (isMoreMenuOpen) {
+    if (isMoreMenuOpen || isSortMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMoreMenuOpen]);
+  }, [isMoreMenuOpen, isSortMenuOpen]);
 
   return (
     <div className={styles.actionBar}>
@@ -83,6 +94,53 @@ export function ActionBar({
                 {viewMode === 'list' ? 'Grid' : 'List'}
               </Button>
             )}
+            {onSortChange && (
+              <div className={styles.sortMenu} ref={sortMenuRef}>
+                <Button iconName="chevrondown" onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}>
+                  Sort
+                </Button>
+                {isSortMenuOpen && (
+                  <div className={styles.sortMenuDropdown}>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('name');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>A-Z{sortBy === 'name' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('weight-low');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Weight (low){sortBy === 'weight-low' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('weight-high');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Weight (high){sortBy === 'weight-high' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('calories');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Calories{sortBy === 'calories' && ' ✓'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -90,7 +148,7 @@ export function ActionBar({
           <>
             <Button onClick={onAddToList}>Add gear</Button>
             {onViewMap && (
-              <Button 
+              <Button
                 onClick={onViewMap}
                 title={connectedTripName ? `View ${connectedTripName} map` : 'View map'}
               >
@@ -98,6 +156,53 @@ export function ActionBar({
               </Button>
             )}
             <Button onClick={onShare}>Share</Button>
+            {onSortChange && (
+              <div className={styles.sortMenu} ref={sortMenuRef}>
+                <Button iconName="chevrondown" onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}>
+                  Sort
+                </Button>
+                {isSortMenuOpen && (
+                  <div className={styles.sortMenuDropdown}>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('name');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>A-Z{sortBy === 'name' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('weight-low');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Weight (low){sortBy === 'weight-low' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('weight-high');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Weight (high){sortBy === 'weight-high' && ' ✓'}</span>
+                    </button>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onSortChange('calories');
+                        setIsSortMenuOpen(false);
+                      }}
+                    >
+                      <span>Calories{sortBy === 'calories' && ' ✓'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -183,6 +288,50 @@ export function ActionBar({
                       <span>{viewMode === 'list' ? 'Grid view' : 'List view'}</span>
                     </button>
                   )}
+                  {onSortChange && (
+                    <>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('name');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="menu" width={20} height={20} />
+                        <span>Sort: A-Z{sortBy === 'name' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('weight-low');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="weight" width={20} height={20} />
+                        <span>Sort: Weight (low){sortBy === 'weight-low' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('weight-high');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="weight" width={20} height={20} />
+                        <span>Sort: Weight (high){sortBy === 'weight-high' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('calories');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="calories" width={20} height={20} />
+                        <span>Sort: Calories{sortBy === 'calories' && ' ✓'}</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -224,6 +373,50 @@ export function ActionBar({
                     <Icon name="link" width={20} height={20} />
                     <span>Share</span>
                   </button>
+                  {onSortChange && (
+                    <>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('name');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="menu" width={20} height={20} />
+                        <span>Sort: A-Z{sortBy === 'name' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('weight-low');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="weight" width={20} height={20} />
+                        <span>Sort: Weight (low){sortBy === 'weight-low' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('weight-high');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="weight" width={20} height={20} />
+                        <span>Sort: Weight (high){sortBy === 'weight-high' && ' ✓'}</span>
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          onSortChange('calories');
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        <Icon name="calories" width={20} height={20} />
+                        <span>Sort: Calories{sortBy === 'calories' && ' ✓'}</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

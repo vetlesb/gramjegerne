@@ -119,9 +119,42 @@ export function formatWeight(weightInGrams: number): string {
   return `${weightInKg.toFixed(3)} kg`;
 }
 
-/** Add this sorting function at component level */
-export function sortListItems(items: ListItem[]): ListItem[] {
+export function sortListItems(items: ListItem[], sortBy: 'name' | 'weight-low' | 'weight-high' | 'calories' = 'name'): ListItem[] {
   return [...items].sort((a, b) => {
+    if (sortBy === 'weight-low') {
+      // Sort by total weight (weight * quantity), lowest first
+      const weightA = (a.item?.weight?.weight || 0) * (a.quantity || 1);
+      const weightB = (b.item?.weight?.weight || 0) * (b.quantity || 1);
+      if (weightA !== weightB) return weightA - weightB;
+      // Secondary sort: A-Z if weights are equal
+      const nameA = a.item?.name || '';
+      const nameB = b.item?.name || '';
+      return nameA.localeCompare(nameB, 'nb');
+    }
+    
+    if (sortBy === 'weight-high') {
+      // Sort by total weight (weight * quantity), highest first
+      const weightA = (a.item?.weight?.weight || 0) * (a.quantity || 1);
+      const weightB = (b.item?.weight?.weight || 0) * (b.quantity || 1);
+      if (weightA !== weightB) return weightB - weightA;
+      // Secondary sort: A-Z if weights are equal
+      const nameA = a.item?.name || '';
+      const nameB = b.item?.name || '';
+      return nameA.localeCompare(nameB, 'nb');
+    }
+    
+    if (sortBy === 'calories') {
+      // Sort by total calories (calories * quantity), highest first
+      const caloriesA = (a.item?.calories || 0) * (a.quantity || 1);
+      const caloriesB = (b.item?.calories || 0) * (b.quantity || 1);
+      if (caloriesA !== caloriesB) return caloriesB - caloriesA;
+      // Secondary sort: A-Z if calories are equal (especially 0)
+      const nameA = a.item?.name || '';
+      const nameB = b.item?.name || '';
+      return nameA.localeCompare(nameB, 'nb');
+    }
+    
+    // Default: sort by name A-Z
     const nameA = a.item?.name || '';
     const nameB = b.item?.name || '';
     return nameA.localeCompare(nameB, 'nb');

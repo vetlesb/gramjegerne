@@ -77,6 +77,7 @@ export default function ListPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery] = useState('');
   const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]);
+  const [sortBy, setSortBy] = useState<'name' | 'weight-low' | 'weight-high' | 'calories'>('name');
   const pathname = usePathname();
   const listSlug = pathname?.split('/')[2];
   const [isLoading, setIsLoading] = useState(false);
@@ -423,7 +424,7 @@ export default function ListPage() {
 
     // If showOnBodyOnly is true, show all onBody items regardless of category
     if (showOnBodyOnly) {
-      return sortListItems(items.filter((item) => item.onBody === true));
+      return sortListItems(items.filter((item) => item.onBody === true), sortBy);
     }
 
     // Otherwise, apply category filter as normal, but exclude on-body items from their original categories
@@ -442,8 +443,8 @@ export default function ListPage() {
       );
     }
 
-    return sortListItems(items);
-  }, [selectedItems, selectedCategory, searchQuery, showOnBodyOnly]);
+    return sortListItems(items, sortBy);
+  }, [selectedItems, selectedCategory, searchQuery, showOnBodyOnly, sortBy]);
 
   // Update the filteredItemsForDialog to use dialogSearchQuery instead
   const filteredItemsForDialog = useMemo(() => {
@@ -868,6 +869,8 @@ export default function ListPage() {
               : undefined
           }
           connectedTripName={list?.connectedTrip?.name}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
           onSaveToMyLists={isSharedMode ? handleSaveToList : undefined}
           isSaved={isSaved}
           isSaving={isSaving}

@@ -85,6 +85,7 @@ function IndexPageContent() {
     }
     return 'list';
   });
+  const [sortBy, setSortBy] = useState<'name' | 'weight-low' | 'weight-high' | 'calories'>('name');
   const isUpdatingURL = useRef(false);
 
   // Handle view mode change
@@ -154,10 +155,39 @@ function IndexPageContent() {
     fetchData();
   }, [session?.user?.id]);
 
-  const sortedItems: Item[] = useMemo(
-    () => [...items].sort((a: Item, b: Item) => a.name.localeCompare(b.name, 'nb')),
-    [items],
-  );
+  const sortedItems: Item[] = useMemo(() => {
+    return [...items].sort((a: Item, b: Item) => {
+      if (sortBy === 'weight-low') {
+        // Sort by weight, lowest first
+        const weightA = a.weight?.weight || 0;
+        const weightB = b.weight?.weight || 0;
+        if (weightA !== weightB) return weightA - weightB;
+        // Secondary sort: A-Z if weights are equal
+        return a.name.localeCompare(b.name, 'nb');
+      }
+      
+      if (sortBy === 'weight-high') {
+        // Sort by weight, highest first
+        const weightA = a.weight?.weight || 0;
+        const weightB = b.weight?.weight || 0;
+        if (weightA !== weightB) return weightB - weightA;
+        // Secondary sort: A-Z if weights are equal
+        return a.name.localeCompare(b.name, 'nb');
+      }
+      
+      if (sortBy === 'calories') {
+        // Sort by calories, highest first
+        const caloriesA = a.calories || 0;
+        const caloriesB = b.calories || 0;
+        if (caloriesA !== caloriesB) return caloriesB - caloriesA;
+        // Secondary sort: A-Z if calories are equal (especially 0)
+        return a.name.localeCompare(b.name, 'nb');
+      }
+      
+      // Default: sort by name A-Z
+      return a.name.localeCompare(b.name, 'nb');
+    });
+  }, [items, sortBy]);
 
   const filteredItems: Item[] = useMemo(() => {
     if (!selectedCategory) return sortedItems;
@@ -390,6 +420,8 @@ function IndexPageContent() {
               onExcel={handleOpenImportDialog}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
             />
 
             {/* New Item Dialog */}
