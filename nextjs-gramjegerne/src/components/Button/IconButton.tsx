@@ -9,7 +9,7 @@ import styles from './IconButton.module.scss';
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconName: IconName;
   variant?: 'primary' | 'secondary' | 'ghost' | 'trans';
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
   'aria-label': string; // Required for accessibility
 }
 
@@ -20,6 +20,9 @@ export function IconButton({
   className,
   ...props
 }: IconButtonProps) {
+  // Determine icon size based on button size
+  const iconSize = size === 'sm' ? 16 : size === 'md' ? 20 : 24;
+
   return (
     <button
       className={clsx(
@@ -30,7 +33,7 @@ export function IconButton({
       )}
       {...props}
     >
-      <Icon name={iconName} width={size === 'lg' ? 20 : 16} height={size === 'lg' ? 20 : 16} />
+      <Icon name={iconName} width={iconSize} height={iconSize} />
     </button>
   );
 }

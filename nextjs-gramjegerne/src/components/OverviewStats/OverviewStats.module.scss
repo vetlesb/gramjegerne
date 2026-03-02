@@ -16,7 +16,7 @@
   flex-wrap: wrap;
   
   @include desktop {
-    gap: $spacing-lg;
+    gap: $spacing-2xl;
   }
 }
 
@@ -37,26 +37,28 @@
 
 .hero {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: $spacing-lg;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
   
   @include tablet {
     grid-template-columns: repeat(2, 1fr);
   }
   
   @include desktop {
-    grid-template-columns: repeat(4, 1fr);
-    gap: $spacing-xl;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
   }
 }
 
 .heroCard {
   @include card;
+  padding: $spacing-md;
   display: grid;
-  gap: $spacing-md;
+  gap: $spacing-xs;
   
   @include desktop-lg {
-    gap: $spacing-lg $spacing-2xl;
+    padding: $spacing-xl;
   }
 }
 
@@ -162,4 +164,7 @@
 
 .categoryName {
   color: var(--fg-accent);
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
 }

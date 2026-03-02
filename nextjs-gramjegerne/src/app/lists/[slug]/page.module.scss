@@ -1,0 +1,28 @@
+@use '@/styles/abstracts/mixins' as *;
+
+// ============================================
+// Item List
+// ============================================
+
+.itemList {
+  @include flex-column;
+  gap: $spacing-sm;
+  width: 100%;
+}
+
+// ============================================
+// Shared Badge
+// ============================================
+
+.sharedBadge {
+  @include flex-start;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--bg-dimmed);
+  border: 1px solid var(--border-primary);
+  border-radius: $border-radius-md;
+  font-size: $font-size-md;
+  color: var(--fg-primary);
+  width: fit-content;
+}

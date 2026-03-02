@@ -428,29 +428,22 @@ function ListsPageContent() {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Dialog */}
+        {/* Delete Dialog - DeleteListButton with controlled dialog */}
         {showDeleteDialog && (
-          <Dialog open={!!showDeleteDialog} onOpenChange={() => setShowDeleteDialog(null)}>
-            <DialogContent className="dialog gap-y-8">
-              <DialogHeader>
-                <DialogTitle>Are you sure you want to delete this list?</DialogTitle>
-              </DialogHeader>
-              <DialogFooter>
-                <DeleteListButton
-                  listId={showDeleteDialog}
-                  listName={lists.find((l) => l._id === showDeleteDialog)?.name || ''}
-                  redirectTo="/lists"
-                  onSuccess={async () => {
-                    await fetchLists();
-                    setShowDeleteDialog(null);
-                  }}
-                />
-                <button onClick={() => setShowDeleteDialog(null)} className="button-secondary">
-                  Cancel
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <DeleteListButton
+            listId={showDeleteDialog}
+            listName={lists.find((l) => l._id === showDeleteDialog)?.name || ''}
+            redirectTo="/lists"
+            open={!!showDeleteDialog}
+            onOpenChange={(open) => {
+              if (!open) setShowDeleteDialog(null);
+            }}
+            showButton={false}
+            onSuccess={async () => {
+              await fetchLists();
+              setShowDeleteDialog(null);
+            }}
+          />
         )}
       </main>
     </ProtectedRoute>

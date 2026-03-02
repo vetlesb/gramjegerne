@@ -16,13 +16,28 @@ interface DeleteListButtonProps {
   listName: string;
   redirectTo?: string;
   onSuccess?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showButton?: boolean;
 }
 
-export function DeleteListButton({listId, listName, redirectTo, onSuccess}: DeleteListButtonProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+export function DeleteListButton({
+  listId,
+  listName,
+  redirectTo,
+  onSuccess,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  showButton = true,
+}: DeleteListButtonProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Use controlled state if provided, otherwise use internal state
+  const isDialogOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsDialogOpen = controlledOnOpenChange || setInternalOpen;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -56,17 +71,19 @@ export function DeleteListButton({listId, listName, redirectTo, onSuccess}: Dele
 
   return (
     <>
-      <button
-        className="button-trans text-lg flex flex-row items-center justify-center gap-x-1"
-        onClick={(event) => {
-          event.stopPropagation(); // Prevents the parent onClick from firing
-          event.preventDefault(); // Prevents any default behavior
-          setIsDialogOpen(true);
-        }}
-        title="Delete list"
-      >
-        <Icon name="delete" width={24} height={24} />
-      </button>
+      {showButton && (
+        <button
+          className="button-trans text-lg flex flex-row items-center justify-center gap-x-1"
+          onClick={(event) => {
+            event.stopPropagation(); // Prevents the parent onClick from firing
+            event.preventDefault(); // Prevents any default behavior
+            setIsDialogOpen(true);
+          }}
+          title="Delete list"
+        >
+          <Icon name="delete" width={24} height={24} />
+        </button>
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="dialog gap-y-8">

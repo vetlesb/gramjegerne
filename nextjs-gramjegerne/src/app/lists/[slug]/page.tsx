@@ -1,7 +1,10 @@
 'use client';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
-import {ShareButton} from '@/components/ShareButton';
+import {ActionBar} from '@/components/ActionBar';
+import {CategoryFilter} from '@/components/CategoryFilter';
+import {OverviewStats} from '@/components/OverviewStats';
+import {PackingListItem} from '@/components/PackingListItem';
 import {client} from '@/sanity/client';
 import {nanoid} from 'nanoid';
 import {useSession} from 'next-auth/react';
@@ -17,11 +20,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '../../../components/ui/dialog';
 import {
-  formatNumber,
-  formatWeight,
   ITEMS_QUERY,
   LIST_QUERY,
   SHARED_LIST_QUERY,
@@ -34,21 +34,7 @@ import {
   type List,
   type ListItem,
 } from './utils';
-
-const DETAIL_GRID = 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-1';
-
-function PlaceholderImage({size = 16}: {size?: number}) {
-  return (
-    <div className={`h-${size} w-${size} flex items-center justify-center placeholder_image`}>
-      <svg width="16" height="16" viewBox="0 0 29 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M3.85938 23.4961C1.32812 23.4961 0.015625 22.1836 0.015625 19.6875V7.39453C0.015625 4.89844 1.32812 3.58594 3.85938 3.58594H7.01172C7.92578 3.58594 8.23047 3.42188 8.78125 2.83594L9.71875 1.82812C10.3281 1.19531 10.9375 0.867188 12.1328 0.867188H16.7969C17.9922 0.867188 18.6016 1.19531 19.2109 1.82812L20.1484 2.83594C20.7109 3.43359 21.0039 3.58594 21.918 3.58594H25.1289C27.6602 3.58594 28.9727 4.89844 28.9727 7.39453V19.6875C28.9727 22.1836 27.6602 23.4961 25.1289 23.4961H3.85938ZM4 21.1992H25C26.0781 21.1992 26.6758 20.625 26.6758 19.4883V7.59375C26.6758 6.45703 26.0781 5.88281 25 5.88281H21.25C20.207 5.88281 19.6562 5.69531 19.0703 5.05078L18.168 4.05469C17.5117 3.35156 17.1602 3.16406 16.1289 3.16406H12.8008C11.7695 3.16406 11.418 3.35156 10.7617 4.06641L9.85938 5.05078C9.27344 5.70703 8.72266 5.88281 7.67969 5.88281H4C2.92188 5.88281 2.3125 6.45703 2.3125 7.59375V19.4883C2.3125 20.625 2.92188 21.1992 4 21.1992ZM14.5 19.6406C10.9844 19.6406 8.17188 16.8281 8.17188 13.3008C8.17188 9.77344 10.9844 6.94922 14.5 6.94922C18.0156 6.94922 20.8281 9.77344 20.8281 13.3008C20.8281 16.8281 18.0039 19.6406 14.5 19.6406ZM21.2266 9.08203C21.2266 8.27344 21.9297 7.57031 22.7617 7.57031C23.5703 7.57031 24.2734 8.27344 24.2734 9.08203C24.2734 9.92578 23.5703 10.5938 22.7617 10.5938C21.918 10.5938 21.2266 9.9375 21.2266 9.08203ZM14.5 17.543C16.8438 17.543 18.7422 15.6562 18.7422 13.3008C18.7422 10.9336 16.8438 9.04688 14.5 9.04688C12.1562 9.04688 10.2578 10.9336 10.2578 13.3008C10.2578 15.6562 12.1562 17.543 14.5 17.543Z"
-          fill="#EAFFE2"
-        />
-      </svg>
-    </div>
-  );
-}
+import styles from './page.module.scss';
 
 export default function ListPage() {
   const {data: session} = useSession();
@@ -291,18 +277,25 @@ export default function ListPage() {
     checkIfSaved();
   }, [checkIfSaved]);
 
-  const updateUrlAndStorage = (params: {set?: Record<string, string>, remove?: string[]}) => {
+  const updateUrlAndStorage = (params: {set?: Record<string, string>; remove?: string[]}) => {
     isUpdatingURL.current = true;
     const newSearchParams = new URLSearchParams(searchParams);
-    params.remove?.forEach(key => {
+    params.remove?.forEach((key) => {
       newSearchParams.delete(key);
-      localStorage.removeItem(key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody');
+      localStorage.removeItem(
+        key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody',
+      );
     });
     Object.entries(params.set || {}).forEach(([key, value]) => {
       newSearchParams.set(key, value);
-      localStorage.setItem(key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody', value);
+      localStorage.setItem(
+        key === 'category' ? 'packingListLastCategory' : 'packingListLastOnBody',
+        value,
+      );
     });
-    router.push(newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname);
+    router.push(
+      newSearchParams.toString() ? `?${newSearchParams.toString()}` : window.location.pathname,
+    );
   };
 
   const handleCategoryChange = (categoryId: string | null) => {
@@ -839,57 +832,62 @@ export default function ListPage() {
       <main className="container mx-auto min-h-screen p-16">
         <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
 
-        {/* Shared by badge and save button */}
+        {/* Shared by badge - only in shared mode */}
         {isSharedMode && list.user?.name && (
           <div className="flex flex-wrap gap-x-2 gap-y-2 mb-4">
-            <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
+            <div className={styles.sharedBadge}>
               <Icon name="user" width={16} height={16} />
               Shared by {list.user.name}
-            </p>
-            {/* Save to My Shared Lists Button - only show when logged in */}
-            {session?.user?.id && (
-              <div className="flex flex-wrap">
-                {isSaved ? (
-                  <div className="tag-list w-fit flex items-center gap-x-2">
-                    <Icon name="checkmark" width={16} height={16} />
-                    <span>Saved</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleSaveToList}
-                    disabled={isSaving}
-                    className="tag-list w-fit flex items-center gap-x-2"
-                  >
-                    <Icon name="link" width={16} height={16} />
-                    {isSaving ? 'Saving...' : 'Save list'}
-                  </button>
-                )}
-              </div>
-            )}
+            </div>
           </div>
         )}
 
-        <div className="flex gap-y-4 gap-x-2 overflow-y-auto no-scrollbar p-1">
-          {/* Button to open the Add Item Dialog - only show in edit mode */}
-          {!isSharedMode && (
+        {/* ActionBar */}
+        <ActionBar
+          mode={isSharedMode ? 'shared-list' : 'list'}
+          onAddToList={() => setIsDialogOpen(true)}
+          onShare={async () => {
+            const shareUrl = `${window.location.origin}/lists/${listSlug}?shared=true`;
+            try {
+              await navigator.clipboard.writeText(shareUrl);
+              toast.success('Link copied to clipboard!', {
+                duration: 3000,
+                position: 'bottom-center',
+              });
+            } catch (err) {
+              toast.error('Could not copy link', {
+                duration: 3000,
+                position: 'bottom-center',
+              });
+              console.error('Copy failed:', err);
+            }
+          }}
+          onViewMap={
+            list?.connectedTrip
+              ? () => router.push(`/maps/${list.connectedTrip!._id}?from=list&slug=${listSlug}`)
+              : undefined
+          }
+          connectedTripName={list?.connectedTrip?.name}
+          onSaveToMyLists={isSharedMode ? handleSaveToList : undefined}
+          isSaved={isSaved}
+          isSaving={isSaving}
+        />
+
+        {/* Add Item Dialog - controlled by ActionBar */}
+        {!isSharedMode && (
           <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-            <DialogTrigger asChild>
-              <button className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md">
-                Add
-              </button>
-            </DialogTrigger>
             {/* Updated DialogContent */}
-            <DialogContent className="dialog p-4 max-w-lg md:p-10 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
+            <DialogContent className="dialog p-4 max-w-lg md:p-5 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
               <DialogHeader>
                 <DialogTitle className="text-2xl text-accent font-normal">Add gear</DialogTitle>
               </DialogHeader>
               {/* Search Bar */}
-              <label className="flex flex-col pt-4 gap-y-2 text-lg">
+              <label className="flex flex-col pt-2 gap-y-2 text-lg">
                 <input
                   type="text"
                   value={dialogSearchQuery}
                   onChange={(e) => setDialogSearchQuery(e.target.value)}
-                  className="w-full max-w-full p-4 mb-2"
+                  className="w-full max-w-full p-4 mb-1"
                   placeholder="Search for gear or category"
                 />
               </label>
@@ -919,11 +917,13 @@ export default function ListPage() {
                                 className="rounded-md h-full w-full object-cover"
                                 src={urlFor(item.image).url()}
                                 alt={`Bilde av ${item?.name || 'item'}`}
-                                  width={96}
-                                  height={96}
+                                width={96}
+                                height={96}
                               />
                             ) : (
-                              <PlaceholderImage size={16} />
+                              <div className="h-12 w-12 rounded-md bg-dimmed flex items-center justify-center">
+                                <Icon name="add" width={16} height={16} />
+                              </div>
                             )}
                           </div>
                           <div className="flex flex-col gap-y-1">
@@ -959,387 +959,116 @@ export default function ListPage() {
                 <button
                   onClick={handleSaveChanges}
                   disabled={tempSelectedItems.length === 0}
-                    className="button-primary-accent flex-1 mt-4"
+                  className="button-primary-accent flex-1 mt-4"
                 >
-                    {tempSelectedItems.length === 0
-                      ? 'Add'
-                      : tempSelectedItems.length === 1
-                        ? 'Add 1 item'
-                        : `Add ${tempSelectedItems.length} items`}
+                  {tempSelectedItems.length === 0
+                    ? 'Add'
+                    : tempSelectedItems.length === 1
+                      ? 'Add 1 item'
+                      : `Add ${tempSelectedItems.length} items`}
                 </button>
-                  <DialogClose asChild></DialogClose>
+                <DialogClose asChild></DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          )}
-
-          {/* Map button - only show if trip is connected */}
-          {list?.connectedTrip && (
-            <button
-              onClick={() =>
-                router.push(`/maps/${list.connectedTrip?._id}?from=list&slug=${listSlug}`)
-              }
-              className="button-create text-lg flex flex-shrink-0 flex-row items-center gap-x-1 text-md"
-              title={`View ${list.connectedTrip.name} map`}
-            >
-              Map
-            </button>
-          )}
-
-          {/* Share button - only show in edit mode */}
-          {!isSharedMode && <ShareButton slug={listSlug} />}
-        </div>
-        <div className="flex gap-x-2 no-scrollbar my-8 p-2">
-          <button
-            onClick={() => handleCategoryChange(null)}
-            className={`menu-category text-md ${
-              selectedCategory === null && !showOnBodyOnly ? 'menu-active' : ''
-            }`}
-          >
-            Overview
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category._id}
-              onClick={() => handleCategoryChange(category._id)}
-              className={`menu-category text-md ${
-                selectedCategory === category._id && !showOnBodyOnly ? 'menu-active' : ''
-              }`}
-            >
-              {category.title}
-            </button>
-          ))}
-          <button
-            onClick={() => handleOnBodyChange(!showOnBodyOnly)}
-            className={`menu-category text-md ${showOnBodyOnly ? 'menu-active' : ''}`}
-          >
-            On body
-          </button>
-        </div>
-        {/* Show totals only when not in "På kropp" view */}
-        {selectedCategory === null && !showOnBodyOnly && (
-          <div className="grid grid-cols-2 gap-x-2">
-            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
-              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <span className="border-1 border-accent rounded-full p-1">
-                  <Icon name="backpack" width={18} height={18} />
-                </span>
-                Backpack
-              </p>
-              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
-                {formatWeight(grandTotal.weight)}
-              </p>
-            </div>
-            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
-              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <span className="border-1 border-accent rounded-full p-1">
-                  <Icon name="clothing" width={18} height={18} />
-                </span>
-                On body
-              </p>
-              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl text-accent font-bold">
-                {formatWeight(grandTotal.weightOnBody)}
-              </p>
-            </div>
-            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
-              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <span className="border-1 border-accent rounded-full p-1">
-                  <Icon name="calories" width={18} height={18} />
-                </span>
-                Calories
-              </p>
-              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
-                {formatNumber(grandTotal.calories)} kcal
-              </p>
-            </div>
-            <div className="grid product gap-y-4 md:gap-y-4 lg:gap-y-8">
-              <p className="flex flex-row gap-x-2 text-md sm:text-xl items-center">
-                <span className="border-1 border-accent rounded-full p-1">
-                  <Icon name="checkmark" width={18} height={18} />
-                </span>
-                Packed
-              </p>
-              <p className="lg:text-8xl md:text-6xl sm:text-4xl text-2xl  text-accent font-bold">
-                {formatNumber(grandTotal.checkedCount || 0)} / {formatNumber(grandTotal.count || 0)}
-              </p>
-            </div>
-          </div>
         )}
-        {selectedItems.length > 0 ? (
-          <ul className="totals flex flex-col w-full">
-            <li>
-              {selectedCategory === null && !showOnBodyOnly ? (
-                // "Alle" view with category totals
-                <div className="flex flex-col">
-                  {/* Category totals section */}
-                  <div className="product">
-                    <div className="flex flex-col gap-y-2 pt-2">
-                      <p className="text-md sm:text-xl pb-8">Detailed overview</p>
-                      <div className={`${DETAIL_GRID} border-b border-white/5 pb-4`}>
-                        <p className="text-md sm:text-xl text-accent">Category</p>
-                        <p className="text-md sm:text-xl text-accent">Weight</p>
-                        <p className="text-md sm:text-xl text-accent">Calories</p>
-                      </div>
-                      {categoryTotals.map(
-                        (total) =>
-                          total.id !== 'on-body' && (
-                            <div
-                              key={total.id}
-                              className={`${DETAIL_GRID} border-b border-white/5 pb-2`}
-                            >
-                              <p className="text-md sm:text-xl">
-                                {total.title}{' '}
-                                <span className="tag-packed w-fit">
-                                  {formatNumber(total.checkedCount || 0)}/
-                                  {formatNumber(total.count || 0)}
-                                </span>
-                              </p>
-                              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                                {formatWeight(total.weight)}
-                              </p>
-                              <p className="text-md sm:text-xl font-medium font-sans tabular-nums">
-                                {total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}
-                              </p>
-                            </div>
-                          ),
-                      )}
 
-                      {/* Add the "On body" section with correct weight */}
-                      {(() => {
-                        const onBodyCategory = categoryTotals.find(
-                          (total) => total.id === 'on-body',
-                        );
-                        return (
-                          <div className={`${DETAIL_GRID} border-b border-white/5 pb-2`}>
-                            <p className="text-md sm:text-xl text-accent">On body</p>
-                            <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                              {formatWeight(onBodyCategory?.weightOnBody || 0)}
-                            </p>
-                            <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                              {onBodyCategory?.calories && onBodyCategory.calories > 0
-                                ? `${formatNumber(onBodyCategory.calories)} kcal`
-                                : ''}
-                            </p>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Grand total section */}
-                      <div>
-                        <div className={`${DETAIL_GRID} pb-2`}>
-                          <p className="text-md sm:text-xl text-accent">Backpack</p>
-                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                            {formatWeight(grandTotal.weight)}
-                          </p>
-                          <p className="text-md sm:text-xl text-accent font-medium font-sans tabular-nums">
-                            {grandTotal.calories > 0
-                              ? `${formatNumber(grandTotal.calories)} kcal`
-                              : ''}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : // Category-specific or "På kropp" view
-              selectedCategory || showOnBodyOnly ? (
-                <div className="product-category items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
-                  <div className="flex items-center gap-x-2 text-sm sm:text-lg fg-accent">
-                    {showOnBodyOnly
-                      ? ``
-                      : `${formatNumber(selectedCategoryTotals?.checkedCount || 0)} / ${formatNumber(selectedCategoryTotals?.count || 0)}`}
-                  </div>
-
-                  <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
-                    {showOnBodyOnly
-                      ? formatWeight(
-                          categoryTotals.find((total) => total.id === 'on-body')?.weightOnBody || 0,
-                        )
-                      : formatWeight(selectedCategoryWeight)}
-                  </div>
-
-                  <div className="flex items-center gap-x-2 text-sm sm:text-lg text-accent">
-                    {showOnBodyOnly
-                      ? (selectedCategoryTotals?.calories || 0) > 0
-                        ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
-                        : ''
-                      : (selectedCategoryTotals?.calories || 0) > 0
-                        ? `${formatNumber(selectedCategoryTotals?.calories || 0)} kcal`
-                        : ''}
-                  </div>
-                </div>
-              ) : null}
-            </li>
-          </ul>
-        ) : null}
-        {/* Show filtered items when either category is selected OR showOnBodyOnly is true */}
+        {/* Category Filter + OnBody button */}
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategorySelect={(categoryId) => handleCategoryChange(categoryId)}
+          showOnBodyFilter={true}
+          showOnBodyOnly={showOnBodyOnly}
+          onBodyFilterChange={handleOnBodyChange}
+          allButtonLabel="Overview"
+        />
+        {/* Hero Stats - show when viewing "All" */}
+        {selectedCategory === null && !showOnBodyOnly && (
+          <OverviewStats
+            mode="list"
+            layout="hero"
+            backpackWeight={grandTotal.weight}
+            onBodyWeight={grandTotal.weightOnBody}
+            calories={grandTotal.calories}
+            packedCount={grandTotal.checkedCount}
+            totalCount={grandTotal.count}
+          />
+        )}
+        {/* Detailed breakdown and compact stats */}
+        {selectedItems.length > 0 && (
+          <>
+            {selectedCategory === null && !showOnBodyOnly ? (
+              // "All" view - show detailed breakdown
+              <OverviewStats
+                mode="list"
+                layout="detailed"
+                showCategoryBreakdown={true}
+                categoryTotals={categoryTotals}
+              />
+            ) : (
+              // Category-specific or "On body" view - show compact stats
+              <OverviewStats
+                mode="list"
+                layout="compact"
+                packedCount={selectedCategoryTotals?.checkedCount}
+                totalCount={selectedCategoryTotals?.count}
+                backpackWeight={
+                  showOnBodyOnly
+                    ? categoryTotals.find((total) => total.id === 'on-body')?.weightOnBody || 0
+                    : selectedCategoryWeight
+                }
+                calories={selectedCategoryTotals?.calories}
+              />
+            )}
+          </>
+        )}
+        {/* Item List */}
         {(selectedCategory || showOnBodyOnly) && (
-          <ul className="flex flex-col divide-y divide-white/5">
+          <ul className={styles.itemList}>
             {filteredItemsForList.map((listItem) => (
-                <li
-                  key={listItem._key}
-                  onClick={
-                    !isSharedMode
-                      ? () => handleCheckboxChange(listItem._key, !(listItem.checked ?? false))
+              <PackingListItem
+                key={listItem._key}
+                mode={isSharedMode ? 'readonly' : 'editable'}
+                listItem={listItem}
+                quantityValue={
+                  tempQuantityInputs[listItem._key] !== undefined
+                    ? tempQuantityInputs[listItem._key]
+                    : pendingQuantities[listItem._key] !== undefined
+                      ? pendingQuantities[listItem._key].toString()
                       : undefined
+                }
+                onQuantityInputChange={(key, value) => {
+                  setTempQuantityInputs((prev) => ({
+                    ...prev,
+                    [key]: value,
+                  }));
+                }}
+                onQuantityBlur={(key, value) => {
+                  const newValue = parseFloat(value);
+                  if (!isNaN(newValue) && newValue >= 0.1) {
+                    handleQuantityChange(key, newValue);
+                  } else {
+                    const currentQuantity =
+                      pendingQuantities[key] !== undefined
+                        ? pendingQuantities[key]
+                        : listItem.quantity || 1;
+                    setTempQuantityInputs((prev) => ({
+                      ...prev,
+                      [key]: currentQuantity.toString(),
+                    }));
                   }
-                  className={`product py-4 ${
-                    !isSharedMode && listItem.checked ? 'product-checked' : ''
-                  } ${!isSharedMode ? 'cursor-pointer' : ''}`}
-                >
-                  <div className="flex flex-wrap gap-y-6 md:gap-y-0 items-center gap-x-4">
-                    {/* Image */}
-                    <div className="aspect-square h-16 w-16 shrink-0">
-                      {listItem.item?.image ? (
-                        <Image
-                          className="rounded-md h-full w-full object-cover"
-                          src={urlFor(listItem.item.image).url()}
-                          alt={`Image of ${listItem.item?.name || 'item'}`}
-                          width={64}
-                          height={64}
-                        />
-                      ) : (
-                        <PlaceholderImage size={16} />
-                      )}
-                    </div>
-
-                    {/* Name and tags container */}
-                    <div className="flex-1 min-w-0 w-full sm:w-auto">
-                      <div className="flex flex-col gap-y-2 min-w-0">
-                        <h2
-                          className="text-xl text-accent truncate pr-2"
-                          title={listItem.item?.name}
-                        >
-                          {listItem.item?.name || 'Unnamed Item'}
-                        </h2>
-                        <div className="flex flex-wrap gap-y-1 shrink-0 gap-x-1">
-                          {listItem.item?.size && (
-                            <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
-                              <Icon name="size" width={16} height={16} />
-                              {listItem.item.size}
-                            </p>
-                          )}
-                          {listItem.item?.weight && (
-                            <p className="tag w-fit items-center gap-x-1 fg-primary flex flex-wrap">
-                              <Icon name="weight" width={16} height={16} />
-                              {listItem.item.weight.weight} {listItem.item.weight.unit}
-                            </p>
-                          )}
-                          {listItem.item?.calories && listItem.item.calories > 0 && (
-                            <p className="tag w-fit items-center gap-x-1 flex flex-wrap">
-                              <Icon name="calories" width={16} height={16} />
-                              {listItem.item.calories} kcal
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions container - hide in shared mode */}
-                    {!isSharedMode && (
-                    <div className="flex items-center gap-x-2 w-full sm:w-auto sm:ml-auto mt-4 sm:mt-0">
-                      <div className="flex">
-                        <div className="flex items-center gap-x-1 font-medium rounded-full p-1">
-                          <input
-                            type="number"
-                            min="0.1"
-                            step="0.1"
-                            value={
-                              tempQuantityInputs[listItem._key] !== undefined
-                                ? tempQuantityInputs[listItem._key]
-                                : pendingQuantities[listItem._key] !== undefined
-                                  ? pendingQuantities[listItem._key].toString()
-                                  : (listItem.quantity || 1).toString()
-                            }
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const inputValue = e.target.value;
-
-                              // Always update the temporary input state
-                              setTempQuantityInputs((prev) => ({
-                                ...prev,
-                                [listItem._key]: inputValue,
-                              }));
-                            }}
-                            onBlur={(e) => {
-                              e.stopPropagation();
-                              const inputValue = e.target.value;
-                              const newValue = parseFloat(inputValue);
-
-                              if (!isNaN(newValue) && newValue >= 0.1) {
-                                // Valid value - update the quantity
-                                handleQuantityChange(listItem._key, newValue);
-                              } else {
-                                // Invalid value - reset to current quantity
-                                const currentQuantity =
-                                  pendingQuantities[listItem._key] !== undefined
-                                    ? pendingQuantities[listItem._key]
-                                    : listItem.quantity || 1;
-                                setTempQuantityInputs((prev) => ({
-                                  ...prev,
-                                  [listItem._key]: currentQuantity.toString(),
-                                }));
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.currentTarget.blur(); // Trigger onBlur
-                              }
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            onFocus={(e) => {
-                              // Select all text when focused for easy editing
-                              e.target.select();
-                            }}
-                            className="number-input w-12 text-center p-1 rounded-full"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Add the On body toggle button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleItemOnBodyChange(listItem._key, !listItem.onBody);
-                        }}
-                        className={`button-ghost flex gap-x-2 h-fit align-middle ${
-                          listItem.onBody ? 'text-accent' : ''
-                        }`}
-                        title={listItem.onBody ? 'Remove from body' : 'Add to body'}
-                      >
-                        <Icon
-                          name={listItem.onBody ? 'clothingfilled' : 'clothing'}
-                          width={24}
-                          height={24}
-                        />
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (listItem.item) {
-                            handleRemoveFromList(listItem.item);
-                          }
-                        }}
-                        className="button-ghost flex gap-x-2 h-fit align-middle"
-                      >
-                        <Icon name="delete" width={24} height={24} />
-                      </button>
-
-                      <input
-                        type="checkbox"
-                        title="Packed"
-                        checked={listItem.checked ?? false}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleCheckboxChange(listItem._key, e.target.checked);
-                        }}
-                        className="shrink-0"
-                      />
-                    </div>
-                    )}
-                  </div>
-                </li>
+                }}
+                onCheckChange={handleCheckboxChange}
+                onBodyChange={handleItemOnBodyChange}
+                onDelete={(key) => {
+                  const item = filteredItemsForList.find((li) => li._key === key);
+                  if (item?.item) {
+                    handleRemoveFromList(item.item);
+                  }
+                }}
+                imageUrlBuilder={(asset) => urlFor(asset).url()}
+              />
             ))}
           </ul>
         )}

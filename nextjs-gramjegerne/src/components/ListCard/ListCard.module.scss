@@ -3,20 +3,23 @@
 .card {
   @include card;
   transition: background-color $transition-fast;
+  padding: 0.5rem;
   
   &:hover {
-    outline: 1px solid var(--fg-accent);
+    background-color: var(--bg-dimmed-hover);
   }
 }
 
 .cardList {
   @include card;
   transition: background-color $transition-fast;
-  padding: $spacing-sm;
+  padding: 0;
+
   &:hover {
 
-    outline: 1px solid var(--fg-accent);
+    background-color: var(--bg-dimmed-hover);
   }
+
   .imageContainer {
     max-width: 64px;
     aspect-ratio: 1;
@@ -28,7 +31,7 @@
 
 .gridLayout {
   @include flex-column;
-  gap: $spacing-md;
+  gap: $spacing-sm;
 }
 
 .listLayout {
@@ -36,7 +39,7 @@
   flex: 1;
   gap: $spacing-md;
   align-items: center;
-  padding: $spacing-sm;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
   cursor: pointer;
   
   @include mobile {

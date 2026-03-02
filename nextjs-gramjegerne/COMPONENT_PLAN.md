@@ -9,9 +9,9 @@ A comprehensive checklist for building a component-based architecture with SCSS 
 
 ## 📊 Progress Overview
 
-- **Completed:** 9/44 components
+- **Completed:** 10/44 components
 - **In Progress:** 0/44 components
-- **Not Started:** 35/44 components
+- **Not Started:** 34/44 components
 
 ### 🎯 External Dependencies Status
 - **To Remove:** 5 packages (@radix-ui x3, cmdk, sonner)
@@ -25,23 +25,23 @@ A comprehensive checklist for building a component-based architecture with SCSS 
 ### Navigation & Layout
 - [x] **ActionBar** - Action buttons row with view mode toggle
   - ✅ Created with SCSS module
-  - 📍 Used in: Gear page, Packing list page
-  - 🔄 Next: Integrate Button components
-
+  - ✅ Enhanced with Map button support for connected trips
+  - 📍 Used in: Gear page, Lists page, Packing list page
+  
 - [x] **CategoryFilter** - Category filter pills
   - ✅ Created with SCSS module
-  - 📍 Used in: Gear page, Packing list page
-  - 🔄 Next: Replace with FilterButton component
-
+  - 📍 Used in: Gear page, Lists page, Packing list page
+  
 - [x] **OverviewStats** - Statistics display cards
   - ✅ Created with SCSS module (compact, hero, detailed layouts)
+  - ✅ Enhanced detailed layout with packed count badges using Tag component
   - 📍 Used in: Gear page, Packing list page
-
+  
 - [x] **ItemCard** - Item display cards
-  - ✅ Created with SCSS module (gear, list, list-readonly modes)
+  - ✅ Created with SCSS module (gear, list, list-readonly, grid modes)
   - ✅ Image click functionality added
-  - 📍 Used in: Gear page (list view), Packing list page
-  - 🔄 Next: Replace tags with Tag component, integrate for grid view
+  - ✅ Integrated Tag and IconButton components
+  - 📍 Used in: Gear page (list and grid views)
 
 ---
 
@@ -117,7 +117,7 @@ A comprehensive checklist for building a component-based architecture with SCSS 
 
 ---
 
-## 🎨 Phase 4: Display Components (Completed: 1/7)
+## 🎨 Phase 4: Display Components (Completed: 2/7)
 
 ### Content Display
 - [ ] **Card** - Generic card container
@@ -133,6 +133,15 @@ A comprehensive checklist for building a component-based architecture with SCSS 
   - ✅ Features: responsive dropdown for actions on narrow screens
   - ✅ Shows: name, image, days, status, weight, calories, participants
   - 📍 Used in: /lists page
+  - 🎯 Priority: High
+
+- [x] **PackingListItem** - Packing list item component
+  - ✅ Created with SCSS module
+  - ✅ Modes: editable, readonly
+  - ✅ Features: checkbox, quantity input, onBody toggle, delete button
+  - ✅ Responsive dropdown for actions on mobile
+  - ✅ Reuses styles and patterns from ItemCard
+  - 📍 Used in: /lists/[slug] page (packing list detail)
   - 🎯 Priority: High
 
 - [ ] **Badge** - Small notification/count badge
@@ -383,15 +392,20 @@ These are existing dialog components that need SCSS modules:
 - [ ] 🔄 Replace remaining utility classes
 
 #### Packing List Page (`/app/lists/[slug]/page.tsx`)
-- [ ] 🔄 Integrate ActionBar (list mode)
-- [ ] 🔄 Integrate CategoryFilter
-- [ ] 🔄 Integrate OverviewStats (hero + detailed layouts)
-- [ ] 🔄 Integrate ItemCard (list mode + readonly mode)
-- [ ] 🔄 Integrate Button components
-- [ ] 🔄 Integrate FilterButton
-- [ ] 🔄 Integrate Tag
-- [ ] 🔄 Integrate Checkbox for packed state
-- [ ] 🔄 Replace utility classes
+- [x] ✅ Created PackingListItem component (replaces custom item rendering)
+- [x] ✅ Integrated ActionBar (list mode with Map button for connected trips)
+- [x] ✅ Integrated CategoryFilter + OnBody FilterButton
+- [x] ✅ Integrated OverviewStats (hero layout for grand totals)
+- [x] ✅ Integrated OverviewStats (detailed layout with category breakdown + packed count badges)
+- [x] ✅ Integrated PackingListItem for editable and readonly modes
+- [x] ✅ Integrated Tag components in items
+- [x] ✅ Integrated FilterButton for OnBody toggle
+- [x] ✅ Integrated IconButton components in PackingListItem
+- [x] ✅ Created page.module.scss for layout styles
+- [x] ✅ Replaced utility classes with SCSS modules
+- [x] ✅ Maintained all functionality (checkbox, quantity input, onBody toggle, delete)
+- [x] ✅ Maintained temporary state management for quantity input
+- [x] ✅ Maintained shared mode (readonly) support
 
 #### Shared List Page (`/app/share/[slug]/SharePageClient.tsx`)
 - [ ] 🔄 Integrate ItemCard (readonly mode)

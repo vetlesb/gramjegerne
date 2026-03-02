@@ -23,6 +23,35 @@
   --fg-dimmed: #272e23;
   --fg-accent: #b4ed9f;
   
+  // Border colors
+  --border-primary: rgba(180, 237, 159, 0.1);
+  
+  // Border radius
+  --radius: 8px;
+}
+
+:root[data-theme='blue'] {
+  // Background colors
+  --bg-primary: #1a1f26;
+  --bg-primary-hover: #151a20;
+  --bg-secondary: #e0f4ff;
+  --bg-dimmed: #222831;
+  --bg-dimmed-hover: #1d232a;
+  --bg-accent: #83c5ff;
+  --bg-accent-hover: #6ba7e6;
+  --bg-checked: #2a3441;
+  --bg-25: rgba(26, 31, 38, 0.25);
+  --bg-50: rgba(26, 31, 38, 0.5);
+  
+  // Foreground colors
+  --fg-primary: #e0f4ff;
+  --fg-secondary: #1a1f26;
+  --fg-dimmed: #222831;
+  --fg-accent: #83c5ff;
+  
+  // Border colors
+  --border-primary: rgba(131, 197, 255, 0.1);
+  
   // Border radius
   --radius: 8px;
 }
@@ -42,6 +71,7 @@
   --fg-accent: #3d6b4a;
   --bg-25: rgba(230, 241, 228, 0.25);
   --bg-50: rgba(230, 241, 228, 0.5);
+  --border-primary: rgba(61, 107, 74, 0.15);
   --radius: 8px;
 }
 
@@ -60,5 +90,6 @@
   --fg-accent: #ffe883;
   --bg-25: rgba(38, 36, 25, 0.25);
   --bg-50: rgba(38, 36, 25, 0.5);
+  --border-primary: rgba(255, 232, 131, 0.1);
   --radius: 8px;
 }

@@ -18,7 +18,8 @@ interface ActionBarProps {
   // List mode props (packing list detail)
   onAddToList?: () => void;
   onShare?: () => void;
-  onDuplicate?: () => void;
+  onViewMap?: () => void;
+  connectedTripName?: string;
   
   // Lists overview mode props
   onAddList?: () => void;
@@ -38,7 +39,8 @@ export function ActionBar({
   onViewModeChange,
   onAddToList,
   onShare,
-  onDuplicate,
+  onViewMap,
+  connectedTripName,
   onAddList,
   onSaveToMyLists,
   isSaved,
@@ -87,8 +89,15 @@ export function ActionBar({
         {mode === 'list' && (
           <>
             <Button onClick={onAddToList}>Add gear</Button>
+            {onViewMap && (
+              <Button 
+                onClick={onViewMap}
+                title={connectedTripName ? `View ${connectedTripName} map` : 'View map'}
+              >
+                Map
+              </Button>
+            )}
             <Button onClick={onShare}>Share</Button>
-            <Button onClick={onDuplicate}>Duplicate</Button>
           </>
         )}
 
@@ -193,6 +202,18 @@ export function ActionBar({
               />
               {isMoreMenuOpen && (
                 <div className={styles.moreMenuDropdown}>
+                  {onViewMap && (
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        onViewMap();
+                        setIsMoreMenuOpen(false);
+                      }}
+                    >
+                      <Icon name="location" width={20} height={20} />
+                      <span>Map</span>
+                    </button>
+                  )}
                   <button
                     className={styles.menuItem}
                     onClick={() => {
@@ -202,16 +223,6 @@ export function ActionBar({
                   >
                     <Icon name="link" width={20} height={20} />
                     <span>Share</span>
-                  </button>
-                  <button
-                    className={styles.menuItem}
-                    onClick={() => {
-                      onDuplicate?.();
-                      setIsMoreMenuOpen(false);
-                    }}
-                  >
-                    <Icon name="duplicate" width={20} height={20} />
-                    <span>Duplicate</span>
                   </button>
                 </div>
               )}

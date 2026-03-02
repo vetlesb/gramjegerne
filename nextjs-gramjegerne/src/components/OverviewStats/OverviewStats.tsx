@@ -1,6 +1,7 @@
 'use client';
 
 import {Icon} from '@/components/Icon';
+import {Tag} from '@/components/Tag';
 import styles from './OverviewStats.module.scss';
 
 interface CategoryTotal {
@@ -65,28 +66,52 @@ export function OverviewStats({
   };
 
   // ============================================
-  // Compact Layout (Gear page)
+  // Compact Layout (Category-specific stats)
   // ============================================
-  if (mode === 'gear' && layout === 'compact') {
-    return (
-      <div className={`${styles.overviewStats} ${styles.compact}`}>
-        {totalItems !== undefined && (
-          <div className={styles.stat}>
-            <span>{totalItems} items</span>
-          </div>
-        )}
-        {totalWeight !== undefined && totalWeight > 0 && (
-          <div className={styles.stat}>
-            <span>{formatWeight(totalWeight)}</span>
-          </div>
-        )}
-        {totalPrice !== undefined && totalPrice > 0 && (
-          <div className={styles.stat}>
-            <span>{formatPrice(totalPrice)}</span>
-          </div>
-        )}
-      </div>
-    );
+  if (layout === 'compact') {
+    if (mode === 'gear') {
+      return (
+        <div className={`${styles.overviewStats} ${styles.compact}`}>
+          {totalItems !== undefined && (
+            <div className={styles.stat}>
+              <span>{totalItems} items</span>
+            </div>
+          )}
+          {totalWeight !== undefined && totalWeight > 0 && (
+            <div className={styles.stat}>
+              <span>{formatWeight(totalWeight)}</span>
+            </div>
+          )}
+          {totalPrice !== undefined && totalPrice > 0 && (
+            <div className={styles.stat}>
+              <span>{formatPrice(totalPrice)}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    if (mode === 'list') {
+      return (
+        <div className={`${styles.overviewStats} ${styles.compact}`}>
+          {packedCount !== undefined && totalCount !== undefined && (
+            <div className={styles.stat}>
+              <span>{formatNumber(packedCount)} / {formatNumber(totalCount)}</span>
+            </div>
+          )}
+          {backpackWeight !== undefined && (
+            <div className={styles.stat}>
+              <span>{formatWeight(backpackWeight)}</span>
+            </div>
+          )}
+          {calories !== undefined && calories > 0 && (
+            <div className={styles.stat}>
+              <span>{formatNumber(calories)} kcal</span>
+            </div>
+          )}
+        </div>
+      );
+    }
   }
 
   // ============================================
@@ -94,7 +119,7 @@ export function OverviewStats({
   // ============================================
   if (mode === 'list' && layout === 'hero') {
     return (
-      <div className={`${styles.overviewStats} ${styles.hero}`}>
+      <div className={styles.hero}>
         {/* Backpack weight */}
         <div className={styles.heroCard}>
           <p className={styles.heroLabel}>
@@ -179,7 +204,12 @@ export function OverviewStats({
             {/* Regular categories */}
             {regularCategories.map((total) => (
               <div key={total.id} className={styles.tableRow}>
-                <span className={styles.categoryName}>{total.title}</span>
+                <span className={styles.categoryName}>
+                  {total.title}{' '}
+                  <Tag size="sm">
+                    {formatNumber(total.checkedCount || 0)}/{formatNumber(total.count || 0)}
+                  </Tag>
+                </span>
                 <span>{formatWeight(total.weight + total.weightOnBody)}</span>
                 <span>{total.calories > 0 ? `${formatNumber(total.calories)} kcal` : ''}</span>
               </div>

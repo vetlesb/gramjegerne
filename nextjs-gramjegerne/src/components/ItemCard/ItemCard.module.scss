@@ -27,7 +27,7 @@
 .cardGrid {
   @include card;
   transition: background-color $transition-fast;
-  padding: $spacing-md;
+  padding: $spacing-sm;
 }
 
 .gridLayout {

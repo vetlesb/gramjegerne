@@ -67,7 +67,6 @@ export function CategoryFilter({
       {showOnBodyFilter && onBodyFilterChange && (
         <FilterButton
           active={showOnBodyOnly}
-          iconName="clothing"
           onClick={() => onBodyFilterChange(!showOnBodyOnly)}
         >
           On body
