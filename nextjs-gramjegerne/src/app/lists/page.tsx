@@ -315,7 +315,7 @@ function ListsPageContent() {
                 className={
                   viewMode === 'list'
                     ? 'flex flex-col gap-y-2'
-                    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-8 gap-x-8'
+                    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-4 gap-x-4'
                 }
               >
                 {selectedFilter === 'shared'
@@ -358,7 +358,11 @@ function ListsPageContent() {
         </div>
 
         {/* Add List Dialog - controlled by ActionBar button */}
-        <AddListDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={fetchLists} />
+        <AddListDialog
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onSuccess={fetchLists}
+        />
 
         {/* Edit List Dialog */}
         {showEditDialog && (
@@ -441,10 +445,7 @@ function ListsPageContent() {
                     setShowDeleteDialog(null);
                   }}
                 />
-                <button
-                  onClick={() => setShowDeleteDialog(null)}
-                  className="button-secondary"
-                >
+                <button onClick={() => setShowDeleteDialog(null)} className="button-secondary">
                   Cancel
                 </button>
               </DialogFooter>

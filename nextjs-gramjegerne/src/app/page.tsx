@@ -372,7 +372,7 @@ function IndexPageContent() {
 
   return (
     <ProtectedRoute>
-      <main className="container mx-auto min-h-screen p-16">
+      <main className="container mx-auto min-h-screen">
         {showLoader ? (
           <div className="flex items-center justify-center min-h-[80vh]">
             <LoadingSpinner className="w-8 h-8 text-accent" />

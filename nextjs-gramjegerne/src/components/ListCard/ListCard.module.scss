@@ -32,15 +32,15 @@
 }
 
 .listLayout {
-  display: grid;
-  grid-template-columns: 64px 1fr auto;
+  display: flex;
+  flex: 1;
   gap: $spacing-md;
   align-items: center;
   padding: $spacing-sm;
   cursor: pointer;
   
   @include mobile {
-    grid-template-columns: 140px 1fr;
+    grid-template-columns: 64px 1fr;
     gap: $spacing-sm;
   }
 }
@@ -98,9 +98,11 @@
 }
 
 .content {
-  @include flex-column;
-  gap: $spacing-sm;
-  padding: 0 $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
   
   .listLayout & {
     padding: 0;
