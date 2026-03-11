@@ -7,6 +7,10 @@
   
   &:hover {
     background-color: var(--bg-dimmed-hover);
+
+    .imageContainer {
+      opacity: 0.7;
+    }
   }
 }
 

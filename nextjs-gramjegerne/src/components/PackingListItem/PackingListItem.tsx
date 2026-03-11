@@ -183,7 +183,7 @@ export function PackingListItem({
             <div className={styles.desktopActions}>
               {/* OnBody toggle */}
               <IconButton
-                iconName="clothing"
+                iconName={listItem.onBody ? 'clothingfilled' : 'clothing'}
                 variant="ghost"
                 size="md"
                 onClick={(e) => {
