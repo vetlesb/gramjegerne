@@ -6,7 +6,7 @@ import {Icon} from '@/components/Icon';
 import styles from './ActionBar.module.scss';
 
 interface ActionBarProps {
-  mode: 'gear' | 'list' | 'lists-overview' | 'shared-list';
+  mode: 'gear' | 'list' | 'lists-overview' | 'trips-overview' | 'shared-list';
 
   // Shared props (gear & list modes)
   viewMode?: 'list' | 'grid';
@@ -28,6 +28,9 @@ interface ActionBarProps {
   // Lists overview mode props
   onAddList?: () => void;
 
+  // Trips overview mode props
+  onAddTrip?: () => void;
+
   // Shared list mode props
   onSaveToMyLists?: () => void;
   isSaved?: boolean;
@@ -48,6 +51,7 @@ export function ActionBar({
   sortBy = 'name',
   onSortChange,
   onAddList,
+  onAddTrip,
   onSaveToMyLists,
   isSaved,
   isSaving,
@@ -209,6 +213,20 @@ export function ActionBar({
         {mode === 'lists-overview' && (
           <>
             <Button onClick={onAddList}>Add List</Button>
+            {viewMode && onViewModeChange && (
+              <Button
+                onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
+                iconName={viewMode === 'list' ? 'grid' : 'list'}
+              >
+                {viewMode === 'list' ? 'Grid' : 'List'}
+              </Button>
+            )}
+          </>
+        )}
+
+        {mode === 'trips-overview' && (
+          <>
+            <Button onClick={onAddTrip}>Add Trip</Button>
             {viewMode && onViewModeChange && (
               <Button
                 onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
@@ -426,6 +444,20 @@ export function ActionBar({
         {mode === 'lists-overview' && (
           <>
             <Button onClick={onAddList}>Add List</Button>
+            {viewMode && onViewModeChange && (
+              <Button
+                onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
+                iconName={viewMode === 'list' ? 'grid' : 'list'}
+              >
+                {viewMode === 'list' ? 'Grid' : 'List'}
+              </Button>
+            )}
+          </>
+        )}
+
+        {mode === 'trips-overview' && (
+          <>
+            <Button onClick={onAddTrip}>Add Trip</Button>
             {viewMode && onViewModeChange && (
               <Button
                 onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}

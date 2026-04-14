@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {client} from '@/sanity/client';
-import {ListDocument, MapListItem} from '@/types';
+import {ListDocument} from '@/types';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
@@ -46,7 +46,7 @@ export function AddListDialog({
   const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<string>('');
-  const [trips, setTrips] = useState<MapListItem[]>([]);
+  const [trips, setTrips] = useState<{_id: string; name: string}[]>([]);
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
 
   // Handle controlled/uncontrolled open state
@@ -57,10 +57,10 @@ export function AddListDialog({
   const fetchTrips = async () => {
     setIsLoadingTrips(true);
     try {
-      const response = await fetch('/api/getMaps');
+      const response = await fetch('/api/getTrips');
       if (response.ok) {
         const data = await response.json();
-        setTrips(data.maps || []);
+        setTrips(data.trips || []);
       }
     } catch (error) {
       console.error('Error fetching trips:', error);
@@ -78,7 +78,7 @@ export function AddListDialog({
         setNewListDays(editList.days ?? null);
         setNewListParticipants(editList.participants ?? null);
         setIsCompleted(editList.completed ?? false);
-        setSelectedTripId(editList.connectedMap?._id || '');
+        setSelectedTripId(editList.connectedTrip?._id || editList.connectedMap?._id || '');
         if (editList.image) {
           setExistingImage(editList.image);
         }
@@ -131,7 +131,7 @@ export function AddListDialog({
 
       // Include connected trip if selected
       if (selectedTripId) {
-        formData.append('connectedMapId', selectedTripId);
+        formData.append('connectedTripId', selectedTripId);
       }
 
       // Include user ID
@@ -288,7 +288,7 @@ export function AddListDialog({
 
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Connected Map (Optional)
+                  Connected Trip (Optional)
                   <select
                     value={selectedTripId}
                     onChange={(e) => setSelectedTripId(e.target.value)}
@@ -302,7 +302,7 @@ export function AddListDialog({
                       </option>
                     ))}
                   </select>
-                  {isLoadingTrips && <span className="text-sm text-gray-500">Loading maps...</span>}
+                  {isLoadingTrips && <span className="text-sm text-gray-500">Loading trips...</span>}
                 </label>
               </div>
 

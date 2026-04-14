@@ -3,8 +3,7 @@
 'use client';
 
 import {Icon} from '@/components/Icon';
-import {LoadingSpinner} from '@/components/ui/LoadingSpinner'; // Add this import
-import {Command} from 'cmdk';
+import {CategoryCombobox} from '@/components/CategoryCombobox';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
 
@@ -36,9 +35,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
-  const [categoryInput, setCategoryInput] = useState('');
-  const [isAddingCategory] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   // Fetch Categories from the API
   useEffect(() => {
@@ -89,12 +85,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
     setImage(null);
     setImagePreview(null);
   }
-
-  // Filter categories based on input
-  const filteredCategories = categories.filter(
-    (category) =>
-      !categoryInput || category.title.toLowerCase().includes(categoryInput.toLowerCase()),
-  );
 
   // Handle new category creation
   const handleAddCategory = async (categoryTitle: string) => {
@@ -215,22 +205,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
     }
   }
 
-  // Add this useEffect near your other effects
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const commandRoot = document.querySelector('[cmdk-root]');
-      const isCommandInput = target.closest('[cmdk-input]');
-
-      if (commandRoot && !commandRoot.contains(target) && !isCommandInput) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   return (
     <div>
       {/* Success Message */}
@@ -298,112 +272,16 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
 
         {/* Category field */}
         <div>
-          <label className="flex flex-col gap-y-2">
-            Category *
-            <div className="relative w-full">
-              <Command
-                className="relative"
-                shouldFilter={false}
-                loop={true}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setIsOpen(false);
-                  }
-                }}
-              >
-                <div className="relative">
-                  <Command.Input
-                    value={
-                      selectedCategory
-                        ? categories.find((c) => c._id === selectedCategory)?.title || ''
-                        : categoryInput
-                    }
-                    onValueChange={(value) => {
-                      setCategoryInput(value);
-                      if (selectedCategory) {
-                        setSelectedCategory(''); // Clear selection only when actively typing
-                      }
-                      setIsOpen(true);
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsOpen(!isOpen);
-                    }}
-                    readOnly={selectedCategory !== ''} // Make input readonly when category is selected
-                    className="w-full p-4 border border-gray-300 rounded cursor-pointer"
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                    {selectedCategory && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedCategory('');
-                          setCategoryInput('');
-                        }}
-                        className="p-1 rounded-md"
-                        title="Remove selected category"
-                      >
-                        <Icon name="close" width={16} height={16} />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setIsOpen(!isOpen);
-                      }}
-                      className="p-1"
-                    >
-                      <Icon name="chevrondown" width={16} height={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {isOpen && (
-                  <div className="absolute w-full mt-2 bg-dimmed border border-accent rounded-md shadow-lg z-[60]">
-                    <Command.List className="max-h-[300px] overflow-auto p-2">
-                      <Command.Empty className="p-4 text-sm text-gray-500">
-                        Ingen kategorier funnet.
-                        {categoryInput && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleAddCategory(categoryInput);
-                              setIsOpen(false);
-                            }}
-                            className="button-primary-accent text-lg flex items-center gap-1 mt-2 text-secondary"
-                          >
-                            <Icon name="add" width={24} height={24} /> Opprett &ldquo;
-                            {categoryInput}&rdquo;
-                            {isAddingCategory && <LoadingSpinner size="sm" />}
-                          </button>
-                        )}
-                      </Command.Empty>
-
-                      {filteredCategories.map((category) => (
-                        <Command.Item
-                          key={category._id}
-                          value={category._id}
-                          onSelect={() => {
-                            // Use setTimeout to ensure state updates happen after event handling
-                            setTimeout(() => {
-                              setSelectedCategory(category._id);
-                              setCategoryInput('');
-                              setIsOpen(false);
-                            }, 0);
-                          }}
-                          className="px-4 py-2 cursor-pointer hover:bg-dimmed focus:bg-dimmed outline-none rounded"
-                        >
-                          {category.title}
-                        </Command.Item>
-                      ))}
-                    </Command.List>
-                  </div>
-                )}
-              </Command>
-            </div>
-          </label>
+          <CategoryCombobox
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelect={setSelectedCategory}
+            onCreateNew={async (title) => {
+              await handleAddCategory(title);
+            }}
+            label="Category"
+            required
+          />
         </div>
 
         {/* Size */}

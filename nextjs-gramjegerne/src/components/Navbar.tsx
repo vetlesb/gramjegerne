@@ -66,6 +66,15 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
+                    className={`text-lg text-center block w-full ${pathname === '/trips' ? 'menu-active' : 'menu-item'}`}
+                    href="/trips"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Trips (beta)
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     className={`text-lg text-center block w-full ${pathname === '/maps' ? 'menu-active' : 'menu-item'}`}
                     href="/maps"
                     onClick={() => setIsMenuOpen(false)}

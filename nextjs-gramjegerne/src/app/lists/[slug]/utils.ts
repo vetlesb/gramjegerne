@@ -39,6 +39,11 @@ export function LIST_QUERY(slug: string) {
     name,
     slug
   },
+  "connectedTrip": connectedTrip->{
+    _id,
+    name,
+    slug
+  },
   "items": items[] {
     _key,
     _type,
@@ -77,6 +82,11 @@ export function SHARED_LIST_QUERY(slug: string) {
     email
   },
   "connectedMap": connectedMap->{
+    _id,
+    name,
+    slug
+  },
+  "connectedTrip": connectedTrip->{
     _id,
     name,
     slug
@@ -207,6 +217,11 @@ export interface List {
     email: string;
   };
   connectedMap?: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+  };
+  connectedTrip?: {
     _id: string;
     name: string;
     slug: {current: string};

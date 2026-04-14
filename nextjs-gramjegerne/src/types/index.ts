@@ -166,11 +166,17 @@ export interface SharedTripReference {
     image?: {
       asset: ImageAsset;
     };
+    startDate?: string;
+    endDate?: string;
     user: {
       _id: string;
       name: string;
       email: string;
     };
+  };
+  category?: {
+    _id: string;
+    title: string;
   };
   addedAt: string;
 }

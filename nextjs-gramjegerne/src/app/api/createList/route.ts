@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       ? parseInt(formData.get('participants') as string)
       : null;
     const connectedMapId = formData.get('connectedMapId') as string | null;
+    const connectedTripId = formData.get('connectedTripId') as string | null;
 
     // Validate required fields
     if (!name) {
@@ -89,6 +90,12 @@ export async function POST(request: Request) {
         connectedMap: {
           _type: 'reference',
           _ref: connectedMapId,
+        },
+      }),
+      ...(connectedTripId && {
+        connectedTrip: {
+          _type: 'reference',
+          _ref: connectedTripId,
         },
       }),
     };

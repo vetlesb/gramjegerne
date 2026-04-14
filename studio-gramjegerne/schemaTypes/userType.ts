@@ -107,6 +107,13 @@ export const userType = defineType({
               validation: (Rule) => Rule.required(),
             },
             {
+              name: 'category',
+              type: 'reference',
+              to: [{type: 'tripCategory'}],
+              title: 'Category',
+              description: 'User-chosen category for this shared trip',
+            },
+            {
               name: 'addedAt',
               type: 'datetime',
               initialValue: () => new Date().toISOString(),

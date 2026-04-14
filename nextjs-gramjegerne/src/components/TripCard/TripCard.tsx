@@ -7,43 +7,32 @@ import {IconButton} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
 import type {ImageAsset} from '@/types';
-import styles from './ListCard.module.scss';
+import styles from './TripCard.module.scss';
 
-interface ListItem {
-  _key: string;
-  quantity?: number;
-  item: {
-    _id: string;
-    name: string;
-    weight?: {
-      weight: number;
-      unit: string;
-    };
-    calories?: number;
-  } | null;
-}
-
-export interface ListCardProps {
+export interface TripCardProps {
   mode: 'owned' | 'shared';
   viewMode?: 'list' | 'grid';
 
-  // List data
-  listId: string;
+  // Trip data
+  tripId: string;
   name: string;
   slug: string;
   image?: ImageAsset;
-  completed?: boolean;
-  participants?: number;
-  days?: number;
-  items?: ListItem[];
+  startDate?: string;
+  endDate?: string;
+  category?: {_id: string; title: string};
+  participantCount?: number;
+  connectedListsCount?: number;
 
   // Shared mode specific
   ownerName?: string;
 
   // Actions (owned mode)
   onEdit?: () => void;
-  onDuplicate?: () => void;
   onDelete?: () => void;
+
+  // Shared trip navigation
+  isSharedTrip?: boolean;
 
   // Actions (shared mode)
   onRemove?: () => void;
@@ -52,30 +41,30 @@ export interface ListCardProps {
   imageUrlBuilder?: (asset: ImageAsset) => string;
 }
 
-export function ListCard({
+export function TripCard({
   mode,
   viewMode = 'grid',
   name,
   slug,
   image,
-  completed,
-  participants,
-  days,
-  items,
+  startDate,
+  endDate,
+  category,
+  participantCount,
+  connectedListsCount,
   ownerName,
+  isSharedTrip,
   onEdit,
-  onDuplicate,
   onDelete,
   onRemove,
   imageUrlBuilder,
-}: ListCardProps) {
+}: TripCardProps) {
   const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const imageUrl = image && imageUrlBuilder ? imageUrlBuilder(image) : null;
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
@@ -93,40 +82,21 @@ export function ListCard({
   }, [isMoreMenuOpen]);
 
   const handleClick = () => {
-    const url = mode === 'shared' ? `/lists/${slug}?shared=true` : `/lists/${slug}`;
+    const url = isSharedTrip ? `/trips/${slug}?shared=true` : `/trips/${slug}`;
     router.push(url);
   };
 
-  // Calculate totals
-  const {totalWeight, totalCalories} = (() => {
-    let weight = 0;
-    let calories = 0;
-
-    items?.forEach((item) => {
-      if (!item.item) return;
-      const quantity = item.quantity || 1;
-
-      if (item.item.weight?.weight) {
-        weight += item.item.weight.weight * quantity;
-      }
-
-      if (item.item.calories) {
-        calories += item.item.calories * quantity;
-      }
-    });
-
-    return {totalWeight: weight, totalCalories: calories};
-  })();
-
-  // Format functions
-  const formatWeight = (weightInGrams: number): string => {
-    const weightInKg = weightInGrams / 1000;
-    return `${weightInKg.toFixed(3)} kg`;
+  // Format date range
+  const formatDateRange = (): string | null => {
+    if (!startDate && !endDate) return null;
+    const opts: Intl.DateTimeFormatOptions = {day: 'numeric', month: 'short'};
+    const start = startDate ? new Date(startDate).toLocaleDateString('nb-NO', opts) : '';
+    const end = endDate ? new Date(endDate).toLocaleDateString('nb-NO', opts) : '';
+    if (start && end) return `${start} - ${end}`;
+    return start || end;
   };
 
-  const formatNumber = (num: number): string => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  };
+  const dateRange = formatDateRange();
 
   return (
     <li className={viewMode === 'list' ? styles.cardList : styles.card}>
@@ -136,13 +106,6 @@ export function ListCard({
       >
         {/* Image */}
         <div className={styles.imageContainer}>
-          {/* Status tag - only in grid view */}
-          {viewMode === 'grid' && mode === 'owned' && (
-            <div className={styles.statusTag}>
-              <Tag>{completed ? 'Completed' : 'Planned'}</Tag>
-            </div>
-          )}
-
           {/* Overlay actions - only in grid view */}
           {viewMode === 'grid' && (
             <div className={styles.overlayActions}>
@@ -155,18 +118,8 @@ export function ListCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit list"
-                    title="Edit list"
-                  />
-                  <IconButton
-                    iconName="duplicate"
-                    variant="trans"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDuplicate?.();
-                    }}
-                    aria-label="Duplicate list"
-                    title="Duplicate list"
+                    aria-label="Edit trip"
+                    title="Edit trip"
                   />
                   <IconButton
                     iconName="delete"
@@ -175,36 +128,36 @@ export function ListCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete list"
-                    title="Delete list"
+                    aria-label="Delete trip"
+                    title="Delete trip"
                   />
                 </>
-              ) : onRemove ? (
+              ) : (
                 <IconButton
                   iconName="delete"
                   variant="trans"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRemove();
+                    onRemove?.();
                   }}
-                  aria-label="Remove from shared lists"
-                  title="Remove from shared lists"
+                  aria-label="Remove from shared trips"
+                  title="Remove from shared trips"
                 />
-              ) : null}
+              )}
             </div>
           )}
 
           {imageUrl ? (
-            <Image 
-              src={imageUrl} 
-              alt={name} 
-              width={800} 
-              height={450} 
+            <Image
+              src={imageUrl}
+              alt={name}
+              width={800}
+              height={450}
               className={styles.image}
               onClick={viewMode === 'grid' ? handleClick : undefined}
             />
           ) : (
-            <div 
+            <div
               className={styles.imagePlaceholder}
               onClick={viewMode === 'grid' ? handleClick : undefined}
             />
@@ -216,23 +169,21 @@ export function ListCard({
           <h2 className={styles.title}>{name}</h2>
 
           <div className={styles.metadata}>
-            {/* Status tag for list view */}
-            {viewMode === 'list' && mode === 'owned' && (
-              <Tag>{completed ? 'Completed' : 'Planned'}</Tag>
-            )}
-
+            {category && <Tag>{category.title}</Tag>}
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
-            {mode === 'owned' && participants && <Tag iconName="user">{participants}</Tag>}
-            {days && <Tag iconName="calendar">{days}</Tag>}
-            {totalWeight > 0 && <Tag iconName="weight">{formatWeight(totalWeight)}</Tag>}
-            {totalCalories > 0 && <Tag iconName="calories">{formatNumber(totalCalories)} kcal</Tag>}
+            {dateRange && <Tag iconName="calendar">{dateRange}</Tag>}
+            {participantCount != null && participantCount > 0 && (
+              <Tag iconName="user">{participantCount}</Tag>
+            )}
+            {connectedListsCount != null && connectedListsCount > 0 && (
+              <Tag iconName="list">{connectedListsCount} lists</Tag>
+            )}
           </div>
         </div>
 
-        {/* Actions - only in list view, outside image */}
+        {/* Actions - only in list view */}
         {viewMode === 'list' && (
           <div className={styles.actions}>
-            {/* Desktop: Show all buttons */}
             <div className={styles.desktopActions}>
               {mode === 'owned' ? (
                 <>
@@ -243,18 +194,8 @@ export function ListCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit list"
-                    title="Edit list"
-                  />
-                  <IconButton
-                    iconName="duplicate"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDuplicate?.();
-                    }}
-                    aria-label="Duplicate list"
-                    title="Duplicate list"
+                    aria-label="Edit trip"
+                    title="Edit trip"
                   />
                   <IconButton
                     iconName="delete"
@@ -263,26 +204,24 @@ export function ListCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete list"
-                    title="Delete list"
+                    aria-label="Delete trip"
+                    title="Delete trip"
                   />
                 </>
-              ) : onRemove ? (
+              ) : (
                 <IconButton
                   iconName="delete"
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRemove();
+                    onRemove?.();
                   }}
-                  aria-label="Remove from shared lists"
-                  title="Remove from shared lists"
+                  aria-label="Remove from shared trips"
+                  title="Remove from shared trips"
                 />
-              ) : null}
+              )}
             </div>
 
-            {/* Mobile/Tablet: Show "More" dropdown */}
-            {(mode === 'owned' || onRemove) && (
             <div className={styles.mobileActions} ref={moreMenuRef}>
               <IconButton
                 iconName="ellipsis"
@@ -315,17 +254,6 @@ export function ListCard({
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsMoreMenuOpen(false);
-                          onDuplicate?.();
-                        }}
-                      >
-                        <Icon name="duplicate" />
-                        Duplicate
-                      </button>
-                      <button
-                        className={styles.menuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsMoreMenuOpen(false);
                           onDelete?.();
                         }}
                       >
@@ -333,23 +261,22 @@ export function ListCard({
                         Delete
                       </button>
                     </>
-                  ) : onRemove ? (
+                  ) : (
                     <button
                       className={styles.menuItem}
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsMoreMenuOpen(false);
-                        onRemove();
+                        onRemove?.();
                       }}
                     >
                       <Icon name="delete" />
                       Remove
                     </button>
-                  ) : null}
+                  )}
                 </div>
               )}
             </div>
-            )}
           </div>
         )}
       </div>

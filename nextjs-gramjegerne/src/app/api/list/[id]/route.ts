@@ -21,6 +21,10 @@ interface UpdateData {
     _type: 'reference';
     _ref: string;
   } | null;
+  connectedTrip?: {
+    _type: 'reference';
+    _ref: string;
+  } | null;
   [key: string]: unknown;
 }
 
@@ -94,7 +98,7 @@ export async function PATCH(request: NextRequest) {
     const weight = formData.get('weight');
     if (weight) updateData.weight = parseFloat(weight.toString());
 
-    // Handle connected trip
+    // Handle connected map
     const connectedMapId = formData.get('connectedMapId');
     if (connectedMapId) {
       updateData.connectedMap = {
@@ -102,8 +106,18 @@ export async function PATCH(request: NextRequest) {
         _ref: connectedMapId.toString(),
       };
     } else if (connectedMapId === '') {
-      // Empty string means user wants to remove the connection
       updateData.connectedMap = null;
+    }
+
+    // Handle connected trip
+    const connectedTripId = formData.get('connectedTripId');
+    if (connectedTripId) {
+      updateData.connectedTrip = {
+        _type: 'reference',
+        _ref: connectedTripId.toString(),
+      };
+    } else if (connectedTripId === '') {
+      updateData.connectedTrip = null;
     }
 
     // Handle image upload
