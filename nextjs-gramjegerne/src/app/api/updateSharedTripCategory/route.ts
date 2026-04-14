@@ -27,6 +27,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const sharedTrips = user.sharedTrips || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updated = sharedTrips.map((entry: any) => {
       if (entry.trip?._ref === tripId) {
         return {

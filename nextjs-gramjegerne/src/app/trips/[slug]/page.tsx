@@ -1,7 +1,6 @@
 'use client';
 
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
-import {Icon} from '@/components/Icon';
 import {TripShareButton} from '@/components/TripShareButton';
 import {ConnectListDialog} from '@/components/ConnectListDialog';
 import {ListCard} from '@/components/ListCard/ListCard';
@@ -10,7 +9,7 @@ import {Tag} from '@/components/Tag';
 import {urlFor as urlForImage} from '@/sanity/images';
 import {client} from '@/sanity/client';
 import {useSession} from 'next-auth/react';
-import {usePathname, useSearchParams, useRouter} from 'next/navigation';
+import {usePathname, useSearchParams} from 'next/navigation';
 import {groq} from 'next-sanity';
 import {useCallback, useEffect, useState} from 'react';
 import {useDelayedLoader} from '@/hooks/useDelayedLoader';
@@ -73,7 +72,6 @@ export default function TripDetailPage() {
   const {data: session} = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const slug = pathname.split('/').pop() || '';
   const isSharedMode = searchParams.get('shared') === 'true';
 
@@ -81,7 +79,6 @@ export default function TripDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const showLoader = useDelayedLoader(isLoading, 300);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
-  const [disconnectingListId, setDisconnectingListId] = useState<string | null>(null);
 
   const getUserId = useCallback(() => {
     if (!session?.user?.id) return null;
@@ -139,7 +136,6 @@ export default function TripDetailPage() {
   }, [fetchTrip]);
 
   const handleDisconnectList = async (listId: string) => {
-    setDisconnectingListId(listId);
     try {
       const response = await fetch('/api/connectListToTrip', {
         method: 'DELETE',
@@ -152,8 +148,6 @@ export default function TripDetailPage() {
       await fetchTrip();
     } catch (error) {
       console.error('Error disconnecting list:', error);
-    } finally {
-      setDisconnectingListId(null);
     }
   };
 

@@ -2,7 +2,6 @@
 
 'use client';
 
-import {Icon} from '@/components/Icon';
 import {CategoryCombobox} from '@/components/CategoryCombobox';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
