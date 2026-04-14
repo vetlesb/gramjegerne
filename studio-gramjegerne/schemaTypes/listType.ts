@@ -146,11 +146,18 @@ const fields = [
     validation: (rule: ReferenceRule) => rule.required(),
   }),
   defineField({
+    name: 'connectedMap',
+    type: 'reference',
+    to: [{type: 'map'}],
+    title: 'Connected Map',
+    description: 'Optional map connection for map integration',
+  }),
+  defineField({
     name: 'connectedTrip',
     type: 'reference',
     to: [{type: 'trip'}],
     title: 'Connected Trip',
-    description: 'Optional trip connection for map integration',
+    description: 'Optional trip this list is part of',
   }),
 ];
 

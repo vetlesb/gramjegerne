@@ -63,6 +63,36 @@ export const userType = defineType({
       description: 'Lists shared with this user that they have saved',
     }),
     defineField({
+      name: 'sharedMaps',
+      title: 'Shared Maps',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'map',
+              type: 'reference',
+              to: [{type: 'map'}],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'addedAt',
+              type: 'datetime',
+              initialValue: () => new Date().toISOString(),
+            },
+          ],
+          preview: {
+            select: {
+              title: 'map.name',
+              subtitle: 'map.user.name',
+            },
+          },
+        },
+      ],
+      description: 'Maps shared with this user that they have saved',
+    }),
+    defineField({
       name: 'sharedTrips',
       title: 'Shared Trips',
       type: 'array',

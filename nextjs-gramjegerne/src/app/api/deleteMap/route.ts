@@ -12,10 +12,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     const {searchParams} = new URL(request.url);
-    const tripId = searchParams.get('tripId');
+    const mapId = searchParams.get('mapId');
 
-    if (!tripId) {
-      return NextResponse.json({error: 'Trip ID is required'}, {status: 400});
+    if (!mapId) {
+      return NextResponse.json({error: 'Map ID is required'}, {status: 400});
     }
 
     // Get user reference from Sanity
@@ -26,26 +26,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Verify the trip belongs to the user
-    const existingTripQuery = `*[_type == "trip" && _id == $tripId && user._ref == $userId][0]`;
-    const existingTrip = await client.fetch(existingTripQuery, {
-      tripId,
+    // Verify the map belongs to the user
+    const existingMapQuery = `*[_type == "map" && _id == $mapId && user._ref == $userId][0]`;
+    const existingMap = await client.fetch(existingMapQuery, {
+      mapId,
       userId: user._id,
     });
 
-    if (!existingTrip) {
-      return NextResponse.json({error: 'Trip not found'}, {status: 404});
+    if (!existingMap) {
+      return NextResponse.json({error: 'Map not found'}, {status: 404});
     }
 
-    // Delete the trip
-    await client.delete(tripId);
+    // Delete the map
+    await client.delete(mapId);
 
     return NextResponse.json({
       success: true,
-      message: 'Trip deleted successfully',
+      message: 'Map deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting trip:', error);
-    return NextResponse.json({error: 'Failed to delete trip'}, {status: 500});
+    console.error('Error deleting map:', error);
+    return NextResponse.json({error: 'Failed to delete map'}, {status: 500});
   }
 }

@@ -73,7 +73,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
 
       const user = await client.fetch(
         `*[_type == "user" && googleId == $googleId][0] {
-          sharedTrips[] {
+          sharedMaps[] {
             trip {
               _ref
             }
@@ -82,7 +82,7 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
         {googleId: rawGoogleId},
       );
 
-      const isAlreadySaved = user?.sharedTrips?.some(
+      const isAlreadySaved = user?.sharedMaps?.some(
         (shared: {trip: {_ref: string}}) => shared.trip._ref === trip._id,
       );
 
@@ -102,12 +102,12 @@ export default function ShareMapClient({trip}: ShareMapClientProps) {
 
     try {
       setIsSaving(true);
-      const response = await fetch('/api/addSharedTrip', {
+      const response = await fetch('/api/addSharedMap', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({tripId: trip._id}),
+        body: JSON.stringify({mapId: trip._id}),
       });
 
       if (!response.ok) {

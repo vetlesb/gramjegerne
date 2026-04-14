@@ -2,18 +2,18 @@
 import {useState, useCallback, useEffect, useRef, Suspense} from 'react';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {useDelayedLoader} from '@/hooks/useDelayedLoader';
-import {DeleteTripButton} from '@/components/deleteTripButton';
-import {EditTripDialog} from '@/components/EditTripDialog';
-import {AddTripDialog} from '@/components/AddTripDialog';
+import {DeleteMapButton} from '@/components/deleteMapButton';
+import {EditMapDialog} from '@/components/EditMapDialog';
+import {AddMapDialog} from '@/components/AddMapDialog';
 import {Icon} from '@/components/Icon';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {TripListItem, SharedTripReference, TripDocument, CampingSpot, Route} from '@/types';
+import {MapListItem, SharedMapReference, MapDocument, CampingSpot, Route} from '@/types';
 import {useSession} from 'next-auth/react';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
 import {toast} from 'sonner';
 import dynamicImport from 'next/dynamic';
-import {TripShareButton} from '@/components/TripShareButton';
+import {MapShareButton} from '@/components/MapShareButton';
 import type {TripMapRef} from '@/components/TripMap';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 
@@ -33,11 +33,11 @@ function MapsPageContent() {
   const {data: session} = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tripPlans, setTripPlans] = useState<TripListItem[]>([]);
-  const [sharedTrips, setSharedTrips] = useState<SharedTripReference[]>([]);
+  const [tripPlans, setTripPlans] = useState<MapListItem[]>([]);
+  const [sharedMaps, setSharedMaps] = useState<SharedMapReference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const showLoader = useDelayedLoader(isLoading, 300); // Only show loader after 300ms
-  const [editingTrip, setEditingTrip] = useState<TripListItem | null>(null);
+  const [editingTrip, setEditingTrip] = useState<MapListItem | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<'my' | 'shared'>('my');
   const [duplicatingTripId, setDuplicatingTripId] = useState<string | null>(null);
   const [isDockVisible, setIsDockVisible] = useState(false);
@@ -45,22 +45,22 @@ function MapsPageContent() {
   // Selected trip from query params or shareId
   const selectedTripId = searchParams.get('trip');
   const shareId = searchParams.get('share');
-  const [selectedTripData, setSelectedTripData] = useState<TripDocument | null>(null);
+  const [selectedTripData, setSelectedTripData] = useState<MapDocument | null>(null);
   const [isSharedMode, setIsSharedMode] = useState(false);
 
   // Full trips with spots/routes for map display
-  const [allTripsData, setAllTripsData] = useState<TripDocument[]>([]);
+  const [allTripsData, setAllTripsData] = useState<MapDocument[]>([]);
 
   // Fetch user's own trips (list view)
   const fetchTrips = useCallback(async () => {
     try {
-      const response = await fetch('/api/getTrips');
+      const response = await fetch('/api/getMaps');
       if (!response.ok) {
         throw new Error('Failed to fetch trips');
       }
       const data = await response.json();
       if (data.success) {
-        setTripPlans(data.trips);
+        setTripPlans(data.maps);
       }
     } catch (error) {
       console.error('Failed to fetch trips:', error);
@@ -73,7 +73,7 @@ function MapsPageContent() {
     if (!session?.user?.id) return;
 
     try {
-      const query = groq`*[_type == "trip" && user._ref == $userId] {
+      const query = groq`*[_type == "map" && user._ref == $userId] {
         _id,
         _type,
         name,
@@ -113,16 +113,16 @@ function MapsPageContent() {
   }, [session?.user?.id]);
 
   // Fetch shared trips
-  const fetchSharedTrips = useCallback(async () => {
+  const fetchSharedMaps = useCallback(async () => {
     if (!session?.user?.id) return;
 
     const rawGoogleId = session.user.id.replace('google_', '');
 
     const query = groq`*[_type == "user" && googleId == $googleId][0] {
-      sharedTrips[] {
+      sharedMaps[] {
         _key,
         addedAt,
-        trip-> {
+        map-> {
           _id,
           name,
           slug,
@@ -139,7 +139,7 @@ function MapsPageContent() {
     }`;
 
     const user = await client.fetch(query, {googleId: rawGoogleId});
-    setSharedTrips(user?.sharedTrips || []);
+    setSharedMaps(user?.sharedMaps || []);
   }, [session?.user?.id]);
 
   // Fetch full trip details for editing
@@ -147,7 +147,7 @@ function MapsPageContent() {
     if (!session?.user?.id) return;
 
     try {
-      const query = groq`*[_type == "trip" && _id == $tripId && user._ref == $userId][0] {
+      const query = groq`*[_type == "map" && _id == $tripId && user._ref == $userId][0] {
         _id,
         _type,
         name,
@@ -192,7 +192,7 @@ function MapsPageContent() {
   // Fetch shared trip by shareId
   const fetchSharedTrip = useCallback(async (shareId: string) => {
     try {
-      const query = groq`*[_type == "trip" && shareId == $shareId && isShared == true][0] {
+      const query = groq`*[_type == "map" && shareId == $shareId && isShared == true][0] {
         _id,
         _type,
         name,
@@ -243,12 +243,12 @@ function MapsPageContent() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchTrips(), fetchSharedTrips(), fetchAllTripsData()]);
+      await Promise.all([fetchTrips(), fetchSharedMaps(), fetchAllTripsData()]);
       setIsLoading(false);
     };
 
     loadData();
-  }, [fetchTrips, fetchSharedTrips, fetchAllTripsData]);
+  }, [fetchTrips, fetchSharedMaps, fetchAllTripsData]);
 
   // Load selected trip details or shared trip when query param changes
   useEffect(() => {
@@ -265,17 +265,17 @@ function MapsPageContent() {
     }
   }, [selectedTripId, shareId, fetchTripDetails, fetchSharedTrip]);
 
-  const handleRemoveSharedTrip = async (tripId: string) => {
+  const handleRemoveSharedMap = async (mapId: string) => {
     try {
-      const response = await fetch('/api/removeSharedTrip', {
+      const response = await fetch('/api/removeSharedMap', {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({tripId}),
+        body: JSON.stringify({mapId}),
       });
 
       if (!response.ok) throw new Error('Failed to remove shared trip');
 
-      await fetchSharedTrips();
+      await fetchSharedMaps();
       toast.success('Shared trip removed');
     } catch (error) {
       console.error('Error removing shared trip:', error);
@@ -283,13 +283,13 @@ function MapsPageContent() {
     }
   };
 
-  const handleDuplicateTrip = async (tripId: string, tripName: string) => {
+  const handleDuplicateMap = async (mapId: string, mapName: string) => {
     try {
-      setDuplicatingTripId(tripId);
-      const response = await fetch('/api/duplicateTrip', {
+      setDuplicatingTripId(mapId);
+      const response = await fetch('/api/duplicateMap', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({tripId}),
+        body: JSON.stringify({mapId}),
       });
 
       if (!response.ok) {
@@ -297,7 +297,7 @@ function MapsPageContent() {
         throw new Error(errorData.error || 'Failed to duplicate trip');
       }
 
-      toast.success(`${tripName} duplicated successfully!`);
+      toast.success(`${mapName} duplicated successfully!`);
       await fetchTrips();
     } catch (error) {
       console.error('Error duplicating trip:', error);
@@ -378,7 +378,7 @@ function MapsPageContent() {
   };
 
   // Calculate total distance for a trip (sum of all routes)
-  const calculateTripDistance = (routes: TripListItem['routes']): number => {
+  const calculateTripDistance = (routes: MapListItem['routes']): number => {
     if (!routes || routes.length === 0) return 0;
     return routes.reduce((total, route) => {
       return total + calculateRouteDistance(route.waypoints);
@@ -386,7 +386,7 @@ function MapsPageContent() {
   };
 
   // Calculate total elevation gain for a trip (sum of all routes)
-  const calculateTripElevation = (routes: TripListItem['routes']): number => {
+  const calculateTripElevation = (routes: MapListItem['routes']): number => {
     if (!routes || routes.length === 0) return 0;
     return routes.reduce((total, route) => {
       return total + (route.elevationGain || 0);
@@ -409,17 +409,17 @@ function MapsPageContent() {
 
   // Save trip plan to Sanity
   const saveTripPlan = useCallback(
-    async (plan: Partial<TripDocument>) => {
+    async (plan: Partial<MapDocument>) => {
       if (!selectedTripData?._id) return;
 
       try {
-        const response = await fetch('/api/updateTrip', {
+        const response = await fetch('/api/updateMap', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tripId: selectedTripData._id,
+            mapId: selectedTripData._id,
             updates: plan,
           }),
         });
@@ -834,7 +834,7 @@ function MapsPageContent() {
   const isEditMode = Boolean(selectedTripId && selectedTripData && !isSharedMode);
   const isViewMode = Boolean((selectedTripId || shareId) && selectedTripData); // Edit or shared
 
-  if (showLoader && tripPlans.length === 0 && sharedTrips.length === 0) {
+  if (showLoader && tripPlans.length === 0 && sharedMaps.length === 0) {
     return (
       <ProtectedRoute>
         <main className="w-full h-screen flex items-center justify-center bg-primary">
@@ -933,10 +933,10 @@ function MapsPageContent() {
                   <div className="flex items-center gap-2">
                     {/* Share Button - only in edit mode */}
                     {!isSharedMode && (
-                      <TripShareButton
-                        tripId={selectedTripData._id}
+                      <MapShareButton
+                        mapId={selectedTripData._id}
                         shareId={selectedTripData.shareId}
-                        tripName={selectedTripData.name}
+                        mapName={selectedTripData.name}
                       />
                     )}
                     {/* Mobile Close Dock Button */}
@@ -1190,7 +1190,7 @@ function MapsPageContent() {
               <p className="text-white/50 text-sm">No maps yet. Create your first map!</p>
             )}
 
-            {selectedFilter === 'shared' && sharedTrips.length === 0 && (
+            {selectedFilter === 'shared' && sharedMaps.length === 0 && (
               <p className="text-white/50 text-sm">No shared maps yet.</p>
             )}
 
@@ -1246,9 +1246,9 @@ function MapsPageContent() {
                           >
                             <Icon name="edit" width={20} height={20} />
                           </button>
-                          <DeleteTripButton
-                            tripId={plan._id}
-                            tripName={plan.name}
+                          <DeleteMapButton
+                            mapId={plan._id}
+                            mapName={plan.name}
                             onSuccess={() => {
                               setTripPlans((prev) => prev.filter((p) => p._id !== plan._id));
                             }}
@@ -1261,34 +1261,34 @@ function MapsPageContent() {
 
               {/* Shared Maps */}
               {selectedFilter === 'shared' &&
-                sharedTrips.map((sharedTrip, index) => (
+                sharedMaps.map((sharedMap, index) => (
                   <div
-                    key={sharedTrip._key || `shared_${sharedTrip.trip._id}_${index}`}
+                    key={sharedMap._key || `shared_${sharedMap.map._id}_${index}`}
                     onClick={() => {
-                      if (sharedTrip.trip.shareId) {
-                        router.push(`/maps?share=${sharedTrip.trip.shareId}`);
+                      if (sharedMap.map.shareId) {
+                        router.push(`/maps?share=${sharedMap.map.shareId}`);
                       }
                     }}
                     className="map-card p-1 lg:p-3 cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-primary truncate">{sharedTrip.trip.name}</h4>
+                        <h4 className="font-medium text-primary truncate">{sharedMap.map.name}</h4>
                         <div className="flex flex-wrap gap-1 mt-2">
                           <span className="text-xs bg-white/10 text-white px-2 py-1 rounded flex items-center gap-1">
                             <Icon name="user" width={12} height={12} />
-                            {sharedTrip.trip.user.name}
+                            {sharedMap.map.user.name}
                           </span>
-                          {sharedTrip.trip.routesCount > 0 && (
+                          {sharedMap.map.routesCount > 0 && (
                             <span className="text-xs bg-white/10 text-white px-2 py-1 rounded flex items-center gap-1">
                               <Icon name="route" width={12} height={12} />
-                              {sharedTrip.trip.routesCount}
+                              {sharedMap.map.routesCount}
                             </span>
                           )}
-                          {sharedTrip.trip.campingSpotsCount > 0 && (
+                          {sharedMap.map.campingSpotsCount > 0 && (
                             <span className="text-xs bg-white/10 text-white px-2 py-1 rounded flex items-center gap-1">
                               <Icon name="viewpoint" width={12} height={12} />
-                              {sharedTrip.trip.campingSpotsCount}
+                              {sharedMap.map.campingSpotsCount}
                             </span>
                           )}
                         </div>
@@ -1297,13 +1297,13 @@ function MapsPageContent() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDuplicateTrip(sharedTrip.trip._id, sharedTrip.trip.name);
+                            handleDuplicateMap(sharedMap.map._id, sharedMap.map.name);
                           }}
-                          disabled={duplicatingTripId === sharedTrip.trip._id}
+                          disabled={duplicatingTripId === sharedMap.map._id}
                           className="button-ghost p-1.5 min-w-0"
                           title="Duplicate map"
                         >
-                          {duplicatingTripId === sharedTrip.trip._id ? (
+                          {duplicatingTripId === sharedMap.map._id ? (
                             <div className="animate-spin w-4 h-4 border border-accent border-t-transparent rounded-full" />
                           ) : (
                             <Icon name="duplicate" width={20} height={20} />
@@ -1312,7 +1312,7 @@ function MapsPageContent() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRemoveSharedTrip(sharedTrip.trip._id);
+                            handleRemoveSharedMap(sharedMap.map._id);
                           }}
                           className="button-ghost p-1.5 min-w-0"
                           title="Remove shared map"
@@ -1328,7 +1328,7 @@ function MapsPageContent() {
 
           {/* Sticky Bottom Add Button */}
           <div className="p-4 bg-background border-t border-white/10 flex-shrink-0">
-            <AddTripDialog
+            <AddMapDialog
               onSuccess={async (newTrip) => {
                 setTripPlans((prev) => [newTrip, ...prev]);
               }}
@@ -1340,8 +1340,8 @@ function MapsPageContent() {
 
         {/* Edit Trip Dialog */}
         {editingTrip && (
-          <EditTripDialog
-            trip={editingTrip}
+          <EditMapDialog
+            map={editingTrip}
             open={!!editingTrip}
             onOpenChange={(open) => {
               if (!open) setEditingTrip(null);

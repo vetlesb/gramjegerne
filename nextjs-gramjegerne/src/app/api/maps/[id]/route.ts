@@ -21,8 +21,8 @@ export async function GET(request: NextRequest, {params}: {params: Promise<{id: 
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Fetch the specific trip with full details
-    const tripQuery = `*[_type == "trip" && _id == $tripId && user._ref == $userId][0] {
+    // Fetch the specific map with full details
+    const mapQuery = `*[_type == "map" && _id == $mapId && user._ref == $userId][0] {
       _id,
       _createdAt,
       _updatedAt,
@@ -36,21 +36,21 @@ export async function GET(request: NextRequest, {params}: {params: Promise<{id: 
       user
     }`;
 
-    const trip = await client.fetch(tripQuery, {
-      tripId: id,
+    const map = await client.fetch(mapQuery, {
+      mapId: id,
       userId: user._id,
     });
 
-    if (!trip) {
-      return NextResponse.json({error: 'Trip not found'}, {status: 404});
+    if (!map) {
+      return NextResponse.json({error: 'Map not found'}, {status: 404});
     }
 
     return NextResponse.json({
       success: true,
-      trip,
+      map,
     });
   } catch (error) {
-    console.error('Error fetching trip:', error);
-    return NextResponse.json({error: 'Failed to fetch trip'}, {status: 500});
+    console.error('Error fetching map:', error);
+    return NextResponse.json({error: 'Failed to fetch map'}, {status: 500});
   }
 }

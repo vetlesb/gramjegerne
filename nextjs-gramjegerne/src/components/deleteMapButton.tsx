@@ -5,14 +5,14 @@ import {useRouter} from 'next/navigation';
 import {Icon} from './Icon';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from './ui/dialog';
 
-interface DeleteTripButtonProps {
-  tripId: string;
-  tripName: string;
+interface DeleteMapButtonProps {
+  mapId: string;
+  mapName: string;
   redirectTo?: string;
   onSuccess?: () => void;
 }
 
-export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: DeleteTripButtonProps) {
+export function DeleteMapButton({mapId, mapName, redirectTo, onSuccess}: DeleteMapButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,13 +24,13 @@ export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: Dele
     setError(null);
 
     try {
-      const response = await fetch(`/api/deleteTrip?tripId=${encodeURIComponent(tripId)}`, {
+      const response = await fetch(`/api/deleteMap?mapId=${encodeURIComponent(mapId)}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete trip');
+        throw new Error(data.error || 'Failed to delete map');
       }
 
       if (redirectTo) {
@@ -42,7 +42,7 @@ export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: Dele
         onSuccess();
       }
     } catch (error) {
-      console.error('Error deleting trip:', error);
+      console.error('Error deleting map:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred.');
     } finally {
       setIsDeleting(false);
@@ -76,7 +76,7 @@ export function DeleteTripButton({tripId, tripName, redirectTo, onSuccess}: Dele
             </DialogTitle>
           </DialogHeader>
           <div className="mb-4 text-lg">
-            <span className="text-xl p-4 bg-dimmed-hover rounded-md">{tripName}</span>
+            <span className="text-xl p-4 bg-dimmed-hover rounded-md">{mapName}</span>
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <DialogFooter className="gap-y-4 gap-x-1">

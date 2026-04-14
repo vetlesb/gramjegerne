@@ -3,7 +3,7 @@ import {getServerSession} from 'next-auth';
 import {authOptions} from '../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {name, description, startDate, endDate} = body;
+    const {mapId, updates} = body;
 
-    if (!name) {
-      return NextResponse.json({error: 'Name is required'}, {status: 400});
+    if (!mapId) {
+      return NextResponse.json({error: 'Map ID is required'}, {status: 400});
     }
 
     // Get user reference from Sanity
@@ -26,29 +26,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Create the trip document
-    const tripDoc = {
-      _type: 'trip',
-      name,
-      description,
-      startDate,
-      endDate,
-      campingSpots: [],
-      routes: [],
-      user: {
-        _type: 'reference',
-        _ref: user._id,
-      },
-    };
+    // Verify the map belongs to the user
+    const existingMapQuery = `*[_type == "map" && _id == $mapId && user._ref == $userId][0]`;
+    const existingMap = await client.fetch(existingMapQuery, {
+      mapId,
+      userId: user._id,
+    });
 
-    const result = await client.create(tripDoc);
+    if (!existingMap) {
+      return NextResponse.json({error: 'Map not found'}, {status: 404});
+    }
+
+    // Update the map
+    const result = await client.patch(mapId).set(updates).commit();
 
     return NextResponse.json({
       success: true,
-      trip: result,
+      map: result,
     });
   } catch (error) {
-    console.error('Error creating trip:', error);
-    return NextResponse.json({error: 'Failed to create trip'}, {status: 500});
+    console.error('Error updating map:', error);
+    return NextResponse.json({error: 'Failed to update map'}, {status: 500});
   }
 }

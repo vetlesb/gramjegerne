@@ -23,7 +23,7 @@ interface ActionBarProps {
   onAddToList?: () => void;
   onShare?: () => void;
   onViewMap?: () => void;
-  connectedTripName?: string;
+  connectedMapName?: string;
 
   // Lists overview mode props
   onAddList?: () => void;
@@ -44,7 +44,7 @@ export function ActionBar({
   onAddToList,
   onShare,
   onViewMap,
-  connectedTripName,
+  connectedMapName,
   sortBy = 'name',
   onSortChange,
   onAddList,
@@ -150,7 +150,7 @@ export function ActionBar({
             {onViewMap && (
               <Button
                 onClick={onViewMap}
-                title={connectedTripName ? `View ${connectedTripName} map` : 'View map'}
+                title={connectedMapName ? `View ${connectedMapName} map` : 'View map'}
               >
                 Map
               </Button>

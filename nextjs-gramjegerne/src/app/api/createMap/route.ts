@@ -3,7 +3,7 @@ import {getServerSession} from 'next-auth';
 import {authOptions} from '../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
 
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,10 +12,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {tripId, updates} = body;
+    const {name, description, startDate, endDate} = body;
 
-    if (!tripId) {
-      return NextResponse.json({error: 'Trip ID is required'}, {status: 400});
+    if (!name) {
+      return NextResponse.json({error: 'Name is required'}, {status: 400});
     }
 
     // Get user reference from Sanity
@@ -26,26 +26,29 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Verify the trip belongs to the user
-    const existingTripQuery = `*[_type == "trip" && _id == $tripId && user._ref == $userId][0]`;
-    const existingTrip = await client.fetch(existingTripQuery, {
-      tripId,
-      userId: user._id,
-    });
+    // Create the map document
+    const mapDoc = {
+      _type: 'map',
+      name,
+      description,
+      startDate,
+      endDate,
+      campingSpots: [],
+      routes: [],
+      user: {
+        _type: 'reference',
+        _ref: user._id,
+      },
+    };
 
-    if (!existingTrip) {
-      return NextResponse.json({error: 'Trip not found'}, {status: 404});
-    }
-
-    // Update the trip
-    const result = await client.patch(tripId).set(updates).commit();
+    const result = await client.create(mapDoc);
 
     return NextResponse.json({
       success: true,
-      trip: result,
+      map: result,
     });
   } catch (error) {
-    console.error('Error updating trip:', error);
-    return NextResponse.json({error: 'Failed to update trip'}, {status: 500});
+    console.error('Error creating map:', error);
+    return NextResponse.json({error: 'Failed to create map'}, {status: 500});
   }
 }

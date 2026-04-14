@@ -17,7 +17,7 @@ interface UpdateData {
     };
   } | null;
   completed: boolean;
-  connectedTrip?: {
+  connectedMap?: {
     _type: 'reference';
     _ref: string;
   } | null;
@@ -59,7 +59,7 @@ export async function PATCH(request: NextRequest) {
         weight,
         image,
         completed,
-        "connectedTrip": connectedTrip->{
+        "connectedMap": connectedMap->{
           _id,
           name,
           slug
@@ -95,15 +95,15 @@ export async function PATCH(request: NextRequest) {
     if (weight) updateData.weight = parseFloat(weight.toString());
 
     // Handle connected trip
-    const connectedTripId = formData.get('connectedTripId');
-    if (connectedTripId) {
-      updateData.connectedTrip = {
+    const connectedMapId = formData.get('connectedMapId');
+    if (connectedMapId) {
+      updateData.connectedMap = {
         _type: 'reference',
-        _ref: connectedTripId.toString(),
+        _ref: connectedMapId.toString(),
       };
-    } else if (connectedTripId === '') {
+    } else if (connectedMapId === '') {
       // Empty string means user wants to remove the connection
-      updateData.connectedTrip = null;
+      updateData.connectedMap = null;
     }
 
     // Handle image upload

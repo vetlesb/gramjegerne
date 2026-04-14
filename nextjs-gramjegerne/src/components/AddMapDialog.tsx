@@ -8,17 +8,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {useState} from 'react';
-import {TripListItem} from '@/types';
+import {MapListItem} from '@/types';
 
-interface AddTripDialogProps {
-  onSuccess?: (newTrip: TripListItem) => Promise<void>;
+interface AddMapDialogProps {
+  onSuccess?: (newMap: MapListItem) => Promise<void>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: AddTripDialogProps) {
+export function AddMapDialog({onSuccess, open: controlledOpen, onOpenChange}: AddMapDialogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [tripName, setTripName] = useState('');
+  const [mapName, setMapName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -28,43 +28,43 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
   const handleOpenChange = onOpenChange || setIsDialogOpen;
 
   const resetForm = () => {
-    setTripName('');
+    setMapName('');
     setError(null);
     setSuccessMessage(null);
   };
 
-  const handleCreateTrip = async () => {
-    if (!tripName.trim()) return;
+  const handleCreateMap = async () => {
+    if (!mapName.trim()) return;
 
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/createTrip', {
+      const response = await fetch('/api/createMap', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: tripName.trim(),
+          name: mapName.trim(),
           defaultTileLayer: 'Kartverket Raster',
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create trip');
+        throw new Error(errorData.error || 'Failed to create map');
       }
 
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.error || 'Failed to create trip');
+        throw new Error(data.error || 'Failed to create map');
       }
 
-      setSuccessMessage('Trip created!');
+      setSuccessMessage('Map created!');
 
       if (onSuccess) {
-        await onSuccess(data.trip);
+        await onSuccess(data.map);
       }
 
       setTimeout(() => {
@@ -72,8 +72,8 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
         resetForm();
       }, 500);
     } catch (error) {
-      console.error('Error creating trip:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create trip');
+      console.error('Error creating map:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create map');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,8 +118,8 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
                   <input
                     className="w-full max-w-full p-4"
                     type="text"
-                    value={tripName}
-                    onChange={(e) => setTripName(e.target.value)}
+                    value={mapName}
+                    onChange={(e) => setMapName(e.target.value)}
                     placeholder="e.g., Jotunheimen Summer 2024"
                     required
                     autoFocus
@@ -136,9 +136,9 @@ export function AddTripDialog({onSuccess, open: controlledOpen, onOpenChange}: A
               </button>
             </DialogClose>
             <button
-              onClick={handleCreateTrip}
+              onClick={handleCreateMap}
               className="button-primary-accent"
-              disabled={isSubmitting || !tripName.trim()}
+              disabled={isSubmitting || !mapName.trim()}
             >
               {isSubmitting ? 'Creating...' : 'Create'}
             </button>

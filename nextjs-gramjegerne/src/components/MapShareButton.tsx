@@ -3,26 +3,26 @@ import {useState} from 'react';
 import {toast} from 'sonner';
 import {Icon} from './Icon';
 
-interface TripShareButtonProps {
-  tripId: string;
+interface MapShareButtonProps {
+  mapId: string;
   shareId?: string;
-  tripName: string;
+  mapName: string;
 }
 
-export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProps) {
+export function MapShareButton({mapId, shareId, mapName}: MapShareButtonProps) {
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
   const generateShareId = async (): Promise<string> => {
     try {
-      const response = await fetch('/api/updateTrip', {
+      const response = await fetch('/api/updateMap', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tripId,
+          mapId,
           updates: {
-            shareId: `trip_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            shareId: `map_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             isShared: true,
           },
         }),
@@ -35,7 +35,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
       }
 
       const data = await response.json();
-      return data.trip.shareId;
+      return data.map.shareId;
     } catch (error) {
       console.error('Error generating share ID:', error);
       throw error;
@@ -58,7 +58,7 @@ export function TripShareButton({tripId, shareId, tripName}: TripShareButtonProp
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
 
-      toast.success(`${tripName} link copied to clipboard!`, {
+      toast.success(`${mapName} link copied to clipboard!`, {
         duration: 3000,
         position: 'bottom-center',
       });

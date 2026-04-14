@@ -37,6 +37,7 @@ export interface User {
   googleId: string;
   image?: string;
   sharedLists?: SharedListReference[];
+  sharedMaps?: SharedMapReference[];
   sharedTrips?: SharedTripReference[];
 }
 
@@ -58,9 +59,9 @@ export interface SharedListReference {
   addedAt: string;
 }
 
-export interface SharedTripReference {
+export interface SharedMapReference {
   _key: string;
-  trip: {
+  map: {
     _id: string;
     name: string;
     slug: {current: string};
@@ -93,6 +94,11 @@ export interface ListDocument {
   user: {
     _ref: string;
   };
+  connectedMap?: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+  };
   connectedTrip?: {
     _id: string;
     name: string;
@@ -115,7 +121,61 @@ export interface ListDocument {
   }>;
 }
 
-// New trip-related types following your existing pattern
+// Trip feature types
+export interface TripCategory {
+  _id: string;
+  title: string;
+  slug: {current: string};
+}
+
+export interface TripDocument {
+  _id: string;
+  slug: {current: string};
+  name: string;
+  description?: string;
+  image?: {
+    asset: ImageAsset;
+  };
+  category?: {
+    _id: string;
+    title: string;
+  };
+  startDate?: string;
+  endDate?: string;
+  user: {
+    _ref: string;
+  };
+  shareId?: string;
+  isShared?: boolean;
+  _createdAt: string;
+  _updatedAt: string;
+}
+
+export interface TripOverviewItem extends TripDocument {
+  connectedListsCount: number;
+  participantCount: number;
+}
+
+export interface SharedTripReference {
+  _key: string;
+  trip: {
+    _id: string;
+    name: string;
+    slug: {current: string};
+    shareId?: string;
+    image?: {
+      asset: ImageAsset;
+    };
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+  addedAt: string;
+}
+
+// Map-related types (camping spots, routes, etc.)
 export type SpotCategory = 'camp' | 'fishing' | 'viewpoint';
 
 export interface CampingSpot {
@@ -150,7 +210,7 @@ export interface Route {
   };
 }
 
-export interface TripDocument {
+export interface MapDocument {
   _id: string;
   slug: {current: string};
   name: string;
@@ -173,7 +233,7 @@ export interface TripDocument {
 }
 
 // Simplified trip interface for listing page (with counts instead of full arrays)
-export interface TripListItem {
+export interface MapListItem {
   _id: string;
   name: string;
   description?: string;

@@ -864,11 +864,11 @@ export default function ListPage() {
             }
           }}
           onViewMap={
-            list?.connectedTrip
-              ? () => router.push(`/maps/${list.connectedTrip!._id}?from=list&slug=${listSlug}`)
+            list?.connectedMap
+              ? () => router.push(`/maps/${list.connectedMap!._id}?from=list&slug=${listSlug}`)
               : undefined
           }
-          connectedTripName={list?.connectedTrip?.name}
+          connectedMapName={list?.connectedMap?.name}
           sortBy={sortBy}
           onSortChange={setSortBy}
           onSaveToMyLists={isSharedMode ? handleSaveToList : undefined}

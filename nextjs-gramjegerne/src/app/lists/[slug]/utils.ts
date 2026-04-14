@@ -34,7 +34,7 @@ export function LIST_QUERY(slug: string) {
   weight,
   participants,
   image,
-  "connectedTrip": connectedTrip->{
+  "connectedMap": connectedMap->{
     _id,
     name,
     slug
@@ -76,7 +76,7 @@ export function SHARED_LIST_QUERY(slug: string) {
     name,
     email
   },
-  "connectedTrip": connectedTrip->{
+  "connectedMap": connectedMap->{
     _id,
     name,
     slug
@@ -206,7 +206,7 @@ export interface List {
     name: string;
     email: string;
   };
-  connectedTrip?: {
+  connectedMap?: {
     _id: string;
     name: string;
     slug: {current: string};

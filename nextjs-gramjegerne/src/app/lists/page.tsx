@@ -68,7 +68,7 @@ function ListsPageContent() {
       completed,
       _updatedAt,
       _createdAt,
-      "connectedTrip": connectedTrip->{
+      "connectedMap": connectedMap->{
         _id,
         name,
         slug

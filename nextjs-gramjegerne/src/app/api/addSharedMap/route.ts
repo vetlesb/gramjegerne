@@ -3,9 +3,9 @@ import {getServerSession} from 'next-auth';
 import {authOptions} from '../auth/[...nextauth]/auth';
 import {client} from '@/sanity/client';
 
-interface SharedTripRef {
+interface SharedMapRef {
   _key: string;
-  trip: {
+  map: {
     _ref: string;
   };
   addedAt: string;
@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
-    const {tripId} = await request.json();
+    const {mapId} = await request.json();
 
-    if (!tripId) {
-      return NextResponse.json({error: 'Trip ID is required'}, {status: 400});
+    if (!mapId) {
+      return NextResponse.json({error: 'Map ID is required'}, {status: 400});
     }
 
     // Extract the raw Google ID from session (remove "google_" prefix)
@@ -36,18 +36,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Check if the trip is already in shared trips
-    const existingSharedTrip = user.sharedTrips?.find(
-      (shared: SharedTripRef) => shared.trip._ref === tripId,
+    // Check if the map is already in shared maps
+    const existingSharedMap = user.sharedMaps?.find(
+      (shared: SharedMapRef) => shared.map._ref === mapId,
     );
 
-    if (existingSharedTrip) {
-      return NextResponse.json({error: 'Trip already in shared trips'}, {status: 400});
+    if (existingSharedMap) {
+      return NextResponse.json({error: 'Map already in shared maps'}, {status: 400});
     }
 
-    // Get the trip details to include user info
-    const trip = await client.fetch(
-      `*[_type == "trip" && _id == $tripId][0] {
+    // Get the map details to include user info
+    const map = await client.fetch(
+      `*[_type == "map" && _id == $mapId][0] {
         _id,
         name,
         slug,
@@ -58,42 +58,42 @@ export async function POST(request: NextRequest) {
           email
         }
       }`,
-      {tripId},
+      {mapId},
     );
 
-    if (!trip) {
-      return NextResponse.json({error: 'Trip not found'}, {status: 404});
+    if (!map) {
+      return NextResponse.json({error: 'Map not found'}, {status: 404});
     }
 
-    // Add the trip to shared trips with a unique key
-    const sharedTripRef = {
+    // Add the map to shared maps with a unique key
+    const sharedMapRef = {
       _type: 'object',
-      _key: `shared_${tripId}_${Date.now()}`, // Generate unique key
-      trip: {
+      _key: `shared_${mapId}_${Date.now()}`, // Generate unique key
+      map: {
         _type: 'reference',
-        _ref: tripId,
+        _ref: mapId,
       },
       addedAt: new Date().toISOString(),
     };
 
     // Use set instead of append to ensure no duplicates
-    const currentSharedTrips = user.sharedTrips || [];
+    const currentSharedMaps = user.sharedMaps || [];
 
-    // Remove any existing references to this trip (in case of duplicates)
-    const filteredSharedTrips = currentSharedTrips.filter(
-      (shared: SharedTripRef) => shared.trip._ref !== tripId,
+    // Remove any existing references to this map (in case of duplicates)
+    const filteredSharedMaps = currentSharedMaps.filter(
+      (shared: SharedMapRef) => shared.map._ref !== mapId,
     );
 
-    const updatedSharedTrips = [...filteredSharedTrips, sharedTripRef];
+    const updatedSharedMaps = [...filteredSharedMaps, sharedMapRef];
 
     const updatedUser = await client
       .patch(user._id)
-      .set({sharedTrips: updatedSharedTrips})
+      .set({sharedMaps: updatedSharedMaps})
       .commit();
 
     return NextResponse.json({success: true, user: updatedUser});
   } catch (error) {
-    console.error('Error adding shared trip:', error);
+    console.error('Error adding shared map:', error);
     return NextResponse.json({error: 'Internal server error'}, {status: 500});
   }
 }

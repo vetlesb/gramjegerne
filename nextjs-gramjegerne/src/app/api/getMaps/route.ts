@@ -19,8 +19,8 @@ export async function GET() {
       return NextResponse.json({error: 'User not found'}, {status: 404});
     }
 
-    // Fetch trips for the user
-    const tripsQuery = `*[_type == "trip" && user._ref == $userId] | order(_createdAt desc) {
+    // Fetch maps for the user
+    const mapsQuery = `*[_type == "map" && user._ref == $userId] | order(_createdAt desc) {
       _id,
       _createdAt,
       _updatedAt,
@@ -36,14 +36,14 @@ export async function GET() {
       image
     }`;
 
-    const trips = await client.fetch(tripsQuery, {userId: user._id});
+    const maps = await client.fetch(mapsQuery, {userId: user._id});
 
     return NextResponse.json({
       success: true,
-      trips,
+      maps,
     });
   } catch (error) {
-    console.error('Error fetching trips:', error);
-    return NextResponse.json({error: 'Failed to fetch trips'}, {status: 500});
+    console.error('Error fetching maps:', error);
+    return NextResponse.json({error: 'Failed to fetch maps'}, {status: 500});
   }
 }

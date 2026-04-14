@@ -1,6 +1,6 @@
 'use client';
 
-import {SharedTripReference} from '@/types';
+import {SharedMapReference} from '@/types';
 import {useRouter} from 'next/navigation';
 import {Icon} from './Icon';
 import {client} from '@/sanity/client';
@@ -13,26 +13,26 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-interface SharedTripItemProps {
-  sharedTrip: SharedTripReference;
-  onRemove: (tripId: string) => Promise<void>;
+interface SharedMapItemProps {
+  sharedMap: SharedMapReference;
+  onRemove: (mapId: string) => Promise<void>;
 }
 
-export function SharedTripItem({sharedTrip, onRemove}: SharedTripItemProps) {
+export function SharedMapItem({sharedMap, onRemove}: SharedMapItemProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to the shared trip view using shareId if available, otherwise use trip ID
-    if (sharedTrip.trip.shareId) {
-      router.push(`/share/map/${sharedTrip.trip.shareId}`);
+    // Navigate to the shared map view using shareId if available, otherwise use map ID
+    if (sharedMap.map.shareId) {
+      router.push(`/share/map/${sharedMap.map.shareId}`);
     } else {
-      // Fallback to regular trip view with shared flag
-      router.push(`/maps/${sharedTrip.trip._id}?shared=true`);
+      // Fallback to regular map view with shared flag
+      router.push(`/maps/${sharedMap.map._id}?shared=true`);
     }
   };
 
   const handleRemove = async () => {
-    await onRemove(sharedTrip.trip._id);
+    await onRemove(sharedMap.map._id);
   };
 
   return (
@@ -43,18 +43,18 @@ export function SharedTripItem({sharedTrip, onRemove}: SharedTripItemProps) {
             <button
               onClick={handleRemove}
               className="button-trans"
-              title="Remove from shared trips"
+              title="Remove from shared maps"
             >
               <div className="flex items-center justify-center gap-x-1 w-full text-lg">
                 <Icon name="delete" width={24} height={24} />
               </div>
             </button>
           </div>
-          {sharedTrip.trip.image ? (
+          {sharedMap.map.image ? (
             <Image
               className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
-              src={urlFor(sharedTrip.trip.image).url()}
-              alt={`Image of ${sharedTrip.trip.name}`}
+              src={urlFor(sharedMap.map.image).url()}
+              alt={`Image of ${sharedMap.map.name}`}
               width={800}
               height={800}
               onClick={handleClick}
@@ -81,29 +81,29 @@ export function SharedTripItem({sharedTrip, onRemove}: SharedTripItemProps) {
         </div>
         <div className="flex flex-col gap-y-1 gap-x-4 pb-4 pl-4 pr-4 pt-2">
           <h2 className="nav-logo text-3xl text-accent cursor-pointer" onClick={handleClick}>
-            {sharedTrip.trip.name}
+            {sharedMap.map.name}
           </h2>
 
           <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
             <li className="gap-x-3">
               <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                 <Icon name="user" width={16} height={16} />
-                {sharedTrip.trip.user.name}
+                {sharedMap.map.user.name}
               </p>
             </li>
-            {sharedTrip.trip.campingSpotsCount > 0 && (
+            {sharedMap.map.campingSpotsCount > 0 && (
               <li className="gap-x-3">
                 <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                   <Icon name="location" width={16} height={16} />
-                  {sharedTrip.trip.campingSpotsCount} spots
+                  {sharedMap.map.campingSpotsCount} spots
                 </p>
               </li>
             )}
-            {sharedTrip.trip.routesCount > 0 && (
+            {sharedMap.map.routesCount > 0 && (
               <li className="gap-x-3">
                 <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
                   <Icon name="route" width={16} height={16} />
-                  {sharedTrip.trip.routesCount} routes
+                  {sharedMap.map.routesCount} routes
                 </p>
               </li>
             )}
