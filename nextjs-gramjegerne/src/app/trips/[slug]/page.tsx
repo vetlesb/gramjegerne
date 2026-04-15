@@ -244,41 +244,33 @@ export default function TripDetailPage() {
       <main className="container mx-auto min-h-screen p-16">
         <div className="flex flex-col gap-y-8">
           {/* Trip header */}
-          <div className="flex flex-col gap-y-4">
-            {trip.image && (
-              <div className="w-full aspect-video max-h-[400px] overflow-hidden rounded-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-[var(--bg-dimmed)] rounded-2xl p-6 flex flex-col gap-y-4">
+              <h1 className="text-5xl text-accent">{trip.name}</h1>
+              {dateRange && (
+                <div className="flex flex-wrap gap-2">
+                  <Tag variant="primary" iconName="calendar">
+                    {dateRange}
+                  </Tag>
+                </div>
+              )}
+              {trip.description && (
+                <p className="text-xl text-primary">{trip.description}</p>
+              )}
+            </div>
+
+            <div className="bg-[var(--bg-dimmed)] rounded-2xl overflow-hidden">
+              {trip.image ? (
                 <Image
                   src={urlFor(trip.image).url()}
                   alt={trip.name}
                   width={1200}
                   height={600}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full aspect-video object-cover"
                 />
-              </div>
-            )}
-
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col gap-y-2">
-                <h1 className="text-4xl text-accent">{trip.name}</h1>
-               
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {dateRange && (
-                    <Tag variant="dimmed" iconName="calendar">
-                      {dateRange}
-                    </Tag>
-                  )}
-                  <Tag variant="dimmed" iconName="user">
-                    {(trip.participants?.length || 0) + 1} participants
-                  </Tag>
-                  <Tag variant="dimmed" iconName="list">
-                    {trip.connectedLists?.length || 0} lists
-                  </Tag>
-                </div>
-                 {trip.description && (
-                  <p className="text-lg text-primary">{trip.description}</p>
-                )}
-              </div>
-
+              ) : (
+                <div className="w-full h-full aspect-video placeholder_image" />
+              )}
             </div>
           </div>
 
