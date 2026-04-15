@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import styles from './Tag.module.scss';
 
 export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'primary';
+  variant?: 'primary' | 'dimmed';
   size?: 'md' | 'sm';
   responsive?: boolean;
   iconName?: IconName;

@@ -40,6 +40,10 @@ export interface ListCardProps {
   // Shared mode specific
   ownerName?: string;
 
+  // Navigation override - if true, links to /lists/${slug}?shared=true
+  // regardless of mode. Defaults to (mode === 'shared').
+  isSharedList?: boolean;
+
   // Actions (owned mode)
   onEdit?: () => void;
   onDuplicate?: () => void;
@@ -63,6 +67,7 @@ export function ListCard({
   days,
   items,
   ownerName,
+  isSharedList,
   onEdit,
   onDuplicate,
   onDelete,
@@ -93,7 +98,8 @@ export function ListCard({
   }, [isMoreMenuOpen]);
 
   const handleClick = () => {
-    const url = mode === 'shared' ? `/lists/${slug}?shared=true` : `/lists/${slug}`;
+    const useSharedUrl = isSharedList ?? mode === 'shared';
+    const url = useSharedUrl ? `/lists/${slug}?shared=true` : `/lists/${slug}`;
     router.push(url);
   };
 

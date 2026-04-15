@@ -153,7 +153,9 @@ function TripsPageContent() {
             _id,
             name,
             email
-          }
+          },
+          "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
+          "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1
         }
       }
     }`;
@@ -388,11 +390,6 @@ function TripsPageContent() {
     }
   };
 
-  // Build filter categories from user's trip categories only
-  const filterCategories = useMemo(() => {
-    return tripCategories.map((c) => ({_id: c._id, title: c.title}));
-  }, [tripCategories]);
-
   // Merge owned and shared trips into a unified list
   const allTrips = useMemo((): TripListEntry[] => {
     const owned: TripListEntry[] = trips.map((trip) => ({
@@ -422,6 +419,8 @@ function TripsPageContent() {
         startDate: st.trip.startDate,
         endDate: st.trip.endDate,
         category: st.category,
+        participantCount: st.trip.participantCount,
+        connectedListsCount: st.trip.connectedListsCount,
         ownerName: st.trip.user?.name,
         isShared: true,
         sharedTripId: st.trip._id,
@@ -434,6 +433,16 @@ function TripsPageContent() {
     if (!selectedCategory) return allTrips;
     return allTrips.filter((trip) => trip.category?._id === selectedCategory);
   }, [allTrips, selectedCategory]);
+
+  // Only show categories that have at least one trip
+  const filterCategories = useMemo(() => {
+    const usedCategoryIds = new Set(
+      allTrips.map((trip) => trip.category?._id).filter(Boolean),
+    );
+    return tripCategories
+      .filter((c) => usedCategoryIds.has(c._id))
+      .map((c) => ({_id: c._id, title: c.title}));
+  }, [tripCategories, allTrips]);
 
   // Format date range for the share modal
   const formatDateRange = (start?: string, end?: string): string | null => {

@@ -173,6 +173,8 @@ export interface SharedTripReference {
       name: string;
       email: string;
     };
+    connectedListsCount?: number;
+    participantCount?: number;
   };
   category?: {
     _id: string;

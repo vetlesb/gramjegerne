@@ -208,66 +208,81 @@ export default function TripDetailPage() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-y-2">
                 <h1 className="text-4xl text-accent">{trip.name}</h1>
-                {trip.description && (
-                  <p className="text-lg text-white/70">{trip.description}</p>
-                )}
+               
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {dateRange && <Tag iconName="calendar">{dateRange}</Tag>}
-                  <Tag iconName="user">
+                  {dateRange && (
+                    <Tag variant="dimmed" iconName="calendar">
+                      {dateRange}
+                    </Tag>
+                  )}
+                  <Tag variant="dimmed" iconName="user">
                     {(trip.participants?.length || 0) + 1} participants
                   </Tag>
-                  <Tag iconName="list">
+                  <Tag variant="dimmed" iconName="list">
                     {trip.connectedLists?.length || 0} lists
                   </Tag>
                 </div>
+                 {trip.description && (
+                  <p className="text-lg text-primary">{trip.description}</p>
+                )}
               </div>
 
-              {isOwner && (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <TripShareButton
-                    tripId={trip._id}
-                    shareId={trip.shareId}
-                    tripName={trip.name}
-                  />
-                </div>
-              )}
             </div>
           </div>
 
           {/* Participants */}
           <section className="flex flex-col gap-y-4">
-            <h2 className="text-2xl text-accent">Participants</h2>
+            <div className="flex items-center gap-x-4">
+              <h2 className="text-2xl text-accent">Participants</h2>
+              {isOwner && (
+                <TripShareButton
+                  tripId={trip._id}
+                  shareId={trip.shareId}
+                  tripName={trip.name}
+                />
+              )}
+            </div>
             <div className="flex flex-wrap gap-3">
               {/* Owner */}
-              <div className="flex items-center gap-2 bg-dimmed rounded-lg p-3">
-                {trip.owner?.image && (
-                  <Image
-                    src={trip.owner.image}
-                    alt={trip.owner.name}
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full"
-                  />
-                )}
-                <span className="text-lg">{trip.owner?.name}</span>
-                <span className="text-sm text-white/50">(owner)</span>
-              </div>
+              {(() => {
+                const currentUserId = getUserId();
+                const isOwnerMe = currentUserId === trip.owner?._id;
+                return (
+                  <div className="flex items-center gap-2 bg-dimmed rounded-lg p-3">
+                    {trip.owner?.image && (
+                      <Image
+                        src={trip.owner.image}
+                        alt={trip.owner.name}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <span className="text-lg">{isOwnerMe ? 'Me' : trip.owner?.name}</span>
+                    <span className="text-sm text-white/50">(owner)</span>
+                  </div>
+                );
+              })()}
 
               {/* Other participants */}
-              {trip.participants?.map((participant) => (
-                <div key={participant._id} className="flex items-center gap-2 bg-dimmed rounded-lg p-3">
-                  {participant.image && (
-                    <Image
-                      src={participant.image}
-                      alt={participant.name}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  )}
-                  <span className="text-lg">{participant.name}</span>
-                </div>
-              ))}
+              {trip.participants?.map((participant) => {
+                const currentUserId = getUserId();
+                const isMe = currentUserId === participant._id;
+                return (
+                  <div key={participant._id} className="flex items-center gap-2 bg-dimmed rounded-lg p-3">
+                    {participant.image && (
+                      <Image
+                        src={participant.image}
+                        alt={participant.name}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <span className="text-lg">{isMe ? 'Me' : participant.name}</span>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -291,6 +306,7 @@ export default function TripDetailPage() {
                     <ListCard
                       key={list._id}
                       mode="shared"
+                      isSharedList={!isListOwner}
                       viewMode="list"
                       listId={list._id}
                       name={list.name}
@@ -300,7 +316,7 @@ export default function TripDetailPage() {
                       participants={list.participants}
                       completed={list.completed}
                       items={list.items}
-                      ownerName={list.owner.name}
+                      ownerName={isListOwner ? undefined : list.owner.name}
                       onRemove={isListOwner ? () => handleDisconnectList(list._id) : undefined}
                       imageUrlBuilder={(asset) => urlForImage(asset)}
                     />

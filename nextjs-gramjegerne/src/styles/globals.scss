@@ -643,21 +643,31 @@ ul.category-list {
 // ============================================
 
 input,
-select {
+select,
+textarea {
   background-color: var(--bg-primary);
   color: var(--fg-primary);
   padding: 1rem;
   border-radius: 4px;
-  
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+
   &:hover {
     background-color: var(--bg-primary-hover);
   }
-  
+
   &:focus,
   &:active {
     border: 0px solid var(--fg-accent);
     outline: 2px solid var(--fg-accent);
   }
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
 }
 
 select {
@@ -672,7 +682,8 @@ select {
 }
 
 input::placeholder,
-select::placeholder {
+select::placeholder,
+textarea::placeholder {
   color: var(--fg-primary);
   opacity: 0.5;
 }
