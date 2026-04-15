@@ -61,6 +61,14 @@
     background-color: var(--bg-dimmed-hover);
   }
 }
+.button--tertiary {
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-primary-hover);
+  }
+}
 
 .button--ghost {
   background-color: transparent;

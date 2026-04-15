@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {Button} from '@/components/Button';
 import {useEffect, useState} from 'react';
 import {useSession} from 'next-auth/react';
 import {client} from '@/sanity/client';
@@ -96,17 +97,18 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
         ) : (
           <div className="flex flex-col gap-y-2 py-4">
             {lists.map((list) => (
-              <button
+              <Button
                 key={list._id}
+                variant="tertiary"
                 onClick={() => handleConnect(list._id)}
                 disabled={isConnecting}
-                className="flex items-center justify-between p-4 rounded-lg bg-dimmed hover:bg-dimmed-hover transition-colors text-left"
+                className="flex items-center justify-between w-full text-left"
               >
                 <span className="text-lg">{list.name}</span>
                 {list.connectedTrip && (
                   <span className="text-sm text-white/50">Connected to another trip</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         )}

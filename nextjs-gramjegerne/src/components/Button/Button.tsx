@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import styles from './Button.module.scss';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'trans';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'trans';
   size?: 'md' | 'lg';
   iconName?: IconName;
   iconPosition?: 'left' | 'right';
