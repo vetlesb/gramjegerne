@@ -26,6 +26,7 @@ export interface Item {
   weight?: {weight: number; unit: string};
   quantity?: number;
   calories?: number;
+  description?: string;
   price?: number;
   categories?: Category[]; // Populated categories
 }

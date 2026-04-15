@@ -24,6 +24,7 @@ interface EditItemFormProps {
     weight?: {weight: number; unit: string};
     quantity?: number;
     calories?: number;
+    description?: string;
     price?: number;
   };
   onSuccess: () => void;
@@ -42,6 +43,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
     unit: item.weight?.unit || 'g',
   });
   const [calories, setCalories] = useState<number>(item.calories || 0);
+  const [description, setDescription] = useState<string>(item.description || '');
   const [price, setPrice] = useState<number>(item.price || 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -132,6 +134,9 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
       formData.append('calories', calories.toString());
     }
 
+    // Always send description (possibly empty) so clearing it works
+    formData.append('description', description.trim());
+
     if (price > 0) {
       formData.append('price', price.toString());
     }
@@ -197,30 +202,6 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
           </label>
         </div>
 
-        {/* Image Upload */}
-        <div>
-          <label className="flex flex-col gap-y-2">
-            Image
-            <input
-              type="file"
-              className="w-full max-w-full p-4"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </label>
-          {(imagePreview || item.image) && (
-            <div className="mt-4 relative">
-              <Image
-                src={imagePreview || item.image?.asset?.url || ''}
-                alt={`Preview of ${name}`}
-                width={96}
-                height={96}
-                className="h-24 w-24 object-cover rounded-md"
-              />
-            </div>
-          )}
-        </div>
-
         {/* Categories */}
         <div>
           <label className="flex flex-col gap-y-2">
@@ -237,19 +218,6 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
                 </option>
               ))}
             </select>
-          </label>
-        </div>
-
-        {/* Size */}
-        <div className="flex flex-col">
-          <label className="flex flex-col gap-y-2">
-            Size
-            <input
-              type="text"
-              className="w-full max-w-full p-4"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            />
           </label>
         </div>
 
@@ -278,6 +246,19 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
           </label>
         </div>
 
+        {/* Size */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Size
+            <input
+              type="text"
+              className="w-full max-w-full p-4"
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+            />
+          </label>
+        </div>
+
         {/* Calories */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
@@ -288,6 +269,43 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10) || 0)}
               min="0"
+            />
+          </label>
+        </div>
+
+        {/* Image Upload */}
+        <div>
+          <label className="flex flex-col gap-y-2">
+            Image
+            <input
+              type="file"
+              className="w-full max-w-full p-4"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </label>
+          {(imagePreview || item.image) && (
+            <div className="mt-4 relative">
+              <Image
+                src={imagePreview || item.image?.asset?.url || ''}
+                alt={`Preview of ${name}`}
+                width={96}
+                height={96}
+                className="h-24 w-24 object-cover rounded-md"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Description
+            <textarea
+              className="w-full max-w-full p-4"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
             />
           </label>
         </div>

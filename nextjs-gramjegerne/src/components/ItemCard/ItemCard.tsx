@@ -106,7 +106,17 @@ export function ItemCard({
 
           {/* Content */}
           <div className={styles.content}>
-            <h2 className={styles.title}>{item.name}</h2>
+            <h2
+              className={styles.title}
+              onClick={() => {
+                if (onImageClick) {
+                  onImageClick(imageUrl || '', item.name);
+                }
+              }}
+              style={{cursor: onImageClick ? 'pointer' : 'default'}}
+            >
+              {item.name}
+            </h2>
             <div className={styles.metadata}>
               {item.size && (
                 <Tag iconName="size">{item.size}</Tag>
@@ -240,7 +250,17 @@ export function ItemCard({
 
           {/* Content */}
           <div className={styles.gridContent}>
-            <h2 className={styles.title}>{item.name}</h2>
+            <h2
+              className={styles.title}
+              onClick={() => {
+                if (onImageClick) {
+                  onImageClick(imageUrl || '', item.name);
+                }
+              }}
+              style={{cursor: onImageClick ? 'pointer' : 'default'}}
+            >
+              {item.name}
+            </h2>
             <div className={styles.metadata}>
               {item.size && (
                 <Tag iconName="size">{item.size}</Tag>

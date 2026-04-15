@@ -78,7 +78,7 @@ function IndexPageContent() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<Item | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [expandedImage, setExpandedImage] = useState<{src: string; alt: string} | null>(null);
+  const [expandedItem, setExpandedItem] = useState<Item | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('gearViewMode') as 'list' | 'grid') || 'list';
@@ -530,7 +530,7 @@ function IndexPageContent() {
                       item={item}
                       onEdit={(item) => setIsEditDialogOpen(item)}
                       onDelete={(id) => handleDeleteClick(id)}
-                      onImageClick={(src, alt) => setExpandedImage({src, alt})}
+                      onImageClick={() => setExpandedItem(item)}
                       imageUrlBuilder={(asset) => urlFor(asset)}
                     />
                   ) : (
@@ -540,7 +540,7 @@ function IndexPageContent() {
                       item={item}
                       onEdit={(item) => setIsEditDialogOpen(item)}
                       onDelete={(id) => handleDeleteClick(id)}
-                      onImageClick={(src, alt) => setExpandedImage({src, alt})}
+                      onImageClick={() => setExpandedItem(item)}
                       imageUrlBuilder={(asset) => urlFor(asset)}
                     />
                   ),
@@ -651,24 +651,74 @@ function IndexPageContent() {
               </DialogContent>
             </Dialog>
 
-            {/* Image Expansion Modal */}
-            <Dialog open={!!expandedImage} onOpenChange={() => setExpandedImage(null)}>
-              <DialogContent className="dialog lg:p-8 p-4 max-w-3xl">
-                <DialogHeader>
-                  <DialogTitle className="lg:text-4xl text-xl text-center pb-2 font-normal text-accent">
-                    {expandedImage?.alt}
-                  </DialogTitle>
-                </DialogHeader>
-                {expandedImage && (
-                  <div className="flex justify-center">
-                    <Image
-                      src={expandedImage.src}
-                      alt={expandedImage.alt}
-                      width={800}
-                      height={800}
-                      className="max-w-full max-h-[70vh] object-contain rounded-md"
-                    />
-                  </div>
+            {/* Gear Details Modal */}
+            <Dialog open={!!expandedItem} onOpenChange={() => setExpandedItem(null)}>
+              <DialogContent className="dialog p-0 gap-0 max-w-[500px] max-h-[90vh] overflow-y-auto no-scrollbar overflow-hidden">
+                {expandedItem && (
+                  <>
+                    {expandedItem.image?.asset && (
+                      <div className="relative w-full aspect-square bg-black/20">
+                        <Image
+                          src={urlFor(expandedItem.image.asset)}
+                          alt={expandedItem.name}
+                          fill
+                          sizes="400px"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-y-6 lg:p-8 p-4">
+                      <div className="flex flex-col gap-y-3">
+                        <DialogHeader className="text-left">
+                          <DialogTitle className="lg:text-4xl text-xl font-normal text-accent text-left">
+                            {expandedItem.name}
+                          </DialogTitle>
+                        </DialogHeader>
+                        {expandedItem.description && (
+                          <p className="whitespace-pre-wrap">{expandedItem.description}</p>
+                        )}
+                      </div>
+                      <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
+                        {expandedItem.category?.title && (
+                          <div className="flex flex-col">
+                            <dt className="text-sm opacity-70">Category</dt>
+                            <dd>{expandedItem.category.title}</dd>
+                          </div>
+                        )}
+                        {expandedItem.size && (
+                          <div className="flex flex-col">
+                            <dt className="text-sm opacity-70">Size</dt>
+                            <dd>{expandedItem.size}</dd>
+                          </div>
+                        )}
+                        {expandedItem.weight && expandedItem.weight.weight > 0 && (
+                          <div className="flex flex-col">
+                            <dt className="text-sm opacity-70">Weight</dt>
+                            <dd>
+                              {expandedItem.weight.weight} {expandedItem.weight.unit}
+                            </dd>
+                          </div>
+                        )}
+                        {expandedItem.calories !== undefined && expandedItem.calories > 0 && (
+                          <div className="flex flex-col">
+                            <dt className="text-sm opacity-70">Calories</dt>
+                            <dd>{expandedItem.calories} kcal</dd>
+                          </div>
+                        )}
+                        {expandedItem.price !== undefined && expandedItem.price > 0 && (
+                          <div className="flex flex-col">
+                            <dt className="text-sm opacity-70">Price</dt>
+                            <dd>
+                              {new Intl.NumberFormat('nb-NO', {
+                                style: 'currency',
+                                currency: 'NOK',
+                              }).format(expandedItem.price)}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                  </>
                 )}
               </DialogContent>
             </Dialog>

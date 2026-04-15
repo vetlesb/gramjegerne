@@ -18,6 +18,7 @@ interface UpdateData {
     unit: string;
   };
   calories?: number;
+  description?: string;
   price?: number;
   image?: {
     _type: 'image';
@@ -89,6 +90,10 @@ export async function PUT(request: NextRequest) {
     const calories = formData.get('calories');
     if (calories) updateData.calories = parseInt(calories.toString(), 10);
 
+    const descriptionField = formData.get('description');
+    const descriptionValue =
+      descriptionField !== null ? descriptionField.toString().trim() : null;
+
     const price = formData.get('price');
     if (price) updateData.price = parseFloat(price.toString());
 
@@ -114,7 +119,16 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const updatedItem = await client.patch(id).set(updateData).commit();
+    if (descriptionValue && descriptionValue.length > 0) {
+      updateData.description = descriptionValue;
+    }
+
+    let patch = client.patch(id).set(updateData);
+    // If description was submitted as empty, unset it so the field is cleared.
+    if (descriptionValue !== null && descriptionValue.length === 0) {
+      patch = patch.unset(['description']);
+    }
+    const updatedItem = await patch.commit();
     return NextResponse.json(updatedItem, {status: 200});
   } catch (error: unknown) {
     return handleApiError(error, 'Error updating item:', 'Kunne ikke oppdatere utstyr.');

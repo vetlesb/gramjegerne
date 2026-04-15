@@ -15,6 +15,7 @@ interface ImportItem {
   weight?: string;
   weight_unit?: string;
   calories?: string | number;
+  description?: string;
   price?: string | number;
   categoryId?: string;
   imageAssetId?: string;
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
                   }
                 : existingItem.weight, // Keep existing weight if not provided
               calories: item.calories ? Number(item.calories) : existingItem.calories, // Update calories if provided
+              description: item.description ? item.description : existingItem.description, // Update description if provided
               price: item.price ? Number(item.price) : existingItem.price, // Update price if provided
               category: categoryRef || existingItem.category, // Use new categoryRef or keep existing category
               user: {
@@ -117,6 +119,7 @@ export async function POST(request: Request) {
                 }
               : undefined,
             calories: item.calories ? Number(item.calories) : undefined,
+            description: item.description || undefined,
             price: item.price ? Number(item.price) : undefined,
             category: categoryRef, // Use the updated categoryRef here
             user: {

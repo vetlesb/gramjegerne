@@ -47,6 +47,12 @@ export const itemType = defineType({
       type: 'number',
     }),
     defineField({
+      name: 'description',
+      type: 'text',
+      title: 'Description',
+      description: 'Optional description of the gear item',
+    }),
+    defineField({
       name: 'price',
       title: 'Price',
       type: 'number',

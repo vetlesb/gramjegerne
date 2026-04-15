@@ -30,6 +30,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
     unit: 'g',
   });
   const [calories, setCalories] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
   const [price, setPrice] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -150,6 +151,10 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         console.log("Skipping calories as it's 0 or less");
       }
 
+      if (description && description.trim()) {
+        formData.append('description', description.trim());
+      }
+
       if (price && parseFloat(price) > 0) {
         formData.append('price', price);
       }
@@ -186,6 +191,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
       setSize('');
       setWeight({weight: '', unit: 'g'});
       setCalories('');
+      setDescription('');
       setPrice('');
 
       setSuccessMessage('Gear created!');
@@ -237,38 +243,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
           </label>
         </div>
 
-        {/* Image Upload */}
-        <div>
-          <label className="flex flex-col gap-y-2">
-            Image
-            <input
-              type="file"
-              className="w-full max-w-full p-4"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </label>
-          {imagePreview && (
-            <div className="mt-4 relative">
-              <Image
-                src={imagePreview}
-                alt="Forhåndsvisning"
-                width={96}
-                height={96}
-                className="h-24 w-24 object-cover rounded-md"
-              />
-              <button
-                type="button"
-                onClick={handleImageRemoval}
-                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                title="Remove image"
-              >
-                &times;
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Category field */}
         <div>
           <CategoryCombobox
@@ -281,19 +255,6 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
             label="Category"
             required
           />
-        </div>
-
-        {/* Size */}
-        <div className="flex flex-col">
-          <label className="flex flex-col gap-y-2">
-            Size
-            <input
-              type="text"
-              className="w-full max-w-full p-4"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            />
-          </label>
         </div>
 
         {/* Weight field - make sure it's properly validated */}
@@ -326,6 +287,19 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
           </label>
         </div>
 
+        {/* Size */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Size
+            <input
+              type="text"
+              className="w-full max-w-full p-4"
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+            />
+          </label>
+        </div>
+
         {/* Calories */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
@@ -336,6 +310,51 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
               value={calories}
               onChange={(e) => setCalories(e.target.value)}
               min="0"
+            />
+          </label>
+        </div>
+
+        {/* Image Upload */}
+        <div>
+          <label className="flex flex-col gap-y-2">
+            Image
+            <input
+              type="file"
+              className="w-full max-w-full p-4"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </label>
+          {imagePreview && (
+            <div className="mt-4 relative">
+              <Image
+                src={imagePreview}
+                alt="Forhåndsvisning"
+                width={96}
+                height={96}
+                className="h-24 w-24 object-cover rounded-md"
+              />
+              <button
+                type="button"
+                onClick={handleImageRemoval}
+                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                title="Remove image"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col">
+          <label className="flex flex-col gap-y-2">
+            Description
+            <textarea
+              className="w-full max-w-full p-4"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
             />
           </label>
         </div>

@@ -23,6 +23,7 @@ export const Query = {
 	  weight,
 	  quantity,
 	  calories,
+	  description,
 	  price
 	}`,
 } as const;
