@@ -9,6 +9,7 @@ import {useCallback, useEffect, useState, useMemo, useRef, Suspense} from 'react
 import {useSearchParams, useRouter} from 'next/navigation';
 import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import {AddTripDialog} from '@/components/AddTripDialog';
+import {ManageTripCategoriesDialog} from '@/components/ManageTripCategoriesDialog';
 import {TripCard} from '@/components/TripCard/TripCard';
 import {CategoryFilter} from '@/components/CategoryFilter';
 import {CategoryCombobox} from '@/components/CategoryCombobox';
@@ -43,6 +44,7 @@ interface TripListEntry {
   category?: {_id: string; title: string};
   participantCount?: number;
   connectedListsCount?: number;
+  connectedMapsCount?: number;
   ownerName?: string;
   isShared: boolean;
   _createdAt?: string;
@@ -93,6 +95,7 @@ function TripsPageContent() {
   const [showEditDialog, setShowEditDialog] = useState<TripOverviewItem | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Edit shared trip category state
@@ -122,6 +125,7 @@ function TripsPageContent() {
       isShared,
       "category": category->{_id, title},
       "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
+      "connectedMapsCount": count(*[_type == "map" && connectedTrip._ref == ^._id]),
       "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1,
       _createdAt,
       _updatedAt
@@ -155,6 +159,7 @@ function TripsPageContent() {
             email
           },
           "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
+          "connectedMapsCount": count(*[_type == "map" && connectedTrip._ref == ^._id]),
           "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1
         }
       }
@@ -403,6 +408,7 @@ function TripsPageContent() {
       category: trip.category,
       participantCount: trip.participantCount,
       connectedListsCount: trip.connectedListsCount,
+      connectedMapsCount: trip.connectedMapsCount,
       isShared: false,
       _createdAt: trip._createdAt,
       originalTrip: trip,
@@ -421,6 +427,7 @@ function TripsPageContent() {
         category: st.category,
         participantCount: st.trip.participantCount,
         connectedListsCount: st.trip.connectedListsCount,
+        connectedMapsCount: st.trip.connectedMapsCount,
         ownerName: st.trip.user?.name,
         isShared: true,
         sharedTripId: st.trip._id,
@@ -461,6 +468,7 @@ function TripsPageContent() {
           <ActionBar
             mode="trips-overview"
             onAddTrip={() => setIsAddDialogOpen(true)}
+            onManageCategories={() => setIsManageCategoriesOpen(true)}
             viewMode={viewMode}
             onViewModeChange={handleViewModeChange}
           />
@@ -505,6 +513,7 @@ function TripsPageContent() {
                     category={entry.category}
                     participantCount={entry.participantCount}
                     connectedListsCount={entry.connectedListsCount}
+                    connectedMapsCount={entry.connectedMapsCount}
                     ownerName={entry.ownerName}
                     onEdit={
                       entry.originalTrip
@@ -542,6 +551,18 @@ function TripsPageContent() {
           onSuccess={async () => {
             await fetchTrips();
             await fetchCategories();
+          }}
+        />
+
+        {/* Manage Trip Categories Dialog */}
+        <ManageTripCategoriesDialog
+          open={isManageCategoriesOpen}
+          onOpenChange={setIsManageCategoriesOpen}
+          categories={tripCategories}
+          onChange={async () => {
+            await fetchCategories();
+            await fetchTrips();
+            await fetchSharedTrips();
           }}
         />
 

@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const endDate = formData.get('endDate') as string | null;
     const categoryId = formData.get('categoryId') as string | null;
     const imageFile = formData.get('image') as File | null;
+    const mapsRestrictedToOwner = formData.get('mapsRestrictedToOwner') === 'true';
 
     if (!name) {
       return NextResponse.json({error: 'Name is required'}, {status: 400});
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
         _ref: user._id,
       },
       isShared: false,
+      mapsRestrictedToOwner,
     };
 
     if (categoryId) {

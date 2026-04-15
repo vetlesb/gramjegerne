@@ -45,6 +45,7 @@ function MapsPageContent() {
   // Selected trip from query params or shareId
   const selectedTripId = searchParams.get('trip');
   const shareId = searchParams.get('share');
+  const fromTrip = searchParams.get('fromTrip');
   const [selectedTripData, setSelectedTripData] = useState<MapDocument | null>(null);
   const [isSharedMode, setIsSharedMode] = useState(false);
 
@@ -886,9 +887,9 @@ function MapsPageContent() {
 
           {/* Back Button - Top Left */}
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push(fromTrip ? `/trips/${fromTrip}` : '/')}
             className="absolute top-4 left-4 z-[1001] bg-dimmed backdrop-blur-sm rounded-lg p-3 hover:bg-dimmed-hover shadow-lg transition-all duration-200"
-            title="Back to gear"
+            title={fromTrip ? 'Back to trip' : 'Back to gear'}
           >
             <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
           </button>
@@ -915,11 +916,11 @@ function MapsPageContent() {
                 {/* Trip Header */}
                 <div className="flex items-center justify-between mb-2 lg:mb-4 rounded-lg">
                   <div className="flex items-center gap-3 flex-1">
-                    {/* Back to Maps Button */}
+                    {/* Back Button */}
                     <button
-                      onClick={() => router.push('/maps')}
+                      onClick={() => router.push(fromTrip ? `/trips/${fromTrip}` : '/maps')}
                       className="text-white/70 hover:text-accent transition-colors"
-                      title="Back to Maps"
+                      title={fromTrip ? 'Back to trip' : 'Back to Maps'}
                     >
                       <Icon name="chevrondown" width={20} height={20} className="rotate-90" />
                     </button>

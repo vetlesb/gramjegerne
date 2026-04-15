@@ -43,6 +43,7 @@ export default function ListPage() {
 
   // Detect if this is a shared list (read-only mode)
   const isSharedMode = searchParams.get('shared') === 'true';
+  const fromTrip = searchParams.get('fromTrip');
 
   // Move getUserId into useCallback
   const getUserId = useCallback(() => {
@@ -874,6 +875,7 @@ export default function ListPage() {
           onSaveToMyLists={isSharedMode ? handleSaveToList : undefined}
           isSaved={isSaved}
           isSaving={isSaving}
+          onBackToTrip={fromTrip ? () => router.push(`/trips/${fromTrip}`) : undefined}
         />
 
         {/* Add Item Dialog - controlled by ActionBar */}

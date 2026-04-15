@@ -147,12 +147,14 @@ export interface TripDocument {
   };
   shareId?: string;
   isShared?: boolean;
+  mapsRestrictedToOwner?: boolean;
   _createdAt: string;
   _updatedAt: string;
 }
 
 export interface TripOverviewItem extends TripDocument {
   connectedListsCount: number;
+  connectedMapsCount: number;
   participantCount: number;
 }
 
@@ -174,6 +176,7 @@ export interface SharedTripReference {
       email: string;
     };
     connectedListsCount?: number;
+    connectedMapsCount?: number;
     participantCount?: number;
   };
   category?: {

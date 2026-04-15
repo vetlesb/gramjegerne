@@ -47,6 +47,16 @@ export async function DELETE(request: NextRequest) {
       await client.patch(listId).unset(['connectedTrip']).commit();
     }
 
+    // Disconnect any maps referencing this trip
+    const connectedMaps = await client.fetch(
+      `*[_type == "map" && connectedTrip._ref == $tripId]._id`,
+      {tripId},
+    );
+
+    for (const mapId of connectedMaps) {
+      await client.patch(mapId).unset(['connectedTrip']).commit();
+    }
+
     // Remove from any users' sharedTrips arrays
     const usersWithShared = await client.fetch(
       `*[_type == "user" && $tripId in sharedTrips[].trip._ref]{_id, sharedTrips}`,

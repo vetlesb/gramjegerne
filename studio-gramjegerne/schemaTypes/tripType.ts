@@ -70,5 +70,12 @@ export const tripType = defineType({
       description: 'Whether this trip is publicly shareable',
       initialValue: false,
     }),
+    defineField({
+      name: 'mapsRestrictedToOwner',
+      type: 'boolean',
+      title: 'Maps restricted to owner',
+      description: 'If true, only the owner can add maps to this trip',
+      initialValue: false,
+    }),
   ],
 });

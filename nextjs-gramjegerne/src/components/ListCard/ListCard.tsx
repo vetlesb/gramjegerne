@@ -44,6 +44,10 @@ export interface ListCardProps {
   // regardless of mode. Defaults to (mode === 'shared').
   isSharedList?: boolean;
 
+  // If set, appends ?fromTrip=${fromTrip} to the URL so the list page
+  // can show a "back to trip" button.
+  fromTrip?: string;
+
   // Actions (owned mode)
   onEdit?: () => void;
   onDuplicate?: () => void;
@@ -68,6 +72,7 @@ export function ListCard({
   items,
   ownerName,
   isSharedList,
+  fromTrip,
   onEdit,
   onDuplicate,
   onDelete,
@@ -99,8 +104,11 @@ export function ListCard({
 
   const handleClick = () => {
     const useSharedUrl = isSharedList ?? mode === 'shared';
-    const url = useSharedUrl ? `/lists/${slug}?shared=true` : `/lists/${slug}`;
-    router.push(url);
+    const params = new URLSearchParams();
+    if (useSharedUrl) params.set('shared', 'true');
+    if (fromTrip) params.set('fromTrip', fromTrip);
+    const qs = params.toString();
+    router.push(`/lists/${slug}${qs ? `?${qs}` : ''}`);
   };
 
   // Calculate totals

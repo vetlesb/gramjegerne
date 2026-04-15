@@ -23,6 +23,7 @@ export interface TripCardProps {
   category?: {_id: string; title: string};
   participantCount?: number;
   connectedListsCount?: number;
+  connectedMapsCount?: number;
 
   // Shared mode specific
   ownerName?: string;
@@ -52,6 +53,7 @@ export function TripCard({
   category,
   participantCount,
   connectedListsCount,
+  connectedMapsCount,
   ownerName,
   isSharedTrip,
   onEdit,
@@ -177,6 +179,9 @@ export function TripCard({
             )}
             {connectedListsCount != null && connectedListsCount > 0 && (
               <Tag iconName="list">{connectedListsCount} lists</Tag>
+            )}
+            {connectedMapsCount != null && connectedMapsCount > 0 && (
+              <Tag iconName="location">{connectedMapsCount} maps</Tag>
             )}
           </div>
         </div>

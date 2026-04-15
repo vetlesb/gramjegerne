@@ -236,6 +236,13 @@ const fields = [
     description: 'Whether this map is publicly shareable',
     initialValue: false,
   }),
+  defineField({
+    name: 'connectedTrip',
+    type: 'reference',
+    to: [{type: 'trip'}],
+    title: 'Connected Trip',
+    description: 'Optional trip this map is part of',
+  }),
 ];
 
 export const mapType = defineType({

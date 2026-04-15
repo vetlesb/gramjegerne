@@ -33,6 +33,114 @@ export async function GET() {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    }
+
+    const {categoryId, title} = await request.json();
+
+    if (!categoryId || !title) {
+      return NextResponse.json({error: 'Category ID and title are required'}, {status: 400});
+    }
+
+    const userQuery = `*[_type == "user" && email == $email][0]`;
+    const user = await client.fetch(userQuery, {email: session.user.email});
+
+    if (!user) {
+      return NextResponse.json({error: 'User not found'}, {status: 404});
+    }
+
+    // Verify category belongs to user
+    const category = await client.fetch(
+      `*[_type == "tripCategory" && _id == $categoryId && user._ref == $userId][0]{_id}`,
+      {categoryId, userId: user._id},
+    );
+
+    if (!category) {
+      return NextResponse.json({error: 'Category not found'}, {status: 404});
+    }
+
+    await client.patch(categoryId).set({title}).commit();
+
+    return NextResponse.json({success: true});
+  } catch (error) {
+    console.error('Error updating trip category:', error);
+    return NextResponse.json({error: 'Failed to update trip category'}, {status: 500});
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    }
+
+    const {searchParams} = new URL(request.url);
+    const categoryId = searchParams.get('categoryId');
+
+    if (!categoryId) {
+      return NextResponse.json({error: 'Category ID is required'}, {status: 400});
+    }
+
+    const userQuery = `*[_type == "user" && email == $email][0]`;
+    const user = await client.fetch(userQuery, {email: session.user.email});
+
+    if (!user) {
+      return NextResponse.json({error: 'User not found'}, {status: 404});
+    }
+
+    // Verify category belongs to user
+    const category = await client.fetch(
+      `*[_type == "tripCategory" && _id == $categoryId && user._ref == $userId][0]{_id}`,
+      {categoryId, userId: user._id},
+    );
+
+    if (!category) {
+      return NextResponse.json({error: 'Category not found'}, {status: 404});
+    }
+
+    // Unset category references on trips that use this category
+    const tripsUsing = await client.fetch(
+      `*[_type == "trip" && category._ref == $categoryId]._id`,
+      {categoryId},
+    );
+    for (const tripId of tripsUsing) {
+      await client.patch(tripId).unset(['category']).commit();
+    }
+
+    // Unset category references in users' sharedTrips entries
+    const usersWithShared = await client.fetch(
+      `*[_type == "user" && count(sharedTrips[category._ref == $categoryId]) > 0]{_id, sharedTrips}`,
+      {categoryId},
+    );
+    for (const u of usersWithShared) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updated = (u.sharedTrips || []).map((entry: any) => {
+        if (entry.category?._ref === categoryId) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const {category, ...rest} = entry;
+          return rest;
+        }
+        return entry;
+      });
+      await client.patch(u._id).set({sharedTrips: updated}).commit();
+    }
+
+    await client.delete(categoryId);
+
+    return NextResponse.json({success: true});
+  } catch (error) {
+    console.error('Error deleting trip category:', error);
+    return NextResponse.json({error: 'Failed to delete trip category'}, {status: 500});
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

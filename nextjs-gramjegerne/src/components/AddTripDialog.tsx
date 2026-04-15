@@ -33,6 +33,7 @@ interface AddTripDialogProps {
     endDate?: string;
     category?: {_id: string; title: string};
     image?: SanityImageSource;
+    mapsRestrictedToOwner?: boolean;
   };
 }
 
@@ -51,6 +52,7 @@ export function AddTripDialog({
   const [categories, setCategories] = useState<TripCategory[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
+  const [mapsRestrictedToOwner, setMapsRestrictedToOwner] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export function AddTripDialog({
         setStartDate(editTrip.startDate || '');
         setEndDate(editTrip.endDate || '');
         setSelectedCategory(editTrip.category?._id || '');
+        setMapsRestrictedToOwner(editTrip.mapsRestrictedToOwner || false);
         if (editTrip.image) setExistingImage(editTrip.image);
       } else {
         resetForm();
@@ -95,6 +98,7 @@ export function AddTripDialog({
     setSelectedCategory('');
     setImage(null);
     setExistingImage(null);
+    setMapsRestrictedToOwner(false);
     setError(null);
     setSuccessMessage(null);
   };
@@ -142,6 +146,7 @@ export function AddTripDialog({
       if (startDate) formData.append('startDate', startDate);
       if (endDate) formData.append('endDate', endDate);
       if (selectedCategory) formData.append('categoryId', selectedCategory);
+      formData.append('mapsRestrictedToOwner', String(mapsRestrictedToOwner));
 
       if (image) {
         formData.append('image', image);
@@ -290,6 +295,18 @@ export function AddTripDialog({
                   rows={3}
                   placeholder="Optional description..."
                 />
+              </label>
+            </div>
+
+            <div className="flex items-center gap-x-2">
+              <label className="flex items-center gap-x-2 text-lg cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={mapsRestrictedToOwner}
+                  onChange={(e) => setMapsRestrictedToOwner(e.target.checked)}
+                  className="w-6 h-6"
+                />
+                Only I can add maps
               </label>
             </div>
           </div>

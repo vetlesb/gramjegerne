@@ -40,6 +40,11 @@ export async function PUT(request: NextRequest) {
         updates.category = {_type: 'reference', _ref: categoryId};
       }
 
+      const mapsRestrictedRaw = formData.get('mapsRestrictedToOwner');
+      if (mapsRestrictedRaw !== null) {
+        updates.mapsRestrictedToOwner = mapsRestrictedRaw === 'true';
+      }
+
       // Handle image
       const imageFile = formData.get('image') as File | null;
       const keepExistingImage = formData.get('keepExistingImage') === 'true';

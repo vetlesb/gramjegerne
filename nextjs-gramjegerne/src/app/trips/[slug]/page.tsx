@@ -3,7 +3,9 @@
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {TripShareButton} from '@/components/TripShareButton';
 import {ConnectListDialog} from '@/components/ConnectListDialog';
+import {ConnectMapDialog} from '@/components/ConnectMapDialog';
 import {ListCard} from '@/components/ListCard/ListCard';
+import {MapCard} from '@/components/MapCard/MapCard';
 import {Button} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {urlFor as urlForImage} from '@/sanity/images';
@@ -40,6 +42,23 @@ interface ConnectedListItem {
   } | null;
 }
 
+interface ConnectedMapRoute {
+  _key?: string;
+  waypoints?: Array<{lat: number; lng: number}>;
+  elevationGain?: number;
+}
+
+interface ConnectedMap {
+  _id: string;
+  name: string;
+  image?: {asset: {_ref: string}};
+  shareId?: string;
+  owner: {_id: string; name: string};
+  routes: ConnectedMapRoute[];
+  campingSpotsCount: number;
+  routesCount: number;
+}
+
 interface ConnectedList {
   _id: string;
   name: string;
@@ -62,10 +81,12 @@ interface TripDetail {
   endDate?: string;
   shareId?: string;
   isShared?: boolean;
+  mapsRestrictedToOwner?: boolean;
   category?: {_id: string; title: string};
   owner: Participant;
   participants: Participant[];
   connectedLists: ConnectedList[];
+  connectedMaps: ConnectedMap[];
 }
 
 export default function TripDetailPage() {
@@ -79,6 +100,7 @@ export default function TripDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const showLoader = useDelayedLoader(isLoading, 300);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
+  const [showConnectMapDialog, setShowConnectMapDialog] = useState(false);
 
   const getUserId = useCallback(() => {
     if (!session?.user?.id) return null;
@@ -93,7 +115,7 @@ export default function TripDetailPage() {
       const query = isSharedMode
         ? groq`*[_type == "trip" && (slug.current == $slug || _id == $slug)][0] {
             _id, name, slug, description, image, startDate, endDate,
-            shareId, isShared,
+            shareId, isShared, mapsRestrictedToOwner,
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
@@ -104,11 +126,18 @@ export default function TripDetailPage() {
                 _key, quantity,
                 "item": item->{_id, name, weight, calories}
               }
+            },
+            "connectedMaps": *[_type == "map" && connectedTrip._ref == ^._id]{
+              _id, name, image, shareId,
+              "owner": user->{_id, name},
+              "routes": routes[]{_key, waypoints, elevationGain},
+              "campingSpotsCount": count(campingSpots),
+              "routesCount": count(routes)
             }
           }`
         : groq`*[_type == "trip" && (slug.current == $slug || _id == $slug) && user._ref == $userId][0] {
             _id, name, slug, description, image, startDate, endDate,
-            shareId, isShared,
+            shareId, isShared, mapsRestrictedToOwner,
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
@@ -119,6 +148,13 @@ export default function TripDetailPage() {
                 _key, quantity,
                 "item": item->{_id, name, weight, calories}
               }
+            },
+            "connectedMaps": *[_type == "map" && connectedTrip._ref == ^._id]{
+              _id, name, image, shareId,
+              "owner": user->{_id, name},
+              "routes": routes[]{_key, waypoints, elevationGain},
+              "campingSpotsCount": count(campingSpots),
+              "routesCount": count(routes)
             }
           }`;
 
@@ -148,6 +184,22 @@ export default function TripDetailPage() {
       await fetchTrip();
     } catch (error) {
       console.error('Error disconnecting list:', error);
+    }
+  };
+
+  const handleDisconnectMap = async (mapId: string) => {
+    try {
+      const response = await fetch('/api/connectMapToTrip', {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mapId}),
+      });
+
+      if (!response.ok) throw new Error('Failed to disconnect map');
+
+      await fetchTrip();
+    } catch (error) {
+      console.error('Error disconnecting map:', error);
     }
   };
 
@@ -307,6 +359,7 @@ export default function TripDetailPage() {
                       key={list._id}
                       mode="shared"
                       isSharedList={!isListOwner}
+                      fromTrip={trip.slug?.current || trip._id}
                       viewMode="list"
                       listId={list._id}
                       name={list.name}
@@ -325,6 +378,46 @@ export default function TripDetailPage() {
               </ul>
             )}
           </section>
+
+          {/* Connected maps */}
+          <section className="flex flex-col gap-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl text-accent">Maps</h2>
+              {session?.user?.id && (!trip.mapsRestrictedToOwner || isOwner) && (
+                <Button onClick={() => setShowConnectMapDialog(true)}>Connect map</Button>
+              )}
+            </div>
+
+            {trip.connectedMaps?.length === 0 ? (
+              <p className="text-lg text-white/50">No maps connected yet.</p>
+            ) : (
+              <ul className="flex flex-col gap-y-2">
+                {trip.connectedMaps?.map((map) => {
+                  const isMapOwner = getUserId() === map.owner._id;
+
+                  return (
+                    <MapCard
+                      key={map._id}
+                      mode="shared"
+                      viewMode="list"
+                      mapId={map._id}
+                      name={map.name}
+                      image={map.image?.asset}
+                      shareId={map.shareId}
+                      isSharedMap={!isMapOwner}
+                      fromTrip={trip.slug?.current || trip._id}
+                      routes={map.routes}
+                      campingSpotsCount={map.campingSpotsCount}
+                      routesCount={map.routesCount}
+                      ownerName={isMapOwner ? undefined : map.owner.name}
+                      onRemove={isMapOwner ? () => handleDisconnectMap(map._id) : undefined}
+                      imageUrlBuilder={(asset) => urlForImage(asset)}
+                    />
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         </div>
 
         {/* Connect list dialog */}
@@ -332,6 +425,14 @@ export default function TripDetailPage() {
           tripId={trip._id}
           open={showConnectDialog}
           onOpenChange={setShowConnectDialog}
+          onSuccess={fetchTrip}
+        />
+
+        {/* Connect map dialog */}
+        <ConnectMapDialog
+          tripId={trip._id}
+          open={showConnectMapDialog}
+          onOpenChange={setShowConnectMapDialog}
           onSuccess={fetchTrip}
         />
       </main>

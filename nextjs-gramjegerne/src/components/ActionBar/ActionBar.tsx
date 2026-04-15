@@ -35,6 +35,9 @@ interface ActionBarProps {
   onSaveToMyLists?: () => void;
   isSaved?: boolean;
   isSaving?: boolean;
+
+  // Back-to-trip button (used in list and shared-list modes)
+  onBackToTrip?: () => void;
 }
 
 export function ActionBar({
@@ -55,6 +58,7 @@ export function ActionBar({
   onSaveToMyLists,
   isSaved,
   isSaving,
+  onBackToTrip,
 }: ActionBarProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
@@ -150,6 +154,7 @@ export function ActionBar({
 
         {mode === 'list' && (
           <>
+            {onBackToTrip && <Button onClick={onBackToTrip}>Back to trip</Button>}
             <Button onClick={onAddToList}>Add gear</Button>
             {onViewMap && (
               <Button
@@ -227,6 +232,9 @@ export function ActionBar({
         {mode === 'trips-overview' && (
           <>
             <Button onClick={onAddTrip}>Add Trip</Button>
+            {onManageCategories && (
+              <Button onClick={onManageCategories}>Categories</Button>
+            )}
             {viewMode && onViewModeChange && (
               <Button
                 onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
@@ -239,23 +247,25 @@ export function ActionBar({
         )}
 
         {mode === 'shared-list' && (
-          <Button
-            variant={isSaved ? 'secondary' : 'primary'}
-            onClick={isSaved ? undefined : onSaveToMyLists}
-            disabled={isSaving || isSaved}
-            iconName={isSaved ? 'checkmark' : undefined}
-          >
-            {isSaving ? (
-              <>
-                <span className={styles.spinner} />
-                Saving...
-              </>
-            ) : isSaved ? (
-              'Saved to my lists'
-            ) : (
-              'Save to my lists'
-            )}
-          </Button>
+          <>
+            {onBackToTrip && <Button onClick={onBackToTrip}>Back to trip</Button>}
+            <Button
+              onClick={isSaved ? undefined : onSaveToMyLists}
+              disabled={isSaving || isSaved}
+              iconName={isSaved ? 'checkmark' : undefined}
+            >
+              {isSaving ? (
+                <>
+                  <span className={styles.spinner} />
+                  Saving...
+                </>
+              ) : isSaved ? (
+                'Saved to my lists'
+              ) : (
+                'Save to my lists'
+              )}
+            </Button>
+          </>
         )}
       </div>
 
@@ -458,6 +468,9 @@ export function ActionBar({
         {mode === 'trips-overview' && (
           <>
             <Button onClick={onAddTrip}>Add Trip</Button>
+            {onManageCategories && (
+              <Button onClick={onManageCategories}>Categories</Button>
+            )}
             {viewMode && onViewModeChange && (
               <Button
                 onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')}
@@ -470,23 +483,25 @@ export function ActionBar({
         )}
 
         {mode === 'shared-list' && (
-          <Button
-            variant={isSaved ? 'secondary' : 'primary'}
-            onClick={isSaved ? undefined : onSaveToMyLists}
-            disabled={isSaving || isSaved}
-            iconName={isSaved ? 'checkmark' : undefined}
-          >
-            {isSaving ? (
-              <>
-                <span className={styles.spinner} />
-                Saving...
-              </>
-            ) : isSaved ? (
-              'Saved to my lists'
-            ) : (
-              'Save to my lists'
-            )}
-          </Button>
+          <>
+            {onBackToTrip && <Button onClick={onBackToTrip}>Back to trip</Button>}
+            <Button
+              onClick={isSaved ? undefined : onSaveToMyLists}
+              disabled={isSaving || isSaved}
+              iconName={isSaved ? 'checkmark' : undefined}
+            >
+              {isSaving ? (
+                <>
+                  <span className={styles.spinner} />
+                  Saving...
+                </>
+              ) : isSaved ? (
+                'Saved to my lists'
+              ) : (
+                'Save to my lists'
+              )}
+            </Button>
+          </>
         )}
       </div>
     </div>
