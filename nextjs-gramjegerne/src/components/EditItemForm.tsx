@@ -224,7 +224,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Weight */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Weight
+            Weight (grams)
             <div className="flex flex-row gap-x-2">
               <input
                 type="number"
@@ -234,14 +234,8 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
                 min="0"
                 step="1"
                 required
+                placeholder="g"
               />
-              <select
-                className="w-full max-w-full p-4"
-                value={weight.unit}
-                onChange={(e) => setWeight({...weight, unit: e.target.value})}
-              >
-                <option value="g">g</option>
-              </select>
             </div>
           </label>
         </div>
