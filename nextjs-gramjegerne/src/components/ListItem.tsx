@@ -160,11 +160,6 @@ export function ListItem({list, onDelete}: ListItemProps) {
                 onSuccess={onDelete}
               />
             </div>
-            {list.completed ? (
-              <div className="absolute top-2 ml-2 tag-status">Completed</div>
-            ) : (
-              <div className="absolute top-2 ml-2 tag-status">Planned</div>
-            )}
             {list.image ? (
               <Image
                 className="rounded-md h-full w-full aspect-video object-cover cursor-pointer"
@@ -200,22 +195,6 @@ export function ListItem({list, onDelete}: ListItemProps) {
             </h2>
 
             <ul className="flex flex-wrap gap-x-1 gap-y-1 pt-2">
-              <li className="gap-x-3">
-                {list.participants && (
-                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
-                    <Icon name="user" width={16} height={16} />
-                    {list.participants}
-                  </p>
-                )}
-              </li>
-              <li className="gap-x-3">
-                {list.days && (
-                  <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">
-                    <Icon name="calendar" width={16} height={16} />
-                    {list.days}
-                  </p>
-                )}
-              </li>
               <li className="gap-x-3">
                 {totalWeight > 0 && (
                   <p className="tag w-fit items-center gap-x-1 text-lg flex flex-wrap">

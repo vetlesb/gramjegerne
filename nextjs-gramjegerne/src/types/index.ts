@@ -88,10 +88,7 @@ export interface ListDocument {
   image?: {
     asset: ImageAsset;
   };
-  days: number;
   weight: number;
-  participants: number;
-  completed: boolean;
   user: {
     _ref: string;
   };
@@ -110,6 +107,7 @@ export interface ListDocument {
   items: Array<{
     _key: string;
     quantity?: number;
+    onBody?: boolean;
     item: {
       _id: string;
       name: string;

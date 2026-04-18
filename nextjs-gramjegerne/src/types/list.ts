@@ -38,9 +38,7 @@ export interface List {
   _id: string;
   name: string;
   slug?: {current: string};
-  days?: number;
   weight?: number;
-  participants?: number;
   image?: {
     asset: ImageAsset;
   };

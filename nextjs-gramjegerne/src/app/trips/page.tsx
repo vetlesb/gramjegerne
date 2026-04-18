@@ -113,7 +113,7 @@ function TripsPageContent() {
   const fetchTrips = useCallback(async () => {
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "trip" && user._ref == $userId] | order(_createdAt desc) {
+    const query = groq`*[_type == "trip" && user._ref == $userId] | order(startDate desc) {
       _id,
       name,
       slug,

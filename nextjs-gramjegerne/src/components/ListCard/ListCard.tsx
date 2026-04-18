@@ -12,6 +12,7 @@ import styles from './ListCard.module.scss';
 interface ListItem {
   _key: string;
   quantity?: number;
+  onBody?: boolean;
   item: {
     _id: string;
     name: string;
@@ -32,9 +33,6 @@ export interface ListCardProps {
   name: string;
   slug: string;
   image?: ImageAsset;
-  completed?: boolean;
-  participants?: number;
-  days?: number;
   items?: ListItem[];
 
   // Shared mode specific
@@ -66,9 +64,6 @@ export function ListCard({
   name,
   slug,
   image,
-  completed,
-  participants,
-  days,
   items,
   ownerName,
   isSharedList,
@@ -111,9 +106,10 @@ export function ListCard({
     router.push(`/lists/${slug}${qs ? `?${qs}` : ''}`);
   };
 
-  // Calculate totals
-  const {totalWeight, totalCalories} = (() => {
-    let weight = 0;
+  // Calculate totals split by backpack vs on-body
+  const {backpackWeight, onBodyWeight, totalCalories} = (() => {
+    let bpWeight = 0;
+    let obWeight = 0;
     let calories = 0;
 
     items?.forEach((item) => {
@@ -121,7 +117,11 @@ export function ListCard({
       const quantity = item.quantity || 1;
 
       if (item.item.weight?.weight) {
-        weight += item.item.weight.weight * quantity;
+        if (item.onBody) {
+          obWeight += item.item.weight.weight * quantity;
+        } else {
+          bpWeight += item.item.weight.weight * quantity;
+        }
       }
 
       if (item.item.calories) {
@@ -129,7 +129,7 @@ export function ListCard({
       }
     });
 
-    return {totalWeight: weight, totalCalories: calories};
+    return {backpackWeight: bpWeight, onBodyWeight: obWeight, totalCalories: calories};
   })();
 
   // Format functions
@@ -150,13 +150,6 @@ export function ListCard({
       >
         {/* Image */}
         <div className={styles.imageContainer}>
-          {/* Status tag - only in grid view */}
-          {viewMode === 'grid' && mode === 'owned' && (
-            <div className={styles.statusTag}>
-              <Tag>{completed ? 'Completed' : 'Planned'}</Tag>
-            </div>
-          )}
-
           {/* Overlay actions - only in grid view */}
           {viewMode === 'grid' && (
             <div className={styles.overlayActions}>
@@ -230,15 +223,9 @@ export function ListCard({
           <h2 className={styles.title}>{name}</h2>
 
           <div className={styles.metadata}>
-            {/* Status tag for list view */}
-            {viewMode === 'list' && mode === 'owned' && (
-              <Tag>{completed ? 'Completed' : 'Planned'}</Tag>
-            )}
-
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
-            {mode === 'owned' && participants && <Tag iconName="user">{participants}</Tag>}
-            {days && <Tag iconName="calendar">{days}</Tag>}
-            {totalWeight > 0 && <Tag iconName="weight">{formatWeight(totalWeight)}</Tag>}
+            {backpackWeight > 0 && <Tag iconName="backpack">{formatWeight(backpackWeight)}</Tag>}
+            {onBodyWeight > 0 && <Tag iconName="weight">{formatWeight(onBodyWeight)}</Tag>}
             {totalCalories > 0 && <Tag iconName="calories">{formatNumber(totalCalories)} kcal</Tag>}
           </div>
         </div>

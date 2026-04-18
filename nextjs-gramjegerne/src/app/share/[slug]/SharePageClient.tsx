@@ -41,9 +41,7 @@ interface SharePageClientProps {
   list: {
     _id: string;
     name: string;
-    days?: number;
     weight?: number;
-    participants?: number;
     image?: SanityImageSource;
     user?: {
       _id: string;
@@ -458,18 +456,6 @@ export default function SharePageClient({list}: SharePageClientProps) {
               <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
                 <Icon name="user" width={16} height={16} />
                 {list.user.name}
-              </p>
-            )}
-            {list.days && (
-              <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-                <Icon name="calendar" width={16} height={16} />
-                {list.days} {list.days === 1 ? 'day' : 'days'}
-              </p>
-            )}
-            {list.participants && list.participants > 1 && (
-              <p className="tag-list w-fit items-center gap-x-1 flex flex-wrap">
-                <Icon name="user" width={16} height={16} />
-                {list.participants} participants
               </p>
             )}
             {/* Save to My Shared Lists Button */}

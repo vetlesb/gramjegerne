@@ -37,14 +37,11 @@ export function AddListDialog({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [newListImage, setNewListImage] = useState<File | null>(null);
-  const [newListDays, setNewListDays] = useState<number | null>(null);
   const [newListWeight, setNewListWeight] = useState<number | null>(null);
-  const [newListParticipants, setNewListParticipants] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<SanityImageSource | null>(null);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<string>('');
   const [trips, setTrips] = useState<{_id: string; name: string}[]>([]);
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
@@ -75,9 +72,6 @@ export function AddListDialog({
       fetchTrips();
       if (editList) {
         setNewListName(editList.name);
-        setNewListDays(editList.days ?? null);
-        setNewListParticipants(editList.participants ?? null);
-        setIsCompleted(editList.completed ?? false);
         setSelectedTripId(editList.connectedTrip?._id || editList.connectedMap?._id || '');
         if (editList.image) {
           setExistingImage(editList.image);
@@ -92,10 +86,7 @@ export function AddListDialog({
     setNewListName('');
     setNewListImage(null);
     setExistingImage(null);
-    setNewListDays(null);
     setNewListWeight(null);
-    setNewListParticipants(null);
-    setIsCompleted(false);
     setSelectedTripId('');
     setError(null);
     setSuccessMessage(null);
@@ -108,7 +99,6 @@ export function AddListDialog({
     try {
       const formData = new FormData();
       formData.append('name', newListName);
-      formData.append('completed', isCompleted.toString());
 
       // Handle image upload
       if (newListImage) {
@@ -119,16 +109,9 @@ export function AddListDialog({
         formData.append('keepExistingImage', 'true');
       }
 
-      if (newListDays !== null) {
-        formData.append('days', newListDays.toString());
-      }
       if (newListWeight !== null) {
         formData.append('weight', newListWeight.toString());
       }
-      if (newListParticipants !== null) {
-        formData.append('participants', newListParticipants.toString());
-      }
-
       // Include connected trip if selected
       if (selectedTripId) {
         formData.append('connectedTripId', selectedTripId);
@@ -260,34 +243,6 @@ export function AddListDialog({
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Days
-                  <input
-                    type="number"
-                    value={newListDays ?? ''}
-                    onChange={(e) =>
-                      setNewListDays(e.target.value ? parseInt(e.target.value) : null)
-                    }
-                    className="w-full max-w-full p-4"
-                  />
-                </label>
-              </div>
-
-              <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2 text-lg">
-                  Participants
-                  <input
-                    type="number"
-                    value={newListParticipants ?? ''}
-                    onChange={(e) =>
-                      setNewListParticipants(e.target.value ? parseInt(e.target.value) : null)
-                    }
-                    className="w-full max-w-full p-4"
-                  />
-                </label>
-              </div>
-
-              <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2 text-lg">
                   Connected Trip (Optional)
                   <select
                     value={selectedTripId}
@@ -306,17 +261,6 @@ export function AddListDialog({
                 </label>
               </div>
 
-              <div className="flex items-center gap-x-2">
-                <label className="flex items-center gap-x-2 text-lg cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isCompleted}
-                    onChange={(e) => setIsCompleted(e.target.checked)}
-                    className="w-6 h-6"
-                  />
-                  Completed
-                </label>
-              </div>
             </div>
           </div>
           <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">

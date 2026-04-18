@@ -25,11 +25,7 @@ export async function POST(request: Request) {
 
     const name = formData.get('name') as string;
     const image = formData.get('image') as File | null;
-    const days = formData.get('days') ? parseInt(formData.get('days') as string) : null;
     const weight = formData.get('weight') ? parseInt(formData.get('weight') as string) : null;
-    const participants = formData.get('participants')
-      ? parseInt(formData.get('participants') as string)
-      : null;
     const connectedMapId = formData.get('connectedMapId') as string | null;
     const connectedTripId = formData.get('connectedTripId') as string | null;
 
@@ -78,9 +74,7 @@ export async function POST(request: Request) {
         current: uniqueSlug,
       },
       image: imageAsset,
-      days,
       weight,
-      participants,
       items: [],
       user: {
         _type: 'reference',

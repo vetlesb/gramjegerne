@@ -92,8 +92,6 @@ export async function createOrGetUser(userData: UserData): Promise<SanityUser> {
       _type: 'slug',
       current: 'example-packing-list',
     },
-    days: 2,
-    participants: 1,
     user: {_type: 'reference', _ref: userId},
     items: [
       {

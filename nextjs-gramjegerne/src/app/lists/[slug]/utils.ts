@@ -30,9 +30,7 @@ export function LIST_QUERY(slug: string) {
   return /* groq */ `*[_type == "list" && slug.current == "${parsedSlug}" && user._ref == $userId][0] {
   _id,
   name,
-  days,
   weight,
-  participants,
   image,
   "connectedMap": connectedMap->{
     _id,
@@ -72,9 +70,7 @@ export function SHARED_LIST_QUERY(slug: string) {
   return /* groq */ `*[_type == "list" && slug.current == "${parsedSlug}"][0] {
   _id,
   name,
-  days,
   weight,
-  participants,
   image,
   "user": user->{
     _id,
@@ -208,8 +204,6 @@ export interface ListItem {
 export interface List {
   _id: string;
   name: string;
-  participants: number;
-  days: number;
   items: ListItem[];
   user?: {
     _id: string;

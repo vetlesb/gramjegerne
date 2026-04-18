@@ -22,10 +22,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-type FilterType = 'planned' | 'completed' | 'shared' | null;
-const VALID_FILTERS = ['planned', 'completed', 'shared'] as const;
+type FilterType = 'shared' | null;
+const VALID_FILTERS = ['shared'] as const;
 
-function isValidFilter(value: string | null): value is 'planned' | 'completed' | 'shared' {
+function isValidFilter(value: string | null): value is 'shared' {
   return value !== null && VALID_FILTERS.includes(value as (typeof VALID_FILTERS)[number]);
 }
 
@@ -58,14 +58,11 @@ function ListsPageContent() {
   const fetchLists = useCallback(async () => {
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _updatedAt desc, _createdAt desc) {
+    const query = groq`*[_type == "list" && user._ref == $userId] | order(_updatedAt desc, _createdAt desc) {
       _id,
       name,
       slug,
       image,
-      days,
-      participants,
-      completed,
       _updatedAt,
       _createdAt,
       "connectedMap": connectedMap->{
@@ -76,6 +73,7 @@ function ListsPageContent() {
       "items": items[] {
         _key,
         quantity,
+        onBody,
         "item": item->{
           _id,
           name,
@@ -129,7 +127,7 @@ function ListsPageContent() {
     // Subscribe to real-time updates
     if (!session?.user?.id) return;
 
-    const query = groq`*[_type == "list" && user._ref == $userId] | order(completed asc, _updatedAt desc, _createdAt desc)`;
+    const query = groq`*[_type == "list" && user._ref == $userId] | order(_updatedAt desc, _createdAt desc)`;
     const subscription = client.listen(query, {userId: session.user.id}).subscribe({
       next: fetchLists,
       error: (error) => {
@@ -208,30 +206,15 @@ function ListsPageContent() {
   };
 
   const filteredLists = useMemo(() => {
-    let filtered: ListDocument[];
-    if (selectedFilter === 'planned') {
-      filtered = lists.filter((list) => !list.completed);
-    } else if (selectedFilter === 'completed') {
-      filtered = lists.filter((list) => list.completed);
-    } else {
-      filtered = [...lists];
-    }
-
-    // Always sort: planned first, then by update time (most recent first)
-    return filtered.sort((a, b) => {
-      // First, sort by completion status (planned before completed)
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      // Then sort by update time (most recent first)
+    return [...lists].sort((a, b) => {
       const aTime = new Date(a._updatedAt || a._createdAt).getTime();
       const bTime = new Date(b._updatedAt || b._createdAt).getTime();
       return bTime - aTime;
     });
-  }, [lists, selectedFilter]);
+  }, [lists]);
 
   const handleDuplicate = async (list: ListDocument) => {
-    const name = `${list.name} (kopi)`;
+    const name = `${list.name} (copy)`;
     setDuplicateName(name);
     setShowDuplicateDialog(list);
   };
@@ -270,8 +253,6 @@ function ListsPageContent() {
   // Create filter data (CategoryFilter will add "All" button automatically)
   const filterCategories = useMemo(
     () => [
-      {_id: 'planned', title: 'Planned'},
-      {_id: 'completed', title: 'Completed'},
       {_id: 'shared', title: 'Shared'},
     ],
     [],
@@ -342,9 +323,6 @@ function ListsPageContent() {
                         name={list.name}
                         slug={list.slug.current}
                         image={list.image?.asset}
-                        completed={list.completed}
-                        participants={list.participants}
-                        days={list.days}
                         items={list.items}
                         onEdit={() => setShowEditDialog(list)}
                         onDuplicate={() => handleDuplicate(list)}

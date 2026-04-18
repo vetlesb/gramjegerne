@@ -6,8 +6,6 @@ import type {NextRequest} from 'next/server';
 
 interface UpdateData {
   name?: string;
-  days?: number;
-  participants?: number;
   weight?: number;
   image?: {
     _type: 'image';
@@ -16,7 +14,6 @@ interface UpdateData {
       _ref: string;
     };
   } | null;
-  completed: boolean;
   connectedMap?: {
     _type: 'reference';
     _ref: string;
@@ -58,11 +55,8 @@ export async function PATCH(request: NextRequest) {
         _id,
         _type,
         name,
-        days,
-        participants,
         weight,
         image,
-        completed,
         "connectedMap": connectedMap->{
           _id,
           name,
@@ -81,19 +75,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const updateData: UpdateData = {
-      completed: formData.get('completed') === 'true',
-    };
+    const updateData: UpdateData = {};
 
     // Handle basic fields
     const name = formData.get('name');
     if (name) updateData.name = name.toString();
-
-    const days = formData.get('days');
-    if (days) updateData.days = parseInt(days.toString(), 10);
-
-    const participants = formData.get('participants');
-    if (participants) updateData.participants = parseInt(participants.toString(), 10);
 
     const weight = formData.get('weight');
     if (weight) updateData.weight = parseFloat(weight.toString());

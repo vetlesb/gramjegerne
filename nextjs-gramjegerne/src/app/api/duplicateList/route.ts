@@ -59,8 +59,6 @@ export async function POST(request: Request) {
         _type: 'slug',
         current: newSlug,
       },
-      days: originalList.days,
-      participants: originalList.participants,
       image: originalList.image,
       items: originalList.items?.map((item: {_key: string; _type: string; item: {_ref: string}; checked?: boolean; quantity?: number; categoryOverride?: {_ref: string}}) => ({
         ...item,

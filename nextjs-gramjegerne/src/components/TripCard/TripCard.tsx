@@ -91,7 +91,7 @@ export function TripCard({
   // Format date range
   const formatDateRange = (): string | null => {
     if (!startDate && !endDate) return null;
-    const opts: Intl.DateTimeFormatOptions = {day: 'numeric', month: 'short'};
+    const opts: Intl.DateTimeFormatOptions = {day: 'numeric', month: 'short', year: 'numeric'};
     const start = startDate ? new Date(startDate).toLocaleDateString('nb-NO', opts) : '';
     const end = endDate ? new Date(endDate).toLocaleDateString('nb-NO', opts) : '';
     if (start && end) return `${start} - ${end}`;

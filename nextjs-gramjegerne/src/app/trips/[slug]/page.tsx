@@ -64,9 +64,6 @@ interface ConnectedList {
   name: string;
   slug: {current: string};
   image?: {asset: {_ref: string}};
-  days?: number;
-  participants?: number;
-  completed?: boolean;
   owner: {_id: string; name: string};
   items: ConnectedListItem[];
 }
@@ -120,7 +117,7 @@ export default function TripDetailPage() {
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
             "connectedLists": *[_type == "list" && connectedTrip._ref == ^._id]{
-              _id, name, slug, image, days, participants, completed,
+              _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
                 _key, quantity,
@@ -142,7 +139,7 @@ export default function TripDetailPage() {
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
             "connectedLists": *[_type == "list" && connectedTrip._ref == ^._id]{
-              _id, name, slug, image, days, participants, completed,
+              _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
                 _key, quantity,
@@ -357,9 +354,6 @@ export default function TripDetailPage() {
                       name={list.name}
                       slug={list.slug.current}
                       image={list.image?.asset}
-                      days={list.days}
-                      participants={list.participants}
-                      completed={list.completed}
                       items={list.items}
                       ownerName={isListOwner ? undefined : list.owner.name}
                       onRemove={isListOwner ? () => handleDisconnectList(list._id) : undefined}
