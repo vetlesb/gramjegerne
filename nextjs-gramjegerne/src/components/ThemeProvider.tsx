@@ -2,7 +2,7 @@
 
 import {createContext, useContext, useEffect, useState} from 'react';
 
-type Theme = 'green' | 'blue' | 'yellow';
+type Theme = 'green' | 'blue' | 'yellow' | 'rock';
 
 interface ThemeContextType {
   theme: Theme;
