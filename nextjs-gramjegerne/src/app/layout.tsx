@@ -12,6 +12,7 @@ import Link from 'next/link';
 import '@/styles/globals.scss';
 import {Providers} from './providers';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
+import {SettingsSync} from '@/components/SettingsSync';
 
 const apfel = localFont({
   src: [
@@ -49,6 +50,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <ThemeProvider>
           <LanguageProvider>
           <Providers>
+            <SettingsSync />
             {!isAuthPage && !isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && <Navbar />}
             {children}
             {!isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && (

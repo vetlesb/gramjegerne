@@ -1,6 +1,7 @@
 'use client';
 
 import {createContext, useContext, useEffect, useState, useCallback} from 'react';
+import {saveSettingToServer} from '@/hooks/useSettingsSync';
 import en from './en';
 import nb from './nb';
 import type {Translations} from './en';
@@ -48,11 +49,13 @@ export function LanguageProvider({children}: {children: React.ReactNode}) {
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('language', lang);
+    saveSettingToServer('language', lang);
   }, []);
 
   const setCurrency = useCallback((cur: Currency) => {
     setCurrencyState(cur);
     localStorage.setItem('currency', cur);
+    saveSettingToServer('currency', cur);
   }, []);
 
   const formatPrice = useCallback(

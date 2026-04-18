@@ -1,6 +1,7 @@
 'use client';
 
-import {createContext, useContext, useEffect, useState} from 'react';
+import {createContext, useContext, useCallback, useEffect, useState} from 'react';
+import {saveSettingToServer} from '@/hooks/useSettingsSync';
 
 type Theme = 'green' | 'blue' | 'yellow' | 'rock';
 
@@ -12,22 +13,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({children}: {children: React.ReactNode}) {
-  const [theme, setTheme] = useState<Theme>('green');
+  const [theme, setThemeState] = useState<Theme>('green');
 
   useEffect(() => {
-    // Load theme from localStorage on mount
     const savedTheme = localStorage.getItem('theme') as Theme;
     if (savedTheme) {
-      setTheme(savedTheme);
+      setThemeState(savedTheme);
     }
   }, []);
 
   useEffect(() => {
-    // Update data-theme attribute when theme changes
     document.documentElement.setAttribute('data-theme', theme);
-    // Save theme to localStorage
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t);
+    saveSettingToServer('theme', t);
+  }, []);
 
   return <ThemeContext.Provider value={{theme, setTheme}}>{children}</ThemeContext.Provider>;
 }
