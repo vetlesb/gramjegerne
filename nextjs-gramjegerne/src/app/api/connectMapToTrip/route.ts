@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest) {
 
     // Check if trip owner restricts maps
     const trip = await client.fetch(
-      `*[_type == "trip" && _id == $tripId][0]{ _id, user, mapsRestrictedToOwner }`,
+      `*[_type == "trip" && _id == $tripId][0]{ _id, user, mapsRestrictedToOwner, mainMap }`,
       {tripId},
     );
 
@@ -58,6 +58,19 @@ export async function PATCH(request: NextRequest) {
         },
       })
       .commit();
+
+    // Auto-set as main map if the trip doesn't have one yet
+    if (!trip.mainMap) {
+      await client
+        .patch(tripId)
+        .set({
+          mainMap: {
+            _type: 'reference',
+            _ref: mapId,
+          },
+        })
+        .commit();
+    }
 
     return NextResponse.json({success: true});
   } catch (error) {

@@ -34,6 +34,7 @@ interface Participant {
 interface ConnectedListItem {
   _key: string;
   quantity?: number;
+  onBody?: boolean;
   item: {
     _id: string;
     name: string;
@@ -84,6 +85,7 @@ interface TripDetail {
   participants: Participant[];
   connectedLists: ConnectedList[];
   connectedMaps: ConnectedMap[];
+  mainMap?: {_ref: string};
 }
 
 export default function TripDetailPage() {
@@ -112,7 +114,7 @@ export default function TripDetailPage() {
       const query = isSharedMode
         ? groq`*[_type == "trip" && (slug.current == $slug || _id == $slug)][0] {
             _id, name, slug, description, image, startDate, endDate,
-            shareId, isShared, mapsRestrictedToOwner,
+            shareId, isShared, mapsRestrictedToOwner, mainMap,
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
@@ -120,7 +122,7 @@ export default function TripDetailPage() {
               _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
-                _key, quantity,
+                _key, quantity, onBody,
                 "item": item->{_id, name, weight, calories}
               }
             },
@@ -134,7 +136,7 @@ export default function TripDetailPage() {
           }`
         : groq`*[_type == "trip" && (slug.current == $slug || _id == $slug) && user._ref == $userId][0] {
             _id, name, slug, description, image, startDate, endDate,
-            shareId, isShared, mapsRestrictedToOwner,
+            shareId, isShared, mapsRestrictedToOwner, mainMap,
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
@@ -142,7 +144,7 @@ export default function TripDetailPage() {
               _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
-                _key, quantity,
+                _key, quantity, onBody,
                 "item": item->{_id, name, weight, calories}
               }
             },
@@ -194,9 +196,47 @@ export default function TripDetailPage() {
 
       if (!response.ok) throw new Error('Failed to disconnect map');
 
+      // If we disconnected the main map, clear it
+      if (trip?.mainMap?._ref === mapId) {
+        await fetch('/api/updateTrip', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({tripId: trip._id, updates: {mainMap: null}}),
+        });
+      }
+
       await fetchTrip();
     } catch (error) {
       console.error('Error disconnecting map:', error);
+    }
+  };
+
+  const handleToggleMainMap = async (mapId: string) => {
+    if (!trip) return;
+
+    const isCurrentlyMain = trip.mainMap?._ref === mapId;
+    const updates = isCurrentlyMain
+      ? {mainMap: null}
+      : {mainMap: {_type: 'reference', _ref: mapId}};
+
+    // Optimistic update
+    setTrip((prev) =>
+      prev
+        ? {...prev, mainMap: isCurrentlyMain ? undefined : {_ref: mapId}}
+        : prev,
+    );
+
+    try {
+      const response = await fetch('/api/updateTrip', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tripId: trip._id, updates}),
+      });
+
+      if (!response.ok) throw new Error('Failed to update main map');
+    } catch (error) {
+      console.error('Error updating main map:', error);
+      await fetchTrip(); // Rollback
     }
   };
 
@@ -211,6 +251,44 @@ export default function TripDetailPage() {
 
   const dateRange = trip ? formatDateRange() : null;
   const isOwner = trip && getUserId() === trip.owner?._id;
+
+  // Calculate main map distance and elevation
+  const mainMapStats = (() => {
+    if (!trip?.mainMap?._ref) return null;
+    const mainMap = trip.connectedMaps?.find((m) => m._id === trip.mainMap?._ref);
+    if (!mainMap?.routes?.length) return null;
+
+    let totalDistance = 0;
+    let totalElevation = 0;
+
+    for (const route of mainMap.routes) {
+      if (route.waypoints && route.waypoints.length >= 2) {
+        for (let i = 1; i < route.waypoints.length; i++) {
+          const prev = route.waypoints[i - 1];
+          const curr = route.waypoints[i];
+          const R = 6371;
+          const dLat = ((curr.lat - prev.lat) * Math.PI) / 180;
+          const dLng = ((curr.lng - prev.lng) * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((prev.lat * Math.PI) / 180) *
+              Math.cos((curr.lat * Math.PI) / 180) *
+              Math.sin(dLng / 2) *
+              Math.sin(dLng / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          totalDistance += R * c;
+        }
+      }
+      if (route.elevationGain && route.elevationGain > 0) {
+        totalElevation += route.elevationGain;
+      }
+    }
+
+    return {
+      distance: totalDistance,
+      elevation: totalElevation,
+    };
+  })();
 
   if (showLoader) {
     return (
@@ -244,11 +322,23 @@ export default function TripDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-[var(--bg-dimmed)] rounded-2xl p-6 flex flex-col gap-y-4">
               <h1 className="text-5xl text-accent">{trip.name}</h1>
-              {dateRange && (
+              {(dateRange || mainMapStats) && (
                 <div className="flex flex-wrap gap-2">
-                  <Tag variant="primary" iconName="calendar">
-                    {dateRange}
-                  </Tag>
+                  {dateRange && (
+                    <Tag variant="primary" iconName="calendar">
+                      {dateRange}
+                    </Tag>
+                  )}
+                  {mainMapStats && mainMapStats.distance > 0 && (
+                    <Tag variant="primary" iconName="route">
+                      {mainMapStats.distance.toFixed(1)} km
+                    </Tag>
+                  )}
+                  {mainMapStats && mainMapStats.elevation > 0 && (
+                    <Tag variant="primary">
+                      ↗ {Math.round(mainMapStats.elevation)} m
+                    </Tag>
+                  )}
                 </div>
               )}
               {trip.description && (
@@ -397,6 +487,8 @@ export default function TripDetailPage() {
                       routesCount={map.routesCount}
                       ownerName={isMapOwner ? undefined : map.owner.name}
                       onRemove={isMapOwner ? () => handleDisconnectMap(map._id) : undefined}
+                      isMainMap={trip.mainMap?._ref === map._id}
+                      onToggleMainMap={isOwner ? () => handleToggleMainMap(map._id) : undefined}
                       imageUrlBuilder={(asset) => urlForImage(asset)}
                     />
                   );

@@ -39,6 +39,8 @@ export interface MapCardProps {
 
   // Actions
   onRemove?: () => void;
+  isMainMap?: boolean;
+  onToggleMainMap?: () => void;
 
   imageUrlBuilder?: (asset: ImageAsset) => string;
 }
@@ -79,6 +81,8 @@ export function MapCard({
   isSharedMap,
   fromTrip,
   onRemove,
+  isMainMap,
+  onToggleMainMap,
   imageUrlBuilder,
 }: MapCardProps) {
   const router = useRouter();
@@ -166,7 +170,7 @@ export function MapCard({
 
         {/* Content */}
         <div className={styles.content}>
-          <h2 className={styles.title}>{name}</h2>
+          <h2 className={styles.title}>{name}{isMainMap && <span className={styles.mainMapLabel}> — Main map</span>}</h2>
 
           <div className={styles.metadata}>
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
@@ -182,19 +186,33 @@ export function MapCard({
         </div>
 
         {/* Actions - only in list view */}
-        {viewMode === 'list' && onRemove && (
+        {viewMode === 'list' && (onRemove || onToggleMainMap) && (
           <div className={styles.actions}>
             <div className={styles.desktopActions}>
-              <IconButton
-                iconName="delete"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemove();
-                }}
-                aria-label="Remove map"
-                title="Remove map"
-              />
+              {onToggleMainMap && (
+                <IconButton
+                  iconName="navigation"
+                  variant={isMainMap ? 'primary' : 'ghost'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleMainMap();
+                  }}
+                  aria-label={isMainMap ? 'Remove as main map' : 'Set as main map'}
+                  title={isMainMap ? 'Remove as main map' : 'Set as main map'}
+                />
+              )}
+              {onRemove && (
+                <IconButton
+                  iconName="delete"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove();
+                  }}
+                  aria-label="Remove map"
+                  title="Remove map"
+                />
+              )}
             </div>
 
             <div className={styles.mobileActions} ref={moreMenuRef}>
@@ -211,17 +229,32 @@ export function MapCard({
 
               {isMoreMenuOpen && (
                 <div className={styles.moreMenuDropdown}>
-                  <button
-                    className={styles.menuItem}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMoreMenuOpen(false);
-                      onRemove();
-                    }}
-                  >
-                    <Icon name="delete" />
-                    Remove
-                  </button>
+                  {onToggleMainMap && (
+                    <button
+                      className={styles.menuItem}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMoreMenuOpen(false);
+                        onToggleMainMap();
+                      }}
+                    >
+                      <Icon name="navigation" />
+                      {isMainMap ? 'Remove main map' : 'Set as main map'}
+                    </button>
+                  )}
+                  {onRemove && (
+                    <button
+                      className={styles.menuItem}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMoreMenuOpen(false);
+                        onRemove();
+                      }}
+                    >
+                      <Icon name="delete" />
+                      Remove
+                    </button>
+                  )}
                 </div>
               )}
             </div>

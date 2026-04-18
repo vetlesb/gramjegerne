@@ -20,10 +20,9 @@ export interface TripCardProps {
   image?: ImageAsset;
   startDate?: string;
   endDate?: string;
-  category?: {_id: string; title: string};
   participantCount?: number;
-  connectedListsCount?: number;
-  connectedMapsCount?: number;
+  distance?: number;
+  elevation?: number;
 
   // Shared mode specific
   ownerName?: string;
@@ -50,10 +49,9 @@ export function TripCard({
   image,
   startDate,
   endDate,
-  category,
   participantCount,
-  connectedListsCount,
-  connectedMapsCount,
+  distance,
+  elevation,
   ownerName,
   isSharedTrip,
   onEdit,
@@ -171,17 +169,16 @@ export function TripCard({
           <h2 className={styles.title}>{name}</h2>
 
           <div className={styles.metadata}>
-            {category && <Tag>{category.title}</Tag>}
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
             {dateRange && <Tag iconName="calendar">{dateRange}</Tag>}
             {participantCount != null && participantCount > 0 && (
               <Tag iconName="user">{participantCount}</Tag>
             )}
-            {connectedListsCount != null && connectedListsCount > 0 && (
-              <Tag iconName="list">{connectedListsCount} lists</Tag>
+            {distance != null && distance > 0 && (
+              <Tag iconName="route">{distance.toFixed(1)} km</Tag>
             )}
-            {connectedMapsCount != null && connectedMapsCount > 0 && (
-              <Tag iconName="location">{connectedMapsCount} maps</Tag>
+            {elevation != null && elevation > 0 && (
+              <Tag>↗ {Math.round(elevation)} m</Tag>
             )}
           </div>
         </div>

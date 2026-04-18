@@ -33,6 +33,43 @@ function urlForSource(source: SanityImageSource) {
 }
 
 // Unified item for the trip list (owned or shared)
+interface MainMapRoute {
+  waypoints?: Array<{lat: number; lng: number}>;
+  elevationGain?: number;
+}
+
+function calculateTotalDistance(routes?: MainMapRoute[]): number {
+  if (!routes) return 0;
+  let total = 0;
+  for (const route of routes) {
+    if (!route.waypoints || route.waypoints.length < 2) continue;
+    for (let i = 1; i < route.waypoints.length; i++) {
+      const prev = route.waypoints[i - 1];
+      const curr = route.waypoints[i];
+      const R = 6371;
+      const dLat = ((curr.lat - prev.lat) * Math.PI) / 180;
+      const dLng = ((curr.lng - prev.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((prev.lat * Math.PI) / 180) *
+          Math.cos((curr.lat * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      total += R * c;
+    }
+  }
+  return total;
+}
+
+function calculateTotalElevation(routes?: MainMapRoute[]): number {
+  if (!routes) return 0;
+  return routes.reduce(
+    (total, route) => total + (route.elevationGain && route.elevationGain > 0 ? route.elevationGain : 0),
+    0,
+  );
+}
+
 interface TripListEntry {
   id: string;
   tripId: string;
@@ -43,8 +80,8 @@ interface TripListEntry {
   endDate?: string;
   category?: {_id: string; title: string};
   participantCount?: number;
-  connectedListsCount?: number;
-  connectedMapsCount?: number;
+  distance?: number;
+  elevation?: number;
   ownerName?: string;
   isShared: boolean;
   _createdAt?: string;
@@ -124,9 +161,8 @@ function TripsPageContent() {
       shareId,
       isShared,
       "category": category->{_id, title},
-      "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
-      "connectedMapsCount": count(*[_type == "map" && connectedTrip._ref == ^._id]),
       "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1,
+      "mainMapRoutes": mainMap->{routes[]{waypoints, elevationGain}}.routes,
       _createdAt,
       _updatedAt
     }`;
@@ -158,9 +194,8 @@ function TripsPageContent() {
             name,
             email
           },
-          "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
-          "connectedMapsCount": count(*[_type == "map" && connectedTrip._ref == ^._id]),
-          "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1
+          "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1,
+          "mainMapRoutes": mainMap->{routes[]{waypoints, elevationGain}}.routes
         }
       }
     }`;
@@ -407,8 +442,8 @@ function TripsPageContent() {
       endDate: trip.endDate,
       category: trip.category,
       participantCount: trip.participantCount,
-      connectedListsCount: trip.connectedListsCount,
-      connectedMapsCount: trip.connectedMapsCount,
+      distance: calculateTotalDistance(trip.mainMapRoutes),
+      elevation: calculateTotalElevation(trip.mainMapRoutes),
       isShared: false,
       _createdAt: trip._createdAt,
       originalTrip: trip,
@@ -426,8 +461,8 @@ function TripsPageContent() {
         endDate: st.trip.endDate,
         category: st.category,
         participantCount: st.trip.participantCount,
-        connectedListsCount: st.trip.connectedListsCount,
-        connectedMapsCount: st.trip.connectedMapsCount,
+        distance: calculateTotalDistance(st.trip.mainMapRoutes),
+        elevation: calculateTotalElevation(st.trip.mainMapRoutes),
         ownerName: st.trip.user?.name,
         isShared: true,
         sharedTripId: st.trip._id,
@@ -510,10 +545,9 @@ function TripsPageContent() {
                     image={entry.image}
                     startDate={entry.startDate}
                     endDate={entry.endDate}
-                    category={entry.category}
                     participantCount={entry.participantCount}
-                    connectedListsCount={entry.connectedListsCount}
-                    connectedMapsCount={entry.connectedMapsCount}
+                    distance={entry.distance}
+                    elevation={entry.elevation}
                     ownerName={entry.ownerName}
                     onEdit={
                       entry.originalTrip

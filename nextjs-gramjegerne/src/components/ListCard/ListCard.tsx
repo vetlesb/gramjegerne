@@ -225,7 +225,7 @@ export function ListCard({
           <div className={styles.metadata}>
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
             {backpackWeight > 0 && <Tag iconName="backpack">{formatWeight(backpackWeight)}</Tag>}
-            {onBodyWeight > 0 && <Tag iconName="weight">{formatWeight(onBodyWeight)}</Tag>}
+            {onBodyWeight > 0 && <Tag iconName="clothing">{formatWeight(onBodyWeight)}</Tag>}
             {totalCalories > 0 && <Tag iconName="calories">{formatNumber(totalCalories)} kcal</Tag>}
           </div>
         </div>

@@ -155,6 +155,10 @@ export interface TripOverviewItem extends TripDocument {
   connectedListsCount: number;
   connectedMapsCount: number;
   participantCount: number;
+  mainMapRoutes?: Array<{
+    waypoints?: Array<{lat: number; lng: number}>;
+    elevationGain?: number;
+  }>;
 }
 
 export interface SharedTripReference {
@@ -177,6 +181,10 @@ export interface SharedTripReference {
     connectedListsCount?: number;
     connectedMapsCount?: number;
     participantCount?: number;
+    mainMapRoutes?: Array<{
+      waypoints?: Array<{lat: number; lng: number}>;
+      elevationGain?: number;
+    }>;
   };
   category?: {
     _id: string;

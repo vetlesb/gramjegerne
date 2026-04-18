@@ -140,6 +140,12 @@
   }
 }
 
+.mainMapLabel {
+  font-weight: 400;
+  opacity: 0.5;
+  font-size: inherit;
+}
+
 .metadata {
   @include flex-start;
   flex-wrap: wrap;
