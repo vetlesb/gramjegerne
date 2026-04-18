@@ -42,6 +42,9 @@ export interface PackingListItemProps {
   onBodyChange?: (key: string, onBody: boolean) => void;
   onDelete?: (key: string) => void;
 
+  // Readonly mode callbacks
+  onAddToGear?: (item: NonNullable<ListItem['item']>) => void;
+
   // Image URL helper
   imageUrlBuilder?: (asset: ImageAsset) => string;
 }
@@ -55,6 +58,7 @@ export function PackingListItem({
   onCheckChange,
   onBodyChange,
   onDelete,
+  onAddToGear,
   imageUrlBuilder,
 }: PackingListItemProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -175,6 +179,23 @@ export function PackingListItem({
             )}
           </div>
         </div>
+
+        {/* Add to gear - Only in readonly mode */}
+        {isReadonly && onAddToGear && listItem.item && (
+          <div className={styles.actions}>
+            <IconButton
+              iconName="add"
+              variant="ghost"
+              size="md"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToGear(listItem.item!);
+              }}
+              aria-label="Add to my gear"
+              title="Add to my gear"
+            />
+          </div>
+        )}
 
         {/* Actions - Only in editable mode */}
         {!isReadonly && (

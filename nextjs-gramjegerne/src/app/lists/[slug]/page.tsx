@@ -3,6 +3,8 @@ import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {Icon} from '@/components/Icon';
 import {ActionBar} from '@/components/ActionBar';
 import {CategoryFilter} from '@/components/CategoryFilter';
+import {CategoryCombobox} from '@/components/CategoryCombobox';
+import {Button} from '@/components/Button/Button';
 import {OverviewStats} from '@/components/OverviewStats';
 import {PackingListItem} from '@/components/PackingListItem';
 import {client} from '@/sanity/client';
@@ -101,6 +103,19 @@ export default function ListPage() {
 
   // Add a new state for dialog search
   const [dialogSearchQuery, setDialogSearchQuery] = useState('');
+
+  // Add to gear dialog state (shared mode)
+  const [addToGearItem, setAddToGearItem] = useState<{
+    _id: string;
+    name: string;
+    size?: string;
+    weight?: {weight: number; unit: string};
+    calories?: number;
+    image?: {asset: {_ref: string}};
+  } | null>(null);
+  const [addToGearCategory, setAddToGearCategory] = useState('');
+  const [addToGearCategories, setAddToGearCategories] = useState<{_id: string; title: string}[]>([]);
+  const [isAddingToGear, setIsAddingToGear] = useState(false);
 
   // Add new state for onBody filter
   const [showOnBodyOnly, setShowOnBodyOnly] = useState<boolean>(() => {
@@ -278,6 +293,81 @@ export default function ListPage() {
   useEffect(() => {
     checkIfSaved();
   }, [checkIfSaved]);
+
+  // Add to gear: open dialog with category selection
+  const handleOpenAddToGear = async (item: {
+    _id: string;
+    name: string;
+    size?: string;
+    weight?: {weight: number; unit: string};
+    calories?: number;
+    image?: {asset: {_ref: string; url?: string}};
+  }) => {
+    setAddToGearItem(item);
+    setAddToGearCategory('');
+
+    // Fetch user's categories
+    try {
+      const response = await fetch('/api/getCategories');
+      if (response.ok) {
+        const data = await response.json();
+        setAddToGearCategories(
+          [...data].sort((a: {title: string}, b: {title: string}) =>
+            a.title.localeCompare(b.title),
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleConfirmAddToGear = async () => {
+    if (!addToGearItem || !addToGearCategory) return;
+
+    setIsAddingToGear(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', addToGearItem.name);
+      formData.append('slug', addToGearItem.name.toLowerCase().replace(/\s+/g, '-').slice(0, 200));
+      formData.append('category', addToGearCategory);
+
+      if (addToGearItem.image?.asset?._ref) {
+        formData.append('imageRef', addToGearItem.image.asset._ref);
+      }
+      if (addToGearItem.weight) {
+        formData.append('weight.weight', addToGearItem.weight.weight.toString());
+        formData.append('weight.unit', addToGearItem.weight.unit);
+      }
+      if (addToGearItem.size) {
+        formData.append('size', addToGearItem.size);
+      }
+      if (addToGearItem.calories && addToGearItem.calories > 0) {
+        formData.append('calories', addToGearItem.calories.toString());
+      }
+
+      const response = await fetch('/api/items', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Failed to add gear');
+
+      toast.success(`"${addToGearItem.name}" added to your gear`, {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+      setAddToGearItem(null);
+    } catch (error) {
+      console.error('Error adding to gear:', error);
+      toast.error('Failed to add to gear. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+    } finally {
+      setIsAddingToGear(false);
+    }
+  };
 
   const updateUrlAndStorage = (params: {set?: Record<string, string>; remove?: string[]}) => {
     isUpdatingURL.current = true;
@@ -1072,11 +1162,49 @@ export default function ListPage() {
                     handleRemoveFromList(item.item);
                   }
                 }}
+                onAddToGear={isSharedMode ? handleOpenAddToGear : undefined}
                 imageUrlBuilder={(asset) => urlFor(asset).url()}
               />
             ))}
           </ul>
         )}
+
+        {/* Add to gear dialog (shared mode) */}
+        <Dialog open={!!addToGearItem} onOpenChange={(open) => !open && setAddToGearItem(null)}>
+          <DialogContent className="dialog p-10 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-accent font-normal pb-4">
+                Add to my gear
+              </DialogTitle>
+            </DialogHeader>
+            {addToGearItem && (
+              <div className="flex flex-col gap-y-4">
+                <p className="text-lg">{addToGearItem.name}</p>
+                <CategoryCombobox
+                  categories={addToGearCategories}
+                  selectedCategory={addToGearCategory}
+                  onSelect={setAddToGearCategory}
+                  label="Category"
+                  required
+                />
+              </div>
+            )}
+            <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">
+              <DialogClose asChild>
+                <button type="button" className="button-secondary">
+                  Cancel
+                </button>
+              </DialogClose>
+              <Button
+                variant="primary"
+                onClick={handleConfirmAddToGear}
+                disabled={!addToGearCategory || isAddingToGear}
+              >
+                {isAddingToGear ? 'Adding...' : 'Add'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </ProtectedRoute>
   );

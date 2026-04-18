@@ -86,7 +86,10 @@ export async function POST(request: Request) {
     }
 
     let imageAsset: string | undefined = undefined;
-    if (imageFile) {
+    const imageRef = formData.get('imageRef') as string | null;
+    if (imageRef) {
+      imageAsset = imageRef;
+    } else if (imageFile) {
       const imageResponse = await client.assets.upload('image', imageFile, {
         filename: imageFile.name,
       });

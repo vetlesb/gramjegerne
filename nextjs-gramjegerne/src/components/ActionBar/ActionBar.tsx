@@ -91,7 +91,7 @@ export function ActionBar({
       <div className={styles.desktopGroup}>
         {mode === 'gear' && (
           <>
-            <Button onClick={onAddGear}>Add</Button>
+            <Button onClick={onAddGear}>Add gear</Button>
             <Button onClick={onManageCategories}>Categories</Button>
             <Button onClick={onExcel}>Excel</Button>
             {viewMode && onViewModeChange && (
