@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {IconButton} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import Image from 'next/image';
 import type {Item, ImageAsset} from '@/types';
 import styles from './ItemCard.module.scss';
@@ -49,6 +50,7 @@ export function ItemCard({
   onRemoveFromList,
   imageUrlBuilder,
 }: ItemCardProps) {
+  const {formatPrice} = useLanguage();
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [quantityInput, setQuantityInput] = useState<string>(
     listItem?.quantity?.toString() || '1'
@@ -131,10 +133,7 @@ export function ItemCard({
               )}
               {typeof item.price !== 'undefined' && item.price > 0 && (
                 <Tag>
-                  {new Intl.NumberFormat('nb-NO', {
-                    style: 'currency',
-                    currency: 'NOK',
-                  }).format(item.price)}
+                  {formatPrice(item.price)}
                 </Tag>
               )}
             </div>
@@ -275,10 +274,7 @@ export function ItemCard({
               )}
               {typeof item.price !== 'undefined' && item.price > 0 && (
                 <Tag>
-                  {new Intl.NumberFormat('nb-NO', {
-                    style: 'currency',
-                    currency: 'NOK',
-                  }).format(item.price)}
+                  {formatPrice(item.price)}
                 </Tag>
               )}
             </div>

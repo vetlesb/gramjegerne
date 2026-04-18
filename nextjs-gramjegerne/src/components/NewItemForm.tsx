@@ -18,7 +18,7 @@ interface NewItemFormProps {
 }
 
 function NewItemForm({onSuccess}: NewItemFormProps) {
-  const {t} = useLanguage();
+  const {t, currencyLabel} = useLanguage();
   // State Definitions
   const [name, setName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
@@ -358,7 +358,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         {/* Price */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            {t.labels.price}
+            {t.labels.price} ({currencyLabel})
             <input
               type="number"
               className="w-full max-w-full p-4"

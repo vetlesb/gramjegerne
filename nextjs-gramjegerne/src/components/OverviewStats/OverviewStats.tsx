@@ -50,17 +50,10 @@ export function OverviewStats({
   showCategoryBreakdown = false,
   categoryTotals = [],
 }: OverviewStatsProps) {
-  const {t} = useLanguage();
+  const {t, formatPrice} = useLanguage();
   const formatWeight = (weightInGrams: number): string => {
     const weightInKg = weightInGrams / 1000;
     return `${weightInKg.toFixed(3)} kg`;
-  };
-
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-    }).format(price);
   };
 
   const formatNumber = (num: number): string => {

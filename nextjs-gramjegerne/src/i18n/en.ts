@@ -14,6 +14,7 @@ const en = {
     account: 'Account',
     theme: 'Theme',
     language: 'Language',
+    currency: 'Currency',
     signOut: 'Sign out',
     themes: {
       forrest: 'Forrest',
@@ -64,7 +65,7 @@ const en = {
     calories: 'Calories',
     image: 'Image',
     description: 'Description',
-    price: 'Price (NOK)',
+    price: 'Price',
     days: 'Days',
     participants: 'Participants',
     quantity: 'Quantity',

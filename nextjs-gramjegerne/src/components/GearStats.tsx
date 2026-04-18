@@ -1,3 +1,7 @@
+'use client';
+
+import {useLanguage} from '@/i18n/LanguageProvider';
+
 interface GearStatsProps {
   items: Item[];
 }
@@ -11,6 +15,8 @@ interface Item {
 }
 
 export function GearStats({items}: GearStatsProps) {
+  const {t, formatPrice} = useLanguage();
+
   const totals = items.reduce(
     (acc, item) => {
       const weight = item.weight?.weight || 0;
@@ -30,17 +36,10 @@ export function GearStats({items}: GearStatsProps) {
     return `${weightInKg.toFixed(3)} kg`;
   };
 
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-    }).format(price);
-  };
-
   return (
     <div className="product-category items-center grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-x-3">
       <div className="flex items-center gap-x-2 text-sm sm:text-lg fg-accent">
-        <p>{totals.totalItems} items</p>
+        <p>{totals.totalItems} {t.misc.items}</p>
       </div>
       <div className="flex items-center gap-x-2 text-sm sm:text-lg fg-accent">
         <p>{formatWeight(totals.totalWeight)}</p>

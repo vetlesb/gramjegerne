@@ -45,7 +45,7 @@ function categoryToSlug(categoryName: string): string {
 }
 
 function IndexPageContent() {
-  const {t} = useLanguage();
+  const {t, formatPrice} = useLanguage();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -711,10 +711,7 @@ function IndexPageContent() {
                           <div className="flex flex-col">
                             <dt className="text-sm opacity-70">{t.labels.price}</dt>
                             <dd>
-                              {new Intl.NumberFormat('nb-NO', {
-                                style: 'currency',
-                                currency: 'NOK',
-                              }).format(expandedItem.price)}
+                              {formatPrice(expandedItem.price)}
                             </dd>
                           </div>
                         )}

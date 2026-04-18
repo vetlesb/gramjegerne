@@ -20,10 +20,18 @@ const languages = [
   {value: 'nb' as const, label: 'Norsk'},
 ];
 
+const currencies = [
+  {value: 'NOK' as const, label: 'NOK'},
+  {value: 'SEK' as const, label: 'SEK'},
+  {value: 'DKK' as const, label: 'DKK'},
+  {value: 'USD' as const, label: 'USD'},
+  {value: 'EUR' as const, label: 'EUR'},
+];
+
 export default function SettingsPage() {
   const {data: session} = useSession();
   const {theme, setTheme} = useTheme();
-  const {language, setLanguage, t} = useLanguage();
+  const {language, setLanguage, currency, setCurrency, t} = useLanguage();
 
   return (
     <ProtectedRoute>
@@ -69,6 +77,24 @@ export default function SettingsPage() {
               }`}
             >
               {lang.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Currency */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{t.settings.currency}</h2>
+        <div className="flex flex-row gap-2 flex-wrap">
+          {currencies.map((cur) => (
+            <button
+              key={cur.value}
+              onClick={() => setCurrency(cur.value)}
+              className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+                currency === cur.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+              }`}
+            >
+              {cur.label}
             </button>
           ))}
         </div>

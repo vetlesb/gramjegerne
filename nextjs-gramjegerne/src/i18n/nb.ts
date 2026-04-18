@@ -16,6 +16,7 @@ const nb: Translations = {
     account: 'Konto',
     theme: 'Tema',
     language: 'Språk',
+    currency: 'Valuta',
     signOut: 'Logg ut',
     themes: {
       forrest: 'Skog',
@@ -66,7 +67,7 @@ const nb: Translations = {
     calories: 'Kalorier',
     image: 'Bilde',
     description: 'Beskrivelse',
-    price: 'Pris (NOK)',
+    price: 'Pris',
     days: 'Dager',
     participants: 'Deltakere',
     quantity: 'Antall',
