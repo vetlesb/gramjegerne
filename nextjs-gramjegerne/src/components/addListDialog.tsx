@@ -152,7 +152,7 @@ export function AddListDialog({
         throw new Error(`Failed to save list: ${response.status} ${response.statusText}`);
       }
 
-      setSuccessMessage(editList ? 'Liste oppdatert!' : 'Liste opprettet!');
+      setSuccessMessage(editList ? 'List updated!' : 'List created!');
 
       if (onSuccess) {
         await onSuccess();

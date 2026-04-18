@@ -116,14 +116,14 @@ export function CategoryCombobox({
             <div className="absolute w-full mt-2 bg-dimmed border border-accent rounded-md shadow-lg z-[60]">
               <Command.List className="max-h-[300px] overflow-auto p-2">
                 <Command.Empty className="p-4 text-sm text-gray-500">
-                  Ingen kategorier funnet.
+                  No categories found.
                   {categoryInput && onCreateNew && (
                     <button
                       type="button"
                       onClick={() => handleCreate(categoryInput)}
                       className="button-primary-accent text-lg flex items-center gap-1 mt-2 text-secondary"
                     >
-                      <Icon name="add" width={24} height={24} /> Opprett &ldquo;
+                      <Icon name="add" width={24} height={24} /> Create &ldquo;
                       {categoryInput}&rdquo;
                       {isAdding && <LoadingSpinner size="sm" />}
                     </button>

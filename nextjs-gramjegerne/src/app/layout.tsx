@@ -3,8 +3,6 @@
 'use client';
 
 import {Navbar} from '@/components/Navbar';
-import {signOut} from 'next-auth/react';
-import {ThemeSelector} from '@/components/ThemeSelector';
 import {ThemeProvider} from '@/components/ThemeProvider';
 import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
@@ -53,22 +51,13 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             {children}
             {!isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && (
               <ProtectedRoute>
-                <div className="flex flex-col md:flex-row justify-between">
-                  <div className="nav-logo text-center text-2xl text-accent pb-8 flex flex-row gap-1 p-8 justify-start">
+                <div className="flex flex-row justify-between items-center p-8 pb-8">
+                  <div className="nav-logo text-2xl text-accent">
                     Gramjegerne
                   </div>
-                  <div className="text-center text-lg pb-8 flex flex-col gap-y-4 md:flex-row gap-1 p-8 justify-end">
-                    <ThemeSelector />
-                    <Link href="mailto:gramjegerne@gmail.com" className="menu-item">
-                      Contact
-                    </Link>{' '}
-                    <button
-                      onClick={() => signOut()}
-                      className="menu-item text-lg flex items-center w-full md:w-auto gap-x-1 justify-center"
-                    >
-                      Log out
-                    </button>
-                  </div>
+                  <Link href="mailto:gramjegerne@gmail.com" className="menu-item text-lg">
+                    Contact
+                  </Link>
                 </div>
               </ProtectedRoute>
             )}

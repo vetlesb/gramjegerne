@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     const calories = formData.get('calories') as string;
 
     if (!name || !slug) {
-      return NextResponse.json({message: 'Navn og slug er obligatorisk.'}, {status: 400});
+      return NextResponse.json({message: 'Name and slug are required.'}, {status: 400});
     }
 
     // Verify category exists

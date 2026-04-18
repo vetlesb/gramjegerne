@@ -259,8 +259,8 @@ function IndexPageContent() {
     try {
       const referencesExist = await hasReferences(categoryToDelete);
       if (referencesExist) {
-        setErrorMessage('Kan ikke slette kategori. Den har referanser i utstyr.');
-        alert('Kan ikke slette kategori. Den har referanser i utstyr.');
+        setErrorMessage('Cannot delete category. It is referenced by gear items.');
+        alert('Cannot delete category. It is referenced by gear items.');
         return;
       }
 
@@ -317,7 +317,7 @@ function IndexPageContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Kunne ikke slette utstyr');
+        throw new Error(errorData.message || 'Could not delete gear');
       }
 
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemToDelete));
@@ -325,7 +325,7 @@ function IndexPageContent() {
       setItemUsageInfo(null);
     } catch (error: unknown) {
       console.error('Error deleting item:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Kunne ikke slette utstyr');
+      setErrorMessage(error instanceof Error ? error.message : 'Could not delete gear');
     } finally {
       setIsLoadingDelete(false);
     }
@@ -634,7 +634,7 @@ function IndexPageContent() {
                     onClick={confirmDeleteItem}
                     disabled={isLoadingDelete}
                   >
-                    {isLoadingDelete ? 'Sletter...' : 'Slett'}
+                    {isLoadingDelete ? 'Deleting...' : 'Delete'}
                   </button>
                   <button
                     type="button"
@@ -645,7 +645,7 @@ function IndexPageContent() {
                       setErrorMessage('');
                     }}
                   >
-                    Avbryt
+                    Cancel
                   </button>
                 </DialogFooter>
               </DialogContent>

@@ -56,6 +56,6 @@ export async function DELETE(request: Request) {
     await client.delete(itemId);
     return NextResponse.json({message: 'Item deleted successfully'}, {status: 200});
   } catch (error: unknown) {
-    return handleApiError(error, 'Error deleting item:', 'Kunne ikke slette utstyr.');
+    return handleApiError(error, 'Error deleting item:', 'Could not delete gear.');
   }
 }

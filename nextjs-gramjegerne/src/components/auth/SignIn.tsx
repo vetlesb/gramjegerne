@@ -16,16 +16,16 @@ export function SignIn() {
           setIsSigningIn(false);
           const message =
             result.error === 'Configuration'
-              ? 'Innlogging er feilkonfigurert. Prøv igjen senere eller kontakt support.'
+              ? 'Login is misconfigured. Please try again later or contact support.'
               : result.error === 'AccessDenied'
-                ? 'Tilgang nektet.'
-                : 'Innlogging feilet. Prøv igjen.';
+                ? 'Access denied.'
+                : 'Login failed. Please try again.';
           toast.error(message);
         }
       })
       .catch(() => {
         setIsSigningIn(false);
-        toast.error('Noe gikk galt. Prøv igjen.');
+        toast.error('Something went wrong. Please try again.');
       });
   };
 
@@ -58,7 +58,7 @@ export function SignIn() {
           />
         </svg>
       )}
-      {isSigningIn ? 'Logger inn…' : 'Logg inn'}
+      {isSigningIn ? 'Signing in…' : 'Sign in'}
     </button>
   );
 }

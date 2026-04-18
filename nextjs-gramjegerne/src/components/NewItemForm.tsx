@@ -50,7 +50,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         setCategories(sortedCategories);
       } catch (error) {
         console.error(error);
-        setErrorMessage('Kunne ikke hente kategorier.');
+        setErrorMessage('Could not fetch categories.');
       }
     };
 
@@ -329,7 +329,7 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
             <div className="mt-4 relative">
               <Image
                 src={imagePreview}
-                alt="Forhåndsvisning"
+                alt="Preview"
                 width={96}
                 height={96}
                 className="h-24 w-24 object-cover rounded-md"

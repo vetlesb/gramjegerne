@@ -67,7 +67,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         }
       } catch (error) {
         console.error('Category fetch error:', error);
-        setErrorMessage('Kunne ikke hente kategorier.');
+        setErrorMessage('Could not fetch categories.');
       }
     };
     fetchCategories();
@@ -105,7 +105,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name || !slug) {
-      setErrorMessage('Navn og slug er obligatorisk.');
+      setErrorMessage('Name and slug are required.');
       return;
     }
 
@@ -152,22 +152,22 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         try {
           errorData = await response.json();
         } catch {
-          throw new Error('Kunne ikke oppdatere utstyr.');
+          throw new Error('Could not update gear.');
         }
-        throw new Error(errorData.message || 'Kunne ikke oppdatere utstyr.');
+        throw new Error(errorData.message || 'Could not update gear.');
       }
 
       const updatedItem = await response.json();
-      console.log('Utstyr oppdatert:', updatedItem);
-      setSuccessMessage('Utstyr oppdatert suksessfullt!');
+      console.log('Gear updated:', updatedItem);
+      setSuccessMessage('Gear updated successfully!');
       onSuccess();
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Detailed error message:', error.message);
-        setErrorMessage(error.message || 'Kunne ikke oppdatere utstyr.');
+        setErrorMessage(error.message || 'Could not update gear.');
       } else {
         console.error('Unexpected error:', error);
-        setErrorMessage('Kunne ikke oppdatere utstyr.');
+        setErrorMessage('Could not update gear.');
       }
     } finally {
       setIsLoading(false);

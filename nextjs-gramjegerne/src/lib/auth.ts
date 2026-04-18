@@ -42,17 +42,17 @@ export async function createOrGetUser(userData: UserData): Promise<SanityUser> {
   const categories = await Promise.all([
     client.create({
       _type: 'category',
-      title: 'Klær',
+      title: 'Clothing',
       user: {_type: 'reference', _ref: userId},
     }),
     client.create({
       _type: 'category',
-      title: 'Mat',
+      title: 'Food',
       user: {_type: 'reference', _ref: userId},
     }),
     client.create({
       _type: 'category',
-      title: 'Utstyr',
+      title: 'Equipment',
       user: {_type: 'reference', _ref: userId},
     }),
   ]);
@@ -87,10 +87,10 @@ export async function createOrGetUser(userData: UserData): Promise<SanityUser> {
   // Create a sample packing list
   await client.create({
     _type: 'list',
-    name: 'Eksempel på pakkeliste',
+    name: 'Example packing list',
     slug: {
       _type: 'slug',
-      current: 'eksempel-pa-pakkeliste',
+      current: 'example-packing-list',
     },
     days: 2,
     participants: 1,

@@ -131,7 +131,7 @@ export async function PUT(request: NextRequest) {
     const updatedItem = await patch.commit();
     return NextResponse.json(updatedItem, {status: 200});
   } catch (error: unknown) {
-    return handleApiError(error, 'Error updating item:', 'Kunne ikke oppdatere utstyr.');
+    return handleApiError(error, 'Error updating item:', 'Could not update gear.');
   }
 }
 
@@ -161,6 +161,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(item, {status: 200});
   } catch (error: unknown) {
-    return handleApiError(error, 'Error fetching item:', 'Kunne ikke hente utstyr.');
+    return handleApiError(error, 'Error fetching item:', 'Could not fetch gear.');
   }
 }

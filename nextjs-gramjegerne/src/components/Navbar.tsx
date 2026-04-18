@@ -70,7 +70,7 @@ export function Navbar() {
                     href="/trips"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Trips (beta)
+                    Trips
                   </Link>
                 </li>
                 <li>
@@ -82,6 +82,15 @@ export function Navbar() {
                     Maps
                   </Link>
                 </li>
+                <li>  
+                  <Link
+                    className={`text-lg text-center block w-full ${pathname === '/settings' ? 'menu-active' : 'menu-item'}`}
+                    href="/settings"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  </li>
               </ul>
             )}
           </div>
