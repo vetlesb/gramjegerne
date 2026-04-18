@@ -32,6 +32,7 @@ import {ActionBar} from '@/components/ActionBar';
 import {CategoryFilter} from '@/components/CategoryFilter';
 import {ItemCard} from '@/components/ItemCard';
 import {OverviewStats} from '@/components/OverviewStats';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 // Convert category name to URL-safe slug
 function categoryToSlug(categoryName: string): string {
@@ -44,6 +45,7 @@ function categoryToSlug(categoryName: string): string {
 }
 
 function IndexPageContent() {
+  const {t} = useLanguage();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -259,8 +261,8 @@ function IndexPageContent() {
     try {
       const referencesExist = await hasReferences(categoryToDelete);
       if (referencesExist) {
-        setErrorMessage('Cannot delete category. It is referenced by gear items.');
-        alert('Cannot delete category. It is referenced by gear items.');
+        setErrorMessage(t.gear.cannotDeleteCategory);
+        alert(t.gear.cannotDeleteCategory);
         return;
       }
 
@@ -325,7 +327,7 @@ function IndexPageContent() {
       setItemUsageInfo(null);
     } catch (error: unknown) {
       console.error('Error deleting item:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Could not delete gear');
+      setErrorMessage(error instanceof Error ? error.message : t.gear.couldNotDeleteGear);
     } finally {
       setIsLoadingDelete(false);
     }
@@ -429,7 +431,7 @@ function IndexPageContent() {
               <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-normal text-accent pb-8">
-                    Add gear
+                    {t.gear.addGear}
                   </DialogTitle>
                 </DialogHeader>
                 <NewItemForm
@@ -454,7 +456,7 @@ function IndexPageContent() {
               <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
                 <DialogHeader>
                   <DialogTitle className="text-2xl text-accent font-normal pb-8">
-                    Add category
+                    {t.gear.addCategory}
                   </DialogTitle>
                 </DialogHeader>
 
@@ -464,7 +466,7 @@ function IndexPageContent() {
                   }}
                 />
 
-                <p className="mt-6">Categories</p>
+                <p className="mt-6">{t.gear.categories}</p>
                 <CategoryList
                   categories={categories}
                   onUpdate={handleUpdateCategory}
@@ -489,7 +491,7 @@ function IndexPageContent() {
                   }
                 }}
                 showAllButton={true}
-                allButtonLabel="All"
+                allButtonLabel={t.misc.all}
               />
             )}
 
@@ -510,8 +512,8 @@ function IndexPageContent() {
             {filteredItems.length === 0 ? (
               <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
                 {selectedCategory
-                  ? 'No gear in this category yet. Add some new!'
-                  : 'You have not added any gear yet. The advantage is that it weighs 0 grams!'}
+                  ? t.gear.emptyCategoryState
+                  : t.gear.emptyState}
               </div>
             ) : (
               <ul
@@ -554,10 +556,10 @@ function IndexPageContent() {
                 onInteractOutside={(e) => e.preventDefault()}
               >
                 <DialogHeader>
-                  <DialogTitle className="text-2xl text-accent font-normal">Excel</DialogTitle>
+                  <DialogTitle className="text-2xl text-accent font-normal">{t.import.title}</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="flex flex-col description text-md pb-8">
-                  Import or export your gear as .xlsx
+                  {t.import.description}
                 </DialogDescription>
                 <ImportForm onSuccess={handleImportSuccess} />
                 <DialogFooter className="pt-4"></DialogFooter>
@@ -567,18 +569,18 @@ function IndexPageContent() {
             <Dialog open={!!categoryToDelete}>
               <DialogContent className="dialog gap-y-8">
                 <DialogHeader>
-                  <DialogTitle>Are you sure you want to delete this category?</DialogTitle>
+                  <DialogTitle>{t.gear.deleteCategoryConfirm}</DialogTitle>
                 </DialogHeader>
                 <DialogFooter>
                   <button onClick={confirmDeleteCategory} className="button-primary-accent">
-                    Yes, delete
+                    {t.actions.delete}
                   </button>
                   <button
                     type="button"
                     className="button-secondary"
                     onClick={() => setCategoryToDelete(null)}
                   >
-                    Cancel
+                    {t.actions.cancel}
                   </button>
                 </DialogFooter>
               </DialogContent>
@@ -587,7 +589,7 @@ function IndexPageContent() {
             <Dialog open={!!isEditDialogOpen} onOpenChange={() => setIsEditDialogOpen(null)}>
               <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-normal text-accent">Edit gear</DialogTitle>
+                  <DialogTitle className="text-xl font-normal text-accent">{t.gear.editGear}</DialogTitle>
                 </DialogHeader>
                 {isEditDialogOpen && (
                   <EditItemForm
@@ -608,7 +610,7 @@ function IndexPageContent() {
                   <DialogTitle className="text-xl font-normal text-accent">
                     {itemUsageInfo && itemUsageInfo.lists.length > 0 ? (
                       <>
-                        {itemUsageInfo.itemName} is in these lists, do you still want to delete it?
+                        {itemUsageInfo.itemName} {t.gear.deleteInLists}
                         <ul className="mt-4 space-y-2 text-base font-normal">
                           {itemUsageInfo.lists.map((list) => (
                             <li
@@ -621,7 +623,7 @@ function IndexPageContent() {
                         </ul>
                       </>
                     ) : (
-                      <>Are you sure you want to delete &quot;{itemUsageInfo?.itemName}&quot;?</>
+                      <>{t.gear.deleteConfirm} &quot;{itemUsageInfo?.itemName}&quot;?</>
                     )}
                   </DialogTitle>
                 </DialogHeader>
@@ -634,7 +636,7 @@ function IndexPageContent() {
                     onClick={confirmDeleteItem}
                     disabled={isLoadingDelete}
                   >
-                    {isLoadingDelete ? 'Deleting...' : 'Delete'}
+                    {isLoadingDelete ? t.actions.deleting : t.actions.delete}
                   </button>
                   <button
                     type="button"
@@ -645,7 +647,7 @@ function IndexPageContent() {
                       setErrorMessage('');
                     }}
                   >
-                    Cancel
+                    {t.actions.cancel}
                   </button>
                 </DialogFooter>
               </DialogContent>
@@ -681,19 +683,19 @@ function IndexPageContent() {
                       <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
                         {expandedItem.category?.title && (
                           <div className="flex flex-col">
-                            <dt className="text-sm opacity-70">Category</dt>
+                            <dt className="text-sm opacity-70">{t.labels.category}</dt>
                             <dd>{expandedItem.category.title}</dd>
                           </div>
                         )}
                         {expandedItem.size && (
                           <div className="flex flex-col">
-                            <dt className="text-sm opacity-70">Size</dt>
+                            <dt className="text-sm opacity-70">{t.labels.size}</dt>
                             <dd>{expandedItem.size}</dd>
                           </div>
                         )}
                         {expandedItem.weight && expandedItem.weight.weight > 0 && (
                           <div className="flex flex-col">
-                            <dt className="text-sm opacity-70">Weight</dt>
+                            <dt className="text-sm opacity-70">{t.labels.weight}</dt>
                             <dd>
                               {expandedItem.weight.weight} {expandedItem.weight.unit}
                             </dd>
@@ -701,13 +703,13 @@ function IndexPageContent() {
                         )}
                         {expandedItem.calories !== undefined && expandedItem.calories > 0 && (
                           <div className="flex flex-col">
-                            <dt className="text-sm opacity-70">Calories</dt>
+                            <dt className="text-sm opacity-70">{t.labels.calories}</dt>
                             <dd>{expandedItem.calories} kcal</dd>
                           </div>
                         )}
                         {expandedItem.price !== undefined && expandedItem.price > 0 && (
                           <div className="flex flex-col">
-                            <dt className="text-sm opacity-70">Price</dt>
+                            <dt className="text-sm opacity-70">{t.labels.price}</dt>
                             <dd>
                               {new Intl.NumberFormat('nb-NO', {
                                 style: 'currency',
@@ -731,7 +733,7 @@ function IndexPageContent() {
 
 export default function IndexPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <IndexPageContent />
     </Suspense>
   );

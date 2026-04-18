@@ -2,6 +2,7 @@
 
 import {Icon} from '@/components/Icon';
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import {Command} from 'cmdk';
 import {useState} from 'react';
 
@@ -27,6 +28,7 @@ export function CategoryCombobox({
   label = 'Category',
   required = false,
 }: CategoryComboboxProps) {
+  const {t} = useLanguage();
   const [categoryInput, setCategoryInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -116,14 +118,14 @@ export function CategoryCombobox({
             <div className="absolute w-full mt-2 bg-dimmed border border-accent rounded-md shadow-lg z-[60]">
               <Command.List className="max-h-[300px] overflow-auto p-2">
                 <Command.Empty className="p-4 text-sm text-gray-500">
-                  No categories found.
+                  {t.misc.noResults}
                   {categoryInput && onCreateNew && (
                     <button
                       type="button"
                       onClick={() => handleCreate(categoryInput)}
                       className="button-primary-accent text-lg flex items-center gap-1 mt-2 text-secondary"
                     >
-                      <Icon name="add" width={24} height={24} /> Create &ldquo;
+                      <Icon name="add" width={24} height={24} /> {t.misc.createCategory} &ldquo;
                       {categoryInput}&rdquo;
                       {isAdding && <LoadingSpinner size="sm" />}
                     </button>

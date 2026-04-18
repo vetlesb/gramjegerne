@@ -10,6 +10,7 @@ import {
 import {CategoryCombobox} from '@/components/CategoryCombobox';
 import {TripCategory} from '@/types';
 import {compressImage} from '@/utils/imageCompression';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import {useEffect, useState} from 'react';
 import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
@@ -43,6 +44,7 @@ export function AddTripDialog({
   onOpenChange,
   editTrip,
 }: AddTripDialogProps) {
+  const {t} = useLanguage();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -203,7 +205,7 @@ export function AddTripDialog({
       <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-2xl text-accent font-normal pb-4">
-            {editTrip ? 'Edit trip' : 'New trip'}
+            {editTrip ? t.trips.editTrip : t.trips.newTrip}
           </DialogTitle>
         </DialogHeader>
 
@@ -214,13 +216,13 @@ export function AddTripDialog({
           <div className="flex flex-col gap-y-8">
             <div className="flex flex-col">
               <label className="flex flex-col gap-y-2 text-lg">
-                Title
+                {t.labels.title}
                 <input
                   className="w-full max-w-full p-4"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Jotunheimen Summer 2025"
+                  placeholder={t.trips.namePlaceholder}
                   required
                   autoFocus
                 />
@@ -229,10 +231,10 @@ export function AddTripDialog({
 
             <div className="flex flex-col">
               <label className="flex flex-col gap-y-2 text-lg">
-                Image
+                {t.labels.image}
                 {existingImage && (
                   <div className="mb-2">
-                    <p className="text-sm mb-2">Existing image:</p>
+                    <p className="text-sm mb-2">{t.misc.existingImage}</p>
                     <Image
                       src={urlForSource(existingImage).url()}
                       alt="Existing image"
@@ -257,13 +259,13 @@ export function AddTripDialog({
                 selectedCategory={selectedCategory}
                 onSelect={setSelectedCategory}
                 onCreateNew={handleCreateCategory}
-                label="Category"
+                label={t.labels.category}
               />
             </div>
 
             <div className="flex flex-col">
               <label className="flex flex-col gap-y-2 text-lg">
-                Start date
+                {t.trips.startDate}
                 <input
                   type="date"
                   value={startDate}
@@ -275,7 +277,7 @@ export function AddTripDialog({
 
             <div className="flex flex-col">
               <label className="flex flex-col gap-y-2 text-lg">
-                End date
+                {t.trips.endDate}
                 <input
                   type="date"
                   value={endDate}
@@ -287,13 +289,13 @@ export function AddTripDialog({
 
             <div className="flex flex-col">
               <label className="flex flex-col gap-y-2 text-lg">
-                Description
+                {t.labels.description}
                 <textarea
                   className="w-full max-w-full p-4"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  placeholder="Optional description..."
+                  placeholder={t.trips.descriptionPlaceholder}
                 />
               </label>
             </div>
@@ -306,7 +308,7 @@ export function AddTripDialog({
                   onChange={(e) => setMapsRestrictedToOwner(e.target.checked)}
                   className="w-6 h-6"
                 />
-                Only I can add maps
+                {t.trips.onlyICanAddMaps}
               </label>
             </div>
           </div>
@@ -315,7 +317,7 @@ export function AddTripDialog({
         <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">
           <DialogClose asChild>
             <button type="button" className="button-secondary" onClick={resetForm}>
-              Cancel
+              {t.actions.cancel}
             </button>
           </DialogClose>
           <button
@@ -323,7 +325,7 @@ export function AddTripDialog({
             className="button-primary-accent"
             disabled={isSubmitting || !name.trim()}
           >
-            {isSubmitting ? 'Saving...' : editTrip ? 'Update' : 'Create'}
+            {isSubmitting ? t.actions.saving : editTrip ? t.actions.update : t.actions.create}
           </button>
         </DialogFooter>
       </DialogContent>

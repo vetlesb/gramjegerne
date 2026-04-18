@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import {Icon} from '@/components/Icon';
 import {TripCategory} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import {useState} from 'react';
 
 interface ManageTripCategoriesDialogProps {
@@ -23,6 +24,7 @@ export function ManageTripCategoriesDialog({
   categories,
   onChange,
 }: ManageTripCategoriesDialogProps) {
+  const {t} = useLanguage();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export function ManageTripCategoriesDialog({
   };
 
   const handleDelete = async (categoryId: string) => {
-    if (!confirm('Delete this category? Trips using it will lose their category.')) return;
+    if (!confirm(t.gear.deleteCategoryWarning)) return;
     try {
       const response = await fetch(
         `/api/tripCategories?categoryId=${encodeURIComponent(categoryId)}`,
@@ -109,7 +111,7 @@ export function ManageTripCategoriesDialog({
       <DialogContent className="dialog p-4 md:p-10 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl text-accent font-normal pb-8">
-            Add category
+            {t.gear.addCategory}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,16 +123,16 @@ export function ManageTripCategoriesDialog({
               onChange={(e) => setNewCategoryName(e.target.value)}
               className="p-4 rounded flex-1"
               required
-              placeholder="Category title"
+              placeholder={t.labels.category}
             />
             <button type="submit" className="button-primary-accent" disabled={isAdding}>
-              {isAdding ? 'Adding...' : 'Add'}
+              {isAdding ? t.actions.adding : t.actions.add}
             </button>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </form>
 
-        <p className="mt-6">Categories</p>
+        <p className="mt-6">{t.gear.categories}</p>
         <ul className="category-list p-2 no-scrollbar flex flex-col gap-y-2 max-h-[50vh] overflow-y-auto">
           {sorted.map((category) => (
             <li key={category._id} className="category p-2 flex justify-between items-center">

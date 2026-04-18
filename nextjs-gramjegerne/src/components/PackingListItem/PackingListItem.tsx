@@ -6,6 +6,7 @@ import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
 import Image from 'next/image';
 import type {ImageAsset} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './PackingListItem.module.scss';
 
 interface ListItem {
@@ -61,6 +62,7 @@ export function PackingListItem({
   onAddToGear,
   imageUrlBuilder,
 }: PackingListItemProps) {
+  const {t} = useLanguage();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -191,8 +193,8 @@ export function PackingListItem({
                 e.stopPropagation();
                 onAddToGear(listItem.item!);
               }}
-              aria-label="Add to my gear"
-              title="Add to my gear"
+              aria-label={t.lists.addToGear}
+              title={t.lists.addToGear}
             />
           </div>
         )}
@@ -211,8 +213,8 @@ export function PackingListItem({
                   e.stopPropagation();
                   onBodyChange?.(listItem._key, !listItem.onBody);
                 }}
-                aria-label={listItem.onBody ? 'Remove on body' : 'Set on body'}
-                title={listItem.onBody ? 'Remove on body' : 'Set on body'}
+                aria-label={listItem.onBody ? t.lists.removeOnBody : t.lists.setOnBody}
+                title={listItem.onBody ? t.lists.removeOnBody : t.lists.setOnBody}
               />
 
               {/* Delete button */}
@@ -224,8 +226,8 @@ export function PackingListItem({
                   e.stopPropagation();
                   onDelete?.(listItem._key);
                 }}
-                aria-label="Delete item"
-                title="Delete item"
+                aria-label={t.actions.delete}
+                title={t.actions.delete}
               />
             </div>
 
@@ -238,8 +240,8 @@ export function PackingListItem({
                   e.stopPropagation();
                   setIsMoreMenuOpen(!isMoreMenuOpen);
                 }}
-                aria-label="More options"
-                title="More options"
+                aria-label={t.actions.edit}
+                title={t.actions.edit}
               />
 
               {isMoreMenuOpen && (
@@ -253,7 +255,7 @@ export function PackingListItem({
                     }}
                   >
                     <Icon name="clothing" />
-                    {listItem.onBody ? 'Remove on body' : 'On body'}
+                    {listItem.onBody ? t.lists.removeOnBody : t.lists.onBody}
                   </button>
                   <button
                     className={styles.menuItem}
@@ -264,7 +266,7 @@ export function PackingListItem({
                     }}
                   >
                     <Icon name="delete" />
-                    Delete
+                    {t.actions.delete}
                   </button>
                 </div>
               )}

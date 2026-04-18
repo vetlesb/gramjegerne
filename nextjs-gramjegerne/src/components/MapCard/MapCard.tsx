@@ -7,6 +7,7 @@ import {IconButton} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
 import type {ImageAsset} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './MapCard.module.scss';
 
 interface MapRoute {
@@ -85,6 +86,7 @@ export function MapCard({
   onToggleMainMap,
   imageUrlBuilder,
 }: MapCardProps) {
+  const {t} = useLanguage();
   const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -145,8 +147,8 @@ export function MapCard({
                   e.stopPropagation();
                   onRemove();
                 }}
-                aria-label="Remove map"
-                title="Remove map"
+                aria-label={t.actions.remove}
+                title={t.actions.remove}
               />
             </div>
           )}
@@ -170,17 +172,17 @@ export function MapCard({
 
         {/* Content */}
         <div className={styles.content}>
-          <h2 className={styles.title}>{name}{isMainMap && <span className={styles.mainMapLabel}> — Main map</span>}</h2>
+          <h2 className={styles.title}>{name}{isMainMap && <span className={styles.mainMapLabel}> — {t.trips.mainMap}</span>}</h2>
 
           <div className={styles.metadata}>
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
             {totalDistance > 0 && <Tag iconName="route">{totalDistance.toFixed(1)} km</Tag>}
             {totalElevation > 0 && <Tag iconName="viewpoint">{Math.round(totalElevation)} m</Tag>}
             {campingSpotsCount != null && campingSpotsCount > 0 && (
-              <Tag iconName="location">{campingSpotsCount} spots</Tag>
+              <Tag iconName="location">{campingSpotsCount} {t.misc.spots}</Tag>
             )}
             {routesCount != null && routesCount > 0 && (
-              <Tag iconName="route">{routesCount} routes</Tag>
+              <Tag iconName="route">{routesCount} {t.misc.routes}</Tag>
             )}
           </div>
         </div>
@@ -197,8 +199,8 @@ export function MapCard({
                     e.stopPropagation();
                     onToggleMainMap();
                   }}
-                  aria-label={isMainMap ? 'Remove as main map' : 'Set as main map'}
-                  title={isMainMap ? 'Remove as main map' : 'Set as main map'}
+                  aria-label={isMainMap ? t.trips.removeAsMainMap : t.trips.setAsMainMap}
+                  title={isMainMap ? t.trips.removeAsMainMap : t.trips.setAsMainMap}
                 />
               )}
               {onRemove && (
@@ -209,8 +211,8 @@ export function MapCard({
                     e.stopPropagation();
                     onRemove();
                   }}
-                  aria-label="Remove map"
-                  title="Remove map"
+                  aria-label={t.actions.remove}
+                  title={t.actions.remove}
                 />
               )}
             </div>
@@ -239,7 +241,7 @@ export function MapCard({
                       }}
                     >
                       <Icon name="navigation" />
-                      {isMainMap ? 'Remove main map' : 'Set as main map'}
+                      {isMainMap ? t.trips.removeMainMap : t.trips.setAsMainMap}
                     </button>
                   )}
                   {onRemove && (
@@ -252,7 +254,7 @@ export function MapCard({
                       }}
                     >
                       <Icon name="delete" />
-                      Remove
+                      {t.actions.remove}
                     </button>
                   )}
                 </div>

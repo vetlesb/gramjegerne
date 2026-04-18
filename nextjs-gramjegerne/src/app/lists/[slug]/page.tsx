@@ -36,9 +36,11 @@ import {
   type List,
   type ListItem,
 } from './utils';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './page.module.scss';
 
 export default function ListPage() {
+  const {t} = useLanguage();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -600,7 +602,7 @@ export default function ListPage() {
           weightOnBody: 0,
           calories: 0,
           checkedCount: 0,
-          title: 'On body',
+          title: t.lists.onBody,
         };
 
         onBodyCategory.count += quantity;
@@ -892,7 +894,7 @@ export default function ListPage() {
     setSelectedItems(updatedItems);
 
     // Show toast notification
-    toast.success(onBody ? 'Item set as on body' : 'Item removed from on body', {
+    toast.success(onBody ? t.lists.itemSetOnBody : t.lists.itemRemovedOnBody, {
       duration: 3000,
       position: 'bottom-center',
     });
@@ -912,7 +914,7 @@ export default function ListPage() {
       // Rollback on failure
       setSelectedItems(previousItems);
       console.error('Failed to update onBody status:', error);
-      toast.error('Failed to update on body status. Please try again.', {
+      toast.error(t.lists.failedUpdateOnBody, {
         duration: 3000,
         position: 'bottom-center',
       });
@@ -942,12 +944,12 @@ export default function ListPage() {
             const shareUrl = `${window.location.origin}/lists/${listSlug}?shared=true`;
             try {
               await navigator.clipboard.writeText(shareUrl);
-              toast.success('Link copied to clipboard!', {
+              toast.success(t.clipboard.copied, {
                 duration: 3000,
                 position: 'bottom-center',
               });
             } catch (err) {
-              toast.error('Could not copy link', {
+              toast.error(t.clipboard.failed, {
                 duration: 3000,
                 position: 'bottom-center',
               });
@@ -974,7 +976,7 @@ export default function ListPage() {
             {/* Updated DialogContent */}
             <DialogContent className="dialog p-4 max-w-lg md:p-5 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-accent font-normal">Add gear</DialogTitle>
+                <DialogTitle className="text-2xl text-accent font-normal">{t.gear.addGear}</DialogTitle>
               </DialogHeader>
               {/* Search Bar */}
               <label className="flex flex-col pt-2 gap-y-2 text-lg">
@@ -983,7 +985,7 @@ export default function ListPage() {
                   value={dialogSearchQuery}
                   onChange={(e) => setDialogSearchQuery(e.target.value)}
                   className="w-full max-w-full p-4 mb-1"
-                  placeholder="Search for gear or category"
+                  placeholder={t.misc.searchGearOrCategory}
                 />
               </label>
 
@@ -1057,10 +1059,10 @@ export default function ListPage() {
                   className="button-primary-accent flex-1 mt-4"
                 >
                   {tempSelectedItems.length === 0
-                    ? 'Add'
+                    ? t.actions.add
                     : tempSelectedItems.length === 1
-                      ? 'Add 1 item'
-                      : `Add ${tempSelectedItems.length} items`}
+                      ? `${t.actions.add} 1 item`
+                      : `${t.actions.add} ${tempSelectedItems.length} items`}
                 </button>
                 <DialogClose asChild></DialogClose>
               </DialogFooter>
@@ -1076,7 +1078,7 @@ export default function ListPage() {
           showOnBodyFilter={true}
           showOnBodyOnly={showOnBodyOnly}
           onBodyFilterChange={handleOnBodyChange}
-          allButtonLabel="Overview"
+          allButtonLabel={t.lists.overview}
         />
         {/* Hero Stats - show when viewing "All" */}
         {selectedCategory === null && !showOnBodyOnly && (
@@ -1174,7 +1176,7 @@ export default function ListPage() {
           <DialogContent className="dialog p-10 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl text-accent font-normal pb-4">
-                Add to my gear
+                {t.lists.addToGear}
               </DialogTitle>
             </DialogHeader>
             {addToGearItem && (
@@ -1184,7 +1186,7 @@ export default function ListPage() {
                   categories={addToGearCategories}
                   selectedCategory={addToGearCategory}
                   onSelect={setAddToGearCategory}
-                  label="Category"
+                  label={t.labels.category}
                   required
                 />
               </div>
@@ -1192,7 +1194,7 @@ export default function ListPage() {
             <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">
               <DialogClose asChild>
                 <button type="button" className="button-secondary">
-                  Cancel
+                  {t.actions.cancel}
                 </button>
               </DialogClose>
               <Button
@@ -1200,7 +1202,7 @@ export default function ListPage() {
                 onClick={handleConfirmAddToGear}
                 disabled={!addToGearCategory || isAddingToGear}
               >
-                {isAddingToGear ? 'Adding...' : 'Add'}
+                {isAddingToGear ? t.actions.adding : t.actions.add}
               </Button>
             </DialogFooter>
           </DialogContent>

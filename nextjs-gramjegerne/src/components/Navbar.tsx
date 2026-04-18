@@ -2,12 +2,14 @@
 
 import {Icon} from '@/components/Icon';
 import {useSession} from 'next-auth/react';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {useState} from 'react';
 
 export function Navbar() {
   const {data: session} = useSession();
+  const {t} = useLanguage();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -52,7 +54,7 @@ export function Navbar() {
                     href="/"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Gear
+                    {t.nav.gear}
                   </Link>
                 </li>
                 <li>
@@ -61,7 +63,7 @@ export function Navbar() {
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Lists
+                    {t.nav.lists}
                   </Link>
                 </li>
                 <li>
@@ -70,7 +72,7 @@ export function Navbar() {
                     href="/trips"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Trips
+                    {t.nav.trips}
                   </Link>
                 </li>
                 <li>
@@ -79,16 +81,16 @@ export function Navbar() {
                     href="/maps"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Maps
+                    {t.nav.maps}
                   </Link>
                 </li>
-                <li>  
+                <li>
                   <Link
                     className={`text-lg text-center block w-full ${pathname === '/settings' ? 'menu-active' : 'menu-item'}`}
                     href="/settings"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Settings
+                    {t.nav.settings}
                   </Link>
                   </li>
               </ul>

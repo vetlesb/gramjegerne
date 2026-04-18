@@ -3,30 +3,37 @@
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {useSession, signOut} from 'next-auth/react';
 import {useTheme} from '@/components/ThemeProvider';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import {Icon} from '@/components/Icon';
 import {Button} from '@/components/Button/Button';
 import Image from 'next/image';
 
-const themes = [
-  {value: 'green', label: 'Forrest', icon: 'tree'},
-  {value: 'blue', label: 'Ocean', icon: 'water'},
-  {value: 'yellow', label: 'Spring', icon: 'leaf'},
-  {value: 'rock', label: 'Rock', icon: 'rock'},
+const themeOptions = [
+  {value: 'green', key: 'forrest' as const, icon: 'tree'},
+  {value: 'blue', key: 'ocean' as const, icon: 'water'},
+  {value: 'yellow', key: 'spring' as const, icon: 'leaf'},
+  {value: 'rock', key: 'rock' as const, icon: 'rock'},
 ] as const;
+
+const languages = [
+  {value: 'en' as const, label: 'English'},
+  {value: 'nb' as const, label: 'Norsk'},
+];
 
 export default function SettingsPage() {
   const {data: session} = useSession();
   const {theme, setTheme} = useTheme();
+  const {language, setLanguage, t} = useLanguage();
 
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen">
         <div className="flex flex-col gap-8 max-w-lg mx-auto">
-          <h1 className="text-2xl font-bold">Settings</h1>
+          <h1 className="text-2xl font-bold">{t.settings.title}</h1>
 
       {/* Account */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Account</h2>
+        <h2 className="text-lg font-medium">{t.settings.account}</h2>
         <div className="flex items-center justify-between bg-dimmed rounded-lg p-4">
           <div className="flex items-center gap-4">
             {session?.user?.image && (
@@ -44,25 +51,43 @@ export default function SettingsPage() {
             </div>
           </div>
           <Button variant="ghost" size="md" onClick={() => signOut()}>
-            Sign out
+            {t.settings.signOut}
           </Button>
+        </div>
+      </section>
+
+      {/* Language */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{t.settings.language}</h2>
+        <div className="flex flex-row gap-2">
+          {languages.map((lang) => (
+            <button
+              key={lang.value}
+              onClick={() => setLanguage(lang.value)}
+              className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+                language === lang.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+              }`}
+            >
+              {lang.label}
+            </button>
+          ))}
         </div>
       </section>
 
       {/* Theme */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Theme</h2>
+        <h2 className="text-lg font-medium">{t.settings.theme}</h2>
         <div className="flex flex-row gap-2">
-          {themes.map((t) => (
+          {themeOptions.map((opt) => (
             <button
-              key={t.value}
-              onClick={() => setTheme(t.value)}
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
               className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
-                theme === t.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+                theme === opt.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
               }`}
             >
-              <Icon name={t.icon} width={24} height={24} />
-              {t.label}
+              <Icon name={opt.icon} width={24} height={24} />
+              {t.settings.themes[opt.key]}
             </button>
           ))}
         </div>

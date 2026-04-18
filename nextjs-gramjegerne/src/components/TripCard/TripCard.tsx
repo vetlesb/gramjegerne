@@ -7,6 +7,7 @@ import {IconButton} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
 import type {ImageAsset} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './TripCard.module.scss';
 
 export interface TripCardProps {
@@ -59,6 +60,7 @@ export function TripCard({
   onRemove,
   imageUrlBuilder,
 }: TripCardProps) {
+  const {t} = useLanguage();
   const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -118,8 +120,8 @@ export function TripCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit trip"
-                    title="Edit trip"
+                    aria-label={t.trips.editTrip}
+                    title={t.trips.editTrip}
                   />
                   <IconButton
                     iconName="delete"
@@ -128,8 +130,8 @@ export function TripCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete trip"
-                    title="Delete trip"
+                    aria-label={t.actions.delete}
+                    title={t.actions.delete}
                   />
                 </>
               ) : (
@@ -140,8 +142,8 @@ export function TripCard({
                     e.stopPropagation();
                     onRemove?.();
                   }}
-                  aria-label="Remove from shared trips"
-                  title="Remove from shared trips"
+                  aria-label={t.actions.remove}
+                  title={t.actions.remove}
                 />
               )}
             </div>
@@ -196,8 +198,8 @@ export function TripCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit trip"
-                    title="Edit trip"
+                    aria-label={t.trips.editTrip}
+                    title={t.trips.editTrip}
                   />
                   <IconButton
                     iconName="delete"
@@ -206,8 +208,8 @@ export function TripCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete trip"
-                    title="Delete trip"
+                    aria-label={t.actions.delete}
+                    title={t.actions.delete}
                   />
                 </>
               ) : (
@@ -218,8 +220,8 @@ export function TripCard({
                     e.stopPropagation();
                     onRemove?.();
                   }}
-                  aria-label="Remove from shared trips"
-                  title="Remove from shared trips"
+                  aria-label={t.actions.remove}
+                  title={t.actions.remove}
                 />
               )}
             </div>
@@ -249,7 +251,7 @@ export function TripCard({
                         }}
                       >
                         <Icon name="edit" />
-                        Edit
+                        {t.actions.edit}
                       </button>
                       <button
                         className={styles.menuItem}
@@ -260,7 +262,7 @@ export function TripCard({
                         }}
                       >
                         <Icon name="delete" />
-                        Delete
+                        {t.actions.delete}
                       </button>
                     </>
                   ) : (
@@ -273,7 +275,7 @@ export function TripCard({
                       }}
                     >
                       <Icon name="delete" />
-                      Remove
+                      {t.actions.remove}
                     </button>
                   )}
                 </div>

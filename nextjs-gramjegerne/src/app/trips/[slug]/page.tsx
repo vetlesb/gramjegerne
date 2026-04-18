@@ -18,6 +18,7 @@ import {useDelayedLoader} from '@/hooks/useDelayedLoader';
 import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 const builder = imageUrlBuilder(client);
 function urlFor(source: SanityImageSource) {
@@ -89,6 +90,7 @@ interface TripDetail {
 }
 
 export default function TripDetailPage() {
+  const {t} = useLanguage();
   const {data: session} = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -307,7 +309,7 @@ export default function TripDetailPage() {
       <ProtectedRoute>
         <main className="container mx-auto min-h-screen p-16">
           <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
-            Trip not found
+            {t.trips.tripNotFound}
           </div>
         </main>
       </ProtectedRoute>
@@ -364,7 +366,7 @@ export default function TripDetailPage() {
           {/* Participants */}
           <section className="flex flex-col gap-y-4">
             <div className="flex items-center gap-x-4">
-              <h2 className="text-2xl text-accent">Participants</h2>
+              <h2 className="text-2xl text-accent">{t.labels.participants}</h2>
               {isOwner && (
                 <TripShareButton
                   tripId={trip._id}
@@ -389,8 +391,8 @@ export default function TripDetailPage() {
                         className="w-8 h-8 rounded-full"
                       />
                     )}
-                    <span className="text-lg">{isOwnerMe ? 'Me' : trip.owner?.name}</span>
-                    <span className="text-sm text-white/50">(owner)</span>
+                    <span className="text-lg">{isOwnerMe ? t.trips.me : trip.owner?.name}</span>
+                    <span className="text-sm text-white/50">({t.trips.owner})</span>
                   </div>
                 );
               })()}
@@ -410,7 +412,7 @@ export default function TripDetailPage() {
                         className="w-8 h-8 rounded-full"
                       />
                     )}
-                    <span className="text-lg">{isMe ? 'Me' : participant.name}</span>
+                    <span className="text-lg">{isMe ? t.trips.me : participant.name}</span>
                   </div>
                 );
               })}
@@ -420,14 +422,14 @@ export default function TripDetailPage() {
           {/* Connected packing lists */}
           <section className="flex flex-col gap-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl text-accent">Lists</h2>
+              <h2 className="text-2xl text-accent">{t.nav.lists}</h2>
               {session?.user?.id && (
-                <Button onClick={() => setShowConnectDialog(true)}>Connect list</Button>
+                <Button onClick={() => setShowConnectDialog(true)}>{t.trips.connectList}</Button>
               )}
             </div>
 
             {trip.connectedLists?.length === 0 ? (
-              <p className="text-lg text-white/50">No packing lists connected yet.</p>
+              <p className="text-lg text-white/50">{t.trips.noListsYet}</p>
             ) : (
               <ul className="flex flex-col gap-y-2">
                 {trip.connectedLists?.map((list) => {
@@ -458,14 +460,14 @@ export default function TripDetailPage() {
           {/* Connected maps */}
           <section className="flex flex-col gap-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl text-accent">Maps</h2>
+              <h2 className="text-2xl text-accent">{t.nav.maps}</h2>
               {session?.user?.id && (!trip.mapsRestrictedToOwner || isOwner) && (
-                <Button onClick={() => setShowConnectMapDialog(true)}>Connect map</Button>
+                <Button onClick={() => setShowConnectMapDialog(true)}>{t.trips.connectMap}</Button>
               )}
             </div>
 
             {trip.connectedMaps?.length === 0 ? (
-              <p className="text-lg text-white/50">No maps connected yet.</p>
+              <p className="text-lg text-white/50">{t.trips.noMapsYet}</p>
             ) : (
               <ul className="flex flex-col gap-y-2">
                 {trip.connectedMaps?.map((map) => {

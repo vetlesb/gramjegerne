@@ -2,12 +2,14 @@
 
 import React from 'react';
 import type {Category} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 interface AddCategoryFormProps {
   onSuccess: (newCategory: Category) => void;
 }
 
 export function AddCategoryForm({onSuccess}: AddCategoryFormProps) {
+  const {t} = useLanguage();
   const [newCategoryName, setNewCategoryName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -49,10 +51,10 @@ export function AddCategoryForm({onSuccess}: AddCategoryFormProps) {
           onChange={(e) => setNewCategoryName(e.target.value)}
           className="p-4 rounded flex-1"
           required
-          placeholder="Category title"
+          placeholder={t.labels.category}
         />
         <button type="submit" className="button-primary-accent" disabled={isLoading}>
-          {isLoading ? 'Adding...' : <>Add</>}
+          {isLoading ? t.actions.adding : t.actions.add}
         </button>
       </div>
       {error && <p className="text-red-500 text-sm">{error}</p>}

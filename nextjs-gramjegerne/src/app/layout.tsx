@@ -4,6 +4,7 @@
 
 import {Navbar} from '@/components/Navbar';
 import {ThemeProvider} from '@/components/ThemeProvider';
+import {LanguageProvider} from '@/i18n/LanguageProvider';
 import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
 import {Toaster} from 'sonner';
@@ -46,6 +47,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="en">
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
+          <LanguageProvider>
           <Providers>
             {!isAuthPage && !isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && <Navbar />}
             {children}
@@ -62,6 +64,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               </ProtectedRoute>
             )}
           </Providers>
+          </LanguageProvider>
         </ThemeProvider>
         <Toaster />
       </body>

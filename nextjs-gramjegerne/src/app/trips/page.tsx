@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 const builder = imageUrlBuilder(client);
 function urlForSource(source: SanityImageSource) {
@@ -104,6 +105,7 @@ interface SharedTripInfo {
 }
 
 function TripsPageContent() {
+  const {t} = useLanguage();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -514,7 +516,7 @@ function TripsPageContent() {
             </div>
           ) : isLoading ? null : allTrips.length === 0 && !shareId ? (
             <div className="text-center text-accent text-3xl min-h-[50vh] flex items-center justify-center">
-              Create a trip to start planning with friends.
+              {t.trips.createTripToStart}
             </div>
           ) : (
             <>
@@ -626,7 +628,7 @@ function TripsPageContent() {
           <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-2xl text-accent font-normal pb-4">
-                Edit trip
+                {t.trips.editTrip}
               </DialogTitle>
             </DialogHeader>
 
@@ -640,7 +642,7 @@ function TripsPageContent() {
                     selectedCategory={editSharedCategory}
                     onSelect={setEditSharedCategory}
                     onCreateNew={handleCreateCategory}
-                    label="Category"
+                    label={t.labels.category}
                   />
                 </div>
 
@@ -650,7 +652,7 @@ function TripsPageContent() {
                     className="button-primary-accent"
                     disabled={isSavingSharedCategory}
                   >
-                    {isSavingSharedCategory ? 'Saving...' : 'Save'}
+                    {isSavingSharedCategory ? t.actions.saving : t.actions.save}
                   </button>
                   <button
                     onClick={() => {
@@ -659,7 +661,7 @@ function TripsPageContent() {
                     }}
                     className="button-secondary"
                   >
-                    Cancel
+                    {t.actions.cancel}
                   </button>
                 </DialogFooter>
               </>
@@ -677,7 +679,7 @@ function TripsPageContent() {
           <DialogContent className="dialog p-4 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl text-accent font-normal">
-                Are you sure you want to delete this trip?
+                {t.trips.deleteTrip}
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
@@ -691,13 +693,13 @@ function TripsPageContent() {
                 className="button-primary-accent"
                 disabled={isDeleting}
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? t.actions.deleting : t.actions.delete}
               </button>
               <button
                 onClick={() => setShowDeleteDialog(null)}
                 className="button-secondary"
               >
-                Cancel
+                {t.actions.cancel}
               </button>
             </DialogFooter>
           </DialogContent>
@@ -719,7 +721,7 @@ function TripsPageContent() {
               <>
                 <DialogHeader>
                   <DialogTitle className="text-2xl text-accent font-normal pb-4">
-                    Save trip
+                    {t.trips.saveTrip}
                   </DialogTitle>
                 </DialogHeader>
 
@@ -772,7 +774,7 @@ function TripsPageContent() {
                       }}
                       className="button-primary-accent"
                     >
-                      Already saved - View trip
+                      {t.trips.savedToMyTrips}
                     </button>
                   ) : (
                     <button
@@ -780,7 +782,7 @@ function TripsPageContent() {
                       className="button-primary-accent"
                       disabled={isSavingShared}
                     >
-                      {isSavingShared ? 'Saving...' : 'Save to my trips'}
+                      {isSavingShared ? t.actions.saving : t.trips.saveToMyTrips}
                     </button>
                   )}
                   <button
@@ -791,7 +793,7 @@ function TripsPageContent() {
                     }}
                     className="button-secondary"
                   >
-                    Cancel
+                    {t.actions.cancel}
                   </button>
                 </DialogFooter>
               </>
@@ -805,7 +807,7 @@ function TripsPageContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <TripsPageContent />
     </Suspense>
   );

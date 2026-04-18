@@ -7,6 +7,7 @@ import {IconButton} from '@/components/Button';
 import {Tag} from '@/components/Tag';
 import {Icon} from '@/components/Icon';
 import type {ImageAsset} from '@/types';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './ListCard.module.scss';
 
 interface ListItem {
@@ -74,6 +75,7 @@ export function ListCard({
   onRemove,
   imageUrlBuilder,
 }: ListCardProps) {
+  const {t} = useLanguage();
   const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -162,8 +164,8 @@ export function ListCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit list"
-                    title="Edit list"
+                    aria-label={t.lists.editList}
+                    title={t.lists.editList}
                   />
                   <IconButton
                     iconName="duplicate"
@@ -172,8 +174,8 @@ export function ListCard({
                       e.stopPropagation();
                       onDuplicate?.();
                     }}
-                    aria-label="Duplicate list"
-                    title="Duplicate list"
+                    aria-label={`${t.actions.duplicate}`}
+                    title={`${t.actions.duplicate}`}
                   />
                   <IconButton
                     iconName="delete"
@@ -182,8 +184,8 @@ export function ListCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete list"
-                    title="Delete list"
+                    aria-label={t.actions.delete}
+                    title={t.actions.delete}
                   />
                 </>
               ) : onRemove ? (
@@ -194,8 +196,8 @@ export function ListCard({
                     e.stopPropagation();
                     onRemove();
                   }}
-                  aria-label="Remove from shared lists"
-                  title="Remove from shared lists"
+                  aria-label={t.actions.remove}
+                  title={t.actions.remove}
                 />
               ) : null}
             </div>
@@ -244,8 +246,8 @@ export function ListCard({
                       e.stopPropagation();
                       onEdit?.();
                     }}
-                    aria-label="Edit list"
-                    title="Edit list"
+                    aria-label={t.lists.editList}
+                    title={t.lists.editList}
                   />
                   <IconButton
                     iconName="duplicate"
@@ -254,8 +256,8 @@ export function ListCard({
                       e.stopPropagation();
                       onDuplicate?.();
                     }}
-                    aria-label="Duplicate list"
-                    title="Duplicate list"
+                    aria-label={`${t.actions.duplicate}`}
+                    title={`${t.actions.duplicate}`}
                   />
                   <IconButton
                     iconName="delete"
@@ -264,8 +266,8 @@ export function ListCard({
                       e.stopPropagation();
                       onDelete?.();
                     }}
-                    aria-label="Delete list"
-                    title="Delete list"
+                    aria-label={t.actions.delete}
+                    title={t.actions.delete}
                   />
                 </>
               ) : onRemove ? (
@@ -276,8 +278,8 @@ export function ListCard({
                     e.stopPropagation();
                     onRemove();
                   }}
-                  aria-label="Remove from shared lists"
-                  title="Remove from shared lists"
+                  aria-label={t.actions.remove}
+                  title={t.actions.remove}
                 />
               ) : null}
             </div>
@@ -309,7 +311,7 @@ export function ListCard({
                         }}
                       >
                         <Icon name="edit" />
-                        Edit
+                        {t.actions.edit}
                       </button>
                       <button
                         className={styles.menuItem}
@@ -320,7 +322,7 @@ export function ListCard({
                         }}
                       >
                         <Icon name="duplicate" />
-                        Duplicate
+                        {t.actions.duplicate}
                       </button>
                       <button
                         className={styles.menuItem}
@@ -331,7 +333,7 @@ export function ListCard({
                         }}
                       >
                         <Icon name="delete" />
-                        Delete
+                        {t.actions.delete}
                       </button>
                     </>
                   ) : onRemove ? (
@@ -344,7 +346,7 @@ export function ListCard({
                       }}
                     >
                       <Icon name="delete" />
-                      Remove
+                      {t.actions.remove}
                     </button>
                   ) : null}
                 </div>

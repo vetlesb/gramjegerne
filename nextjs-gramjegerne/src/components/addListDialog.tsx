@@ -14,6 +14,7 @@ import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import Image from 'next/image';
 import {useEffect, useState} from 'react';
 import {compressImage} from '@/utils/imageCompression';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -34,6 +35,7 @@ export function AddListDialog({
   onOpenChange,
   editList,
 }: AddListDialogProps) {
+  const {t} = useLanguage();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [newListImage, setNewListImage] = useState<File | null>(null);
@@ -135,7 +137,7 @@ export function AddListDialog({
         throw new Error(`Failed to save list: ${response.status} ${response.statusText}`);
       }
 
-      setSuccessMessage(editList ? 'List updated!' : 'List created!');
+      setSuccessMessage(editList ? t.lists.listUpdated : t.lists.listCreated);
 
       if (onSuccess) {
         await onSuccess();
@@ -178,7 +180,7 @@ export function AddListDialog({
             onClick={() => handleOpenChange(true)}
             className="button-create flex flex-shrink-0 text-md items-center gap-x-1"
           >
-            Add
+            {t.actions.add}
           </button>
         </div>
       )}
@@ -195,7 +197,7 @@ export function AddListDialog({
         <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent font-normal pb-4">
-              {editList ? 'Edit' : 'New'}
+              {editList ? t.lists.editList : t.lists.newList}
             </DialogTitle>
           </DialogHeader>
 
@@ -208,7 +210,7 @@ export function AddListDialog({
             <div className="flex flex-col gap-y-8">
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Title
+                  {t.labels.title}
                   <input
                     className="w-full max-w-full p-4"
                     type="text"
@@ -220,10 +222,10 @@ export function AddListDialog({
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Image
+                  {t.labels.image}
                   {existingImage && (
                     <div className="mb-2">
-                      <p className="text-sm mb-2">Existing image:</p>
+                      <p className="text-sm mb-2">{t.misc.existingImage}</p>
                       <Image
                         src={urlFor(existingImage).url()}
                         alt="Existing image"
@@ -243,21 +245,21 @@ export function AddListDialog({
               </div>
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
-                  Connected Trip (Optional)
+                  {t.lists.connectedTrip}
                   <select
                     value={selectedTripId}
                     onChange={(e) => setSelectedTripId(e.target.value)}
                     className="w-full max-w-full p-4"
                     disabled={isLoadingTrips}
                   >
-                    <option value="">No trip connected</option>
+                    <option value="">{t.lists.noTripConnected}</option>
                     {trips.map((trip) => (
                       <option key={trip._id} value={trip._id}>
                         {trip.name}
                       </option>
                     ))}
                   </select>
-                  {isLoadingTrips && <span className="text-sm text-gray-500">Loading trips...</span>}
+                  {isLoadingTrips && <span className="text-sm text-gray-500">{t.misc.loadingTrips}</span>}
                 </label>
               </div>
 
@@ -266,7 +268,7 @@ export function AddListDialog({
           <DialogFooter className="flex mt-4 gap-y-4 gap-x-2">
             <DialogClose asChild>
               <button type="button" className="button-secondary" onClick={resetForm}>
-                Cancel
+                {t.actions.cancel}
               </button>
             </DialogClose>
             <button
@@ -274,7 +276,7 @@ export function AddListDialog({
               className="button-primary-accent"
               disabled={isSubmitting || !newListName.trim()}
             >
-              {isSubmitting ? 'Saving...' : editList ? 'Update' : 'Create'}
+              {isSubmitting ? t.actions.saving : editList ? t.actions.update : t.actions.create}
             </button>
           </DialogFooter>
         </DialogContent>

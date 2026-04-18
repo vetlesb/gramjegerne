@@ -4,9 +4,11 @@ import {signIn} from 'next-auth/react';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 export function SignIn() {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const {t} = useLanguage();
 
   const handleGoogleSignIn = () => {
     setIsSigningIn(true);
@@ -16,16 +18,16 @@ export function SignIn() {
           setIsSigningIn(false);
           const message =
             result.error === 'Configuration'
-              ? 'Login is misconfigured. Please try again later or contact support.'
+              ? t.auth.errorConfig
               : result.error === 'AccessDenied'
-                ? 'Access denied.'
-                : 'Login failed. Please try again.';
+                ? t.auth.errorDenied
+                : t.auth.errorFailed;
           toast.error(message);
         }
       })
       .catch(() => {
         setIsSigningIn(false);
-        toast.error('Something went wrong. Please try again.');
+        toast.error(t.auth.errorGeneric);
       });
   };
 
@@ -58,7 +60,7 @@ export function SignIn() {
           />
         </svg>
       )}
-      {isSigningIn ? 'Signing in…' : 'Sign in'}
+      {isSigningIn ? t.auth.signingIn : t.auth.signIn}
     </button>
   );
 }

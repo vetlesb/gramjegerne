@@ -2,6 +2,7 @@
 
 import {Icon} from '@/components/Icon';
 import {Tag} from '@/components/Tag';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './OverviewStats.module.scss';
 
 interface CategoryTotal {
@@ -49,6 +50,7 @@ export function OverviewStats({
   showCategoryBreakdown = false,
   categoryTotals = [],
 }: OverviewStatsProps) {
+  const {t} = useLanguage();
   const formatWeight = (weightInGrams: number): string => {
     const weightInKg = weightInGrams / 1000;
     return `${weightInKg.toFixed(3)} kg`;
@@ -74,7 +76,7 @@ export function OverviewStats({
         <div className={`${styles.overviewStats} ${styles.compact}`}>
           {totalItems !== undefined && (
             <div className={styles.stat}>
-              <span>{totalItems} items</span>
+              <span>{totalItems} {t.misc.items}</span>
             </div>
           )}
           {totalWeight !== undefined && totalWeight > 0 && (
@@ -126,7 +128,7 @@ export function OverviewStats({
             <span className={styles.heroIcon}>
               <Icon name="backpack" width={18} height={18} />
             </span>
-            Backpack
+            {t.lists.backpack}
           </p>
           <p className={styles.heroValue}>
             {backpackWeight !== undefined ? formatWeight(backpackWeight) : '0.000 kg'}
@@ -139,7 +141,7 @@ export function OverviewStats({
             <span className={styles.heroIcon}>
               <Icon name="clothing" width={18} height={18} />
             </span>
-            On body
+            {t.lists.onBody}
           </p>
           <p className={styles.heroValue}>
             {onBodyWeight !== undefined ? formatWeight(onBodyWeight) : '0.000 kg'}
@@ -152,7 +154,7 @@ export function OverviewStats({
             <span className={styles.heroIcon}>
               <Icon name="calories" width={18} height={18} />
             </span>
-            Calories
+            {t.labels.calories}
           </p>
           <p className={styles.heroValue}>
             {calories !== undefined ? `${formatNumber(calories)} kcal` : '0 kcal'}
@@ -165,7 +167,7 @@ export function OverviewStats({
             <span className={styles.heroIcon}>
               <Icon name="checkmark" width={18} height={18} />
             </span>
-            Packed
+            {t.lists.packed}
           </p>
           <p className={styles.heroValue}>
             {formatNumber(packedCount || 0)} / {formatNumber(totalCount || 0)}
@@ -196,9 +198,9 @@ export function OverviewStats({
           <div className={styles.table}>
             {/* Table header */}
             <div className={styles.tableHeader}>
-              <span>Category</span>
-              <span>Weight</span>
-              <span>Calories</span>
+              <span>{t.labels.category}</span>
+              <span>{t.labels.weight}</span>
+              <span>{t.labels.calories}</span>
             </div>
 
             {/* Regular categories */}
@@ -218,7 +220,7 @@ export function OverviewStats({
             {/* On body section */}
             {onBodyCategory && (
               <div className={styles.tableRow}>
-                <span className={styles.categoryName}>On body</span>
+                <span className={styles.categoryName}>{t.lists.onBody}</span>
                 <span>{formatWeight(onBodyCategory.weightOnBody)}</span>
                 <span>
                   {onBodyCategory.calories > 0 ? `${formatNumber(onBodyCategory.calories)} kcal` : ''}
@@ -228,7 +230,7 @@ export function OverviewStats({
 
             {/* Grand total */}
             <div className={`${styles.tableRow} ${styles['tableRow--total']}`}>
-              <span className={styles.categoryName}>Backpack</span>
+              <span className={styles.categoryName}>{t.lists.backpack}</span>
               <span>{formatWeight(grandTotal.weight)}</span>
               <span>
                 {grandTotal.calories > 0 ? `${formatNumber(grandTotal.calories)} kcal` : ''}

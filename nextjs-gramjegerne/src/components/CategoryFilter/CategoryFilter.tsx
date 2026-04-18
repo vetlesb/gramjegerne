@@ -1,6 +1,7 @@
 'use client';
 
 import {FilterButton} from '@/components/Button';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './CategoryFilter.module.scss';
 
 interface Category {
@@ -32,13 +33,14 @@ export function CategoryFilter({
   selectedCategory,
   onCategorySelect,
   showAllButton = true,
-  allButtonLabel = 'All',
+  allButtonLabel,
   showOnBodyFilter = false,
   showOnBodyOnly = false,
   onBodyFilterChange,
   showCounts = false,
   getCategoryCount,
 }: CategoryFilterProps) {
+  const {t} = useLanguage();
   return (
     <div className={styles.categoryFilter}>
       {/* All/Overview button */}
@@ -47,7 +49,7 @@ export function CategoryFilter({
           active={selectedCategory === null && !showOnBodyOnly}
           onClick={() => onCategorySelect(null)}
         >
-          {allButtonLabel}
+          {allButtonLabel || t.misc.all}
         </FilterButton>
       )}
       
@@ -69,7 +71,7 @@ export function CategoryFilter({
           active={showOnBodyOnly}
           onClick={() => onBodyFilterChange(!showOnBodyOnly)}
         >
-          On body
+          {t.lists.onBody}
         </FilterButton>
       )}
     </div>

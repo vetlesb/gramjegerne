@@ -1,4 +1,5 @@
 'use client';
+import {useLanguage} from '@/i18n/LanguageProvider';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
 
@@ -31,6 +32,7 @@ interface EditItemFormProps {
 }
 
 export function EditItemForm({item, onSuccess}: EditItemFormProps) {
+  const {t} = useLanguage();
   const [name, setName] = useState<string>(item.name);
   const [slug, setSlug] = useState<string>(item.slug);
   const [image, setImage] = useState<File | null>(null);
@@ -67,7 +69,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         }
       } catch (error) {
         console.error('Category fetch error:', error);
-        setErrorMessage('Could not fetch categories.');
+        setErrorMessage(t.gear.couldNotFetchCategories);
       }
     };
     fetchCategories();
@@ -105,7 +107,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name || !slug) {
-      setErrorMessage('Name and slug are required.');
+      setErrorMessage(t.gear.nameRequired);
       return;
     }
 
@@ -152,22 +154,22 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         try {
           errorData = await response.json();
         } catch {
-          throw new Error('Could not update gear.');
+          throw new Error(t.gear.couldNotUpdateGear);
         }
-        throw new Error(errorData.message || 'Could not update gear.');
+        throw new Error(errorData.message || t.gear.couldNotUpdateGear);
       }
 
       const updatedItem = await response.json();
       console.log('Gear updated:', updatedItem);
-      setSuccessMessage('Gear updated successfully!');
+      setSuccessMessage(t.gear.gearUpdated);
       onSuccess();
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Detailed error message:', error.message);
-        setErrorMessage(error.message || 'Could not update gear.');
+        setErrorMessage(error.message || t.gear.couldNotUpdateGear);
       } else {
         console.error('Unexpected error:', error);
-        setErrorMessage('Could not update gear.');
+        setErrorMessage(t.gear.couldNotUpdateGear);
       }
     } finally {
       setIsLoading(false);
@@ -191,7 +193,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Item Name */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Name
+            {t.labels.name}
             <input
               className="w-full max-w-full p-4"
               type="text"
@@ -205,7 +207,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Categories */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Category
+            {t.labels.category}
             <select
               className="w-full max-w-full p-4"
               value={selectedCategory}
@@ -224,7 +226,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Weight */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Weight (grams)
+            {t.labels.weightGrams}
             <div className="flex flex-row gap-x-2">
               <input
                 type="number"
@@ -243,7 +245,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Size */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Size
+            {t.labels.size}
             <input
               type="text"
               className="w-full max-w-full p-4"
@@ -256,7 +258,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Calories */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Calories
+            {t.labels.calories}
             <input
               type="number"
               className="w-full max-w-full p-4"
@@ -270,7 +272,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Image Upload */}
         <div>
           <label className="flex flex-col gap-y-2">
-            Image
+            {t.labels.image}
             <input
               type="file"
               className="w-full max-w-full p-4"
@@ -294,7 +296,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Description */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Description
+            {t.labels.description}
             <textarea
               className="w-full max-w-full p-4"
               value={description}
@@ -307,7 +309,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         {/* Price */}
         <div className="flex flex-col">
           <label className="flex flex-col gap-y-2">
-            Price (NOK)
+            {t.labels.price}
             <input
               type="number"
               className="w-full max-w-full p-4"
@@ -326,7 +328,7 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? 'Updating...' : 'Update gear'}
+          {isLoading ? t.actions.updating : t.actions.update}
         </button>
       </form>
     </div>

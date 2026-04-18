@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 type FilterType = 'shared' | null;
 const VALID_FILTERS = ['shared'] as const;
@@ -30,6 +31,7 @@ function isValidFilter(value: string | null): value is 'shared' {
 }
 
 function ListsPageContent() {
+  const {t} = useLanguage();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -214,7 +216,7 @@ function ListsPageContent() {
   }, [lists]);
 
   const handleDuplicate = async (list: ListDocument) => {
-    const name = `${list.name} (copy)`;
+    const name = `${list.name} (${t.lists.copy})`;
     setDuplicateName(name);
     setShowDuplicateDialog(list);
   };
@@ -253,9 +255,9 @@ function ListsPageContent() {
   // Create filter data (CategoryFilter will add "All" button automatically)
   const filterCategories = useMemo(
     () => [
-      {_id: 'shared', title: 'Shared'},
+      {_id: 'shared', title: t.lists.shared},
     ],
-    [],
+    [t.lists.shared],
   );
 
   const selectedCategoryId = selectedFilter;
@@ -367,12 +369,12 @@ function ListsPageContent() {
         >
           <DialogContent className="dialog p-4 rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-accent font-normal">Duplicate list</DialogTitle>
+              <DialogTitle className="text-2xl text-accent font-normal">{t.actions.duplicate}</DialogTitle>
             </DialogHeader>
 
             <div className="py-4 flex flex-col gap-y-4">
               <label className="flex flex-col gap-y-2 text-lg">
-                Title
+                {t.labels.title}
                 <input
                   className="w-full max-w-full p-4"
                   type="text"
@@ -391,7 +393,7 @@ function ListsPageContent() {
                 className="button-primary-accent"
                 disabled={isDuplicating || !duplicateName.trim()}
               >
-                {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+                {isDuplicating ? t.actions.saving : t.actions.duplicate}
               </button>
               <button
                 onClick={() => {
@@ -400,7 +402,7 @@ function ListsPageContent() {
                 }}
                 className="button-secondary"
               >
-                Cancel
+                {t.actions.cancel}
               </button>
             </DialogFooter>
           </DialogContent>
@@ -430,7 +432,7 @@ function ListsPageContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <ListsPageContent />
     </Suspense>
   );
