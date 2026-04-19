@@ -2,7 +2,7 @@ const en = {
   // Navigation
   nav: {
     gear: 'Gear',
-    lists: 'Lists',
+    lists: 'Packing lists',
     trips: 'Trips',
     maps: 'Maps',
     settings: 'Settings',
@@ -206,7 +206,7 @@ const en = {
     loading: 'Loading...',
     contact: 'Contact',
     all: 'All',
-    items: 'items',
+    items: 'pcs',
     spots: 'spots',
     routes: 'routes',
     noResults: 'No categories found.',

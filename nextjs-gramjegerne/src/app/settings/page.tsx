@@ -36,7 +36,7 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen">
-        <div className="flex flex-col gap-8 max-w-lg mx-auto">
+        <div className="flex flex-col gap-8 rounded-lg max-w-lg p-8 mx-auto bg-primary-hover">
           <h1 className="text-2xl font-bold">{t.settings.title}</h1>
 
       {/* Account */}
@@ -67,7 +67,7 @@ export default function SettingsPage() {
       {/* Language */}
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-medium">{t.settings.language}</h2>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 flex-wrap">
           {languages.map((lang) => (
             <button
               key={lang.value}
@@ -77,6 +77,25 @@ export default function SettingsPage() {
               }`}
             >
               {lang.label}
+            </button>
+          ))}
+        </div>
+      </section>
+      
+   {/* Theme */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{t.settings.theme}</h2>
+        <div className="flex flex-row gap-2 flex-wrap">
+          {themeOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+                theme === opt.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+              }`}
+            >
+              <Icon name={opt.icon} width={24} height={24} />
+              {t.settings.themes[opt.key]}
             </button>
           ))}
         </div>
@@ -95,25 +114,6 @@ export default function SettingsPage() {
               }`}
             >
               {cur.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Theme */}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">{t.settings.theme}</h2>
-        <div className="flex flex-row gap-2">
-          {themeOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setTheme(opt.value)}
-              className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
-                theme === opt.value ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
-              }`}
-            >
-              <Icon name={opt.icon} width={24} height={24} />
-              {t.settings.themes[opt.key]}
             </button>
           ))}
         </div>

@@ -4,7 +4,7 @@ const nb: Translations = {
   // Navigation
   nav: {
     gear: 'Utstyr',
-    lists: 'Lister',
+    lists: 'Pakkelister',
     trips: 'Turer',
     maps: 'Kart',
     settings: 'Innstillinger',
@@ -208,7 +208,7 @@ const nb: Translations = {
     loading: 'Laster...',
     contact: 'Kontakt',
     all: 'Alle',
-    items: 'gjenstander',
+    items: 'stk',
     spots: 'steder',
     routes: 'ruter',
     noResults: 'Ingen kategorier funnet.',
