@@ -3,7 +3,7 @@
 .overviewStats {
   @include card;
   margin-bottom: $spacing-sm;
-
+  background-color: var(--bg-dimmed-hover);
 }
 
 // ============================================
@@ -57,6 +57,7 @@
   padding: $spacing-md;
   display: grid;
   gap: $spacing-xs;
+  background-color: var(--bg-dimmed-hover);
   
   @include desktop-lg {
     padding: $spacing-xl;

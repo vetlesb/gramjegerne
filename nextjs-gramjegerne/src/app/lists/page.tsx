@@ -270,7 +270,7 @@ function ListsPageContent() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-2">
           <ActionBar
             mode="lists-overview"
             onAddList={() => setIsAddDialogOpen(true)}

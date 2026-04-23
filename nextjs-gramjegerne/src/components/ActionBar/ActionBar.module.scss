@@ -3,7 +3,7 @@
 .actionBar {
   @include flex-start;
   gap: $spacing-sm;
-  padding: $spacing-sm;
+  padding: $spacing-sm 0;
   /* Removed overflow-x: auto to prevent clipping dropdown */
   overflow-y: visible;
   @include hide-scrollbar;

@@ -1,6 +1,7 @@
 'use client';
 
 import {Icon} from '@/components/Icon';
+import {SettingsDialog} from '@/components/SettingsDialog';
 import {useSession} from 'next-auth/react';
 import {useLanguage} from '@/i18n/LanguageProvider';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ export function Navbar() {
   const {t} = useLanguage();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <nav className="nav pb-8 relative">
@@ -85,19 +87,26 @@ export function Navbar() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    className={`text-lg text-center block w-full ${pathname === '/settings' ? 'menu-active' : 'menu-item'}`}
-                    href="/settings"
-                    onClick={() => setIsMenuOpen(false)}
+                  <button
+                    className={`text-center flex items-center justify-center ${isSettingsOpen ? 'menu-active' : 'menu-item'}`}
+                    style={{minHeight: 46}}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsSettingsOpen(true);
+                    }}
+                    aria-label={t.nav.settings}
+                    title={t.nav.settings}
                   >
-                    {t.nav.settings}
-                  </Link>
+                    <Icon name="settings" width={20} height={20} />
+                  </button>
                   </li>
               </ul>
             )}
           </div>
         </div>
       </div>
+
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </nav>
   );
 }

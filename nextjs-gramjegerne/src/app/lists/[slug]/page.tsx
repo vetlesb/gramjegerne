@@ -890,6 +890,7 @@ export default function ListPage() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
+          <div className="flex flex-col gap-y-2">
         <h1 className="nav-logo text-4xl md:text-6xl text-accent py-4">{list.name}</h1>
 
         {/* Shared by badge - only in shared mode */}
@@ -1085,6 +1086,7 @@ export default function ListPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </main>
     </ProtectedRoute>
   );

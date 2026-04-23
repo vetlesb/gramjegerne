@@ -6,6 +6,7 @@
   gap: $spacing-md;
   padding: $spacing-sm;
   cursor: pointer;
+  background-color: var(--bg-primary);
   transition: background-color $transition-fast;
 
   &:hover {
@@ -14,6 +15,10 @@
 
   &--selected {
     background-color: var(--bg-checked);
+    
+     &:hover {
+      background-color: var(--bg-checked);
+   }
   }
 }
 

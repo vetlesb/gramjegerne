@@ -66,7 +66,7 @@
   color: var(--fg-primary);
   
   &:hover:not(:disabled) {
-    background-color: var(--bg-dimmed-hover);
+    background-color: var(--bg-primary-hover);
   }
 }
 

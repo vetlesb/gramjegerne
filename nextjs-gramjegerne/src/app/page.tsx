@@ -405,6 +405,7 @@ function IndexPageContent() {
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen">
+        <div className="flex flex-col gap-y-2">
         {showLoader ? (
           <div className="flex items-center justify-center min-h-[80vh]">
             <LoadingSpinner className="w-8 h-8 text-accent" />
@@ -723,6 +724,7 @@ function IndexPageContent() {
             </Dialog>
           </>
         )}
+        </div>
       </main>
     </ProtectedRoute>
   );
