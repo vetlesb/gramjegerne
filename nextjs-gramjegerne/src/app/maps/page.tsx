@@ -1544,6 +1544,24 @@ function MapsPageContent() {
                   />
                 </label>
 
+                <div className="flex flex-col gap-2">
+                  <span className="text-white">Color</span>
+                  <div className="flex gap-2">
+                    {['#FF0000', '#10B981', '#3B82F6', '#F59E0B', '#A855F7'].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setCurrentRoute({...currentRoute, color})}
+                        className="w-8 h-8 rounded-full border-2 transition-transform"
+                        style={{
+                          backgroundColor: color,
+                          borderColor: currentRoute.color === color ? '#fff' : 'transparent',
+                          transform: currentRoute.color === color ? 'scale(1.15)' : 'scale(1)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
                   <button
                     onClick={handleCancelRoute}

@@ -1312,21 +1312,48 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       const map = mapInstanceRef.current;
 
-      // Clear existing polylines
+      // Clear existing polylines and route endpoint markers
       map.eachLayer((layer) => {
-        if (layer instanceof L.Polyline) {
+        if (layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
           map.removeLayer(layer);
         }
       });
 
-      // Add route polylines (only if routes are visible)
+      // Add route polylines and endpoint markers (only if routes are visible)
       if (showRoutes) {
         routes.forEach((route) => {
+          if (!route.waypoints || route.waypoints.length === 0) return;
+
+          const routeColor = route.color || '#10B981';
+
+          // Draw endpoint circles for first and last waypoints
+          const firstWp = route.waypoints[0];
+          const lastWp = route.waypoints[route.waypoints.length - 1];
+
+          L.circleMarker([firstWp.lat, firstWp.lng], {
+            radius: 6,
+            color: routeColor,
+            fillColor: routeColor,
+            fillOpacity: 1,
+            weight: 2,
+          }).addTo(map);
+
+          if (route.waypoints.length > 1) {
+            L.circleMarker([lastWp.lat, lastWp.lng], {
+              radius: 6,
+              color: routeColor,
+              fillColor: routeColor,
+              fillOpacity: 1,
+              weight: 2,
+            }).addTo(map);
+          }
+
+          // Only draw polyline if there are at least 2 waypoints
           if (route.waypoints.length < 2) return;
 
           const latlngs = route.waypoints.map((wp) => [wp.lat, wp.lng]);
           const polyline = L.polyline(latlngs as [number, number][], {
-            color: route.color || '#10B981',
+            color: routeColor,
             weight: 4,
             opacity: 1,
             dashArray: '10, 8',
