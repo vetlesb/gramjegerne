@@ -431,13 +431,13 @@ function MapsPageContent() {
 
         const data = await response.json();
         if (data.success) {
-          setSelectedTripData(data.trip);
-          
+          setSelectedTripData(data.map);
+
           // Also update this trip in allTripsData so overview reflects changes
           setAllTripsData((prev) =>
             prev.map((trip) =>
               trip._id === selectedTripData._id
-                ? data.trip
+                ? data.map
                 : trip
             )
           );

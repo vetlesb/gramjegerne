@@ -23,7 +23,7 @@ export interface Coordinates {
 
 export class ElevationService {
   private static readonly KARTVERKET_ELEVATION_URL = 'https://ws.geonorge.no/hoydedata/v1/punkt';
-  private static readonly SAMPLE_INTERVAL = 100; // meters between elevation samples
+  private static readonly SAMPLE_INTERVAL = 500; // meters between elevation samples
 
   /**
    * Calculate elevation profile for a route using Kartverket's elevation API
