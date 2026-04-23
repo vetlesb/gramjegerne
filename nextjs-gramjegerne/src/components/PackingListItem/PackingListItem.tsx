@@ -171,12 +171,12 @@ export function PackingListItem({
             )}
             {listItem.item?.weight && listItem.item.weight.weight > 0 && (
               <Tag iconName="weight" responsive>
-                {listItem.item.weight.weight} {listItem.item.weight.unit}
+                {listItem.item.weight.weight * (listItem.quantity || 1)} {listItem.item.weight.unit}
               </Tag>
             )}
             {listItem.item?.calories && listItem.item.calories > 0 && (
               <Tag iconName="calories" responsive>
-                {listItem.item.calories} kcal
+                {listItem.item.calories * (listItem.quantity || 1)} kcal
               </Tag>
             )}
           </div>

@@ -554,6 +554,9 @@ export default function ListPage() {
     selectedItems.forEach((item) => {
       if (!item.item) return;
       const quantity = item.quantity || 1;
+      // For packing count: fractional quantities (e.g. 0.2x sugar = 20g) represent
+      // a single physical item, while whole numbers (e.g. 2x t-shirts) are discrete items.
+      const packingCount = Number.isInteger(quantity) ? quantity : 1;
       const effectiveCategory = item.item.category;
       if (!effectiveCategory) return;
 
@@ -569,9 +572,9 @@ export default function ListPage() {
           title: t.lists.onBody,
         };
 
-        onBodyCategory.count += quantity;
+        onBodyCategory.count += packingCount;
         if (item.checked) {
-          onBodyCategory.checkedCount += quantity;
+          onBodyCategory.checkedCount += packingCount;
         }
         if (item.item.weight) {
           onBodyCategory.weightOnBody += item.item.weight.weight * quantity;
@@ -593,9 +596,9 @@ export default function ListPage() {
           title: effectiveCategory.title,
         };
 
-        existing.count += quantity;
+        existing.count += packingCount;
         if (item.checked) {
-          existing.checkedCount += quantity;
+          existing.checkedCount += packingCount;
         }
         if (item.item.weight) {
           existing.weight += item.item.weight.weight * quantity;
