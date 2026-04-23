@@ -219,6 +219,7 @@ export interface Route {
     lng: number;
   }>;
   color: string;
+  dashed?: boolean;
   elevationGain?: number; // Total elevation gain in meters
   elevationProfile?: {
     totalAscent: number;

@@ -1277,6 +1277,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             border-radius: 8px !important;
             padding: 0 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+            font-family: 'ApfelGrotezk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           }
 
           .leaflet-popup-tip {
@@ -1356,15 +1357,43 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             color: routeColor,
             weight: 4,
             opacity: 1,
-            dashArray: '10, 8',
+            ...(route.dashed !== false ? {dashArray: '10, 8'} : {}),
           });
+
+          // Calculate distance for popup
+          const routeDistance = (() => {
+            let total = 0;
+            for (let i = 1; i < route.waypoints.length; i++) {
+              const prev = route.waypoints[i - 1];
+              const curr = route.waypoints[i];
+              const R = 6371;
+              const dLat = ((curr.lat - prev.lat) * Math.PI) / 180;
+              const dLng = ((curr.lng - prev.lng) * Math.PI) / 180;
+              const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((prev.lat * Math.PI) / 180) *
+                  Math.cos((curr.lat * Math.PI) / 180) *
+                  Math.sin(dLng / 2) *
+                  Math.sin(dLng / 2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              total += R * c;
+            }
+            return total;
+          })();
+
+          const distanceStr = routeDistance >= 1
+            ? `${routeDistance.toFixed(1)} km`
+            : `${Math.round(routeDistance * 1000)} m`;
+
+          const elevationStr = route.elevationGain != null && route.elevationGain >= 0
+            ? `${Math.round(route.elevationGain)} m`
+            : null;
 
           // Add popup
           const popupContent = `
         <div style="background-color: var(--bg-primary); color: var(--fg-primary); border-radius: 8px; min-width: 200px; margin: 0; padding: 10px 0 6px 0;">
           <h3 class="font-bold text-lg" style="color: var(--fg-accent); margin-bottom: 8px; margin-top: 0;">${route.name}</h3>
-          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; margin-bottom: 8px; margin-top: 0;">Route</p>
-          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; opacity: 0.5; margin-bottom: 8px; margin-top: 0;">${route.waypoints.length} waypoints</p>
+          <p class="text-xs" style="color: var(--fg-primary); font-size: 14px; margin-bottom: 4px; margin-top: 0;">${distanceStr}${elevationStr ? ` · ↗ ${elevationStr}` : ''}</p>
         </div>
         <style>
           .leaflet-popup-content-wrapper {
@@ -1372,6 +1401,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             border-radius: 8px !important;
             padding: 0 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+            font-family: 'ApfelGrotezk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           }
 
           .leaflet-popup-tip {

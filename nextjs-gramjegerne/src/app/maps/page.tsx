@@ -459,10 +459,10 @@ function MapsPageContent() {
 
       const newSpot: CampingSpot = {
         _key: Date.now().toString(),
-        name: `Camping Spot ${(selectedTripData.campingSpots?.length || 0) + 1}`,
+        name: `Spot ${(selectedTripData.campingSpots?.length || 0) + 1}`,
         coordinates,
         description: '',
-        category: 'camp',
+        category: 'viewpoint',
       };
 
       // Don't save yet - just show the dialog
@@ -552,6 +552,7 @@ function MapsPageContent() {
       name: `Route ${(selectedTripData.routes?.length || 0) + 1}`,
       waypoints: [],
       color: '#FF0000',
+      dashed: true,
     };
 
     setCurrentRoute(newRoute);
@@ -1544,21 +1545,54 @@ function MapsPageContent() {
                   />
                 </label>
 
-                <div className="flex flex-col gap-2">
-                  <span className="text-white">Color</span>
-                  <div className="flex gap-2">
-                    {['#FF0000', '#10B981', '#3B82F6', '#F59E0B', '#A855F7'].map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setCurrentRoute({...currentRoute, color})}
-                        className="w-8 h-8 rounded-full border-2 transition-transform"
-                        style={{
-                          backgroundColor: color,
-                          borderColor: currentRoute.color === color ? '#fff' : 'transparent',
-                          transform: currentRoute.color === color ? 'scale(1.15)' : 'scale(1)',
-                        }}
-                      />
-                    ))}
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white">Color</span>
+                    <div className="flex gap-2">
+                      {['#FF0000', '#10B981', '#3B82F6', '#F59E0B', '#A855F7'].map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setCurrentRoute({...currentRoute, color})}
+                          className="w-8 h-8 rounded-full border-2 transition-transform"
+                          style={{
+                            backgroundColor: color,
+                            borderColor: currentRoute.color === color ? '#fff' : 'transparent',
+                            transform: currentRoute.color === color ? 'scale(1.15)' : 'scale(1)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white">Style</span>
+                    <div className="flex gap-2">
+                      {([true, false] as const).map((dashed) => (
+                        <button
+                          key={String(dashed)}
+                          onClick={() => setCurrentRoute({...currentRoute, dashed})}
+                          className="h-8 w-16 rounded-lg border-2 flex items-center justify-center transition-transform"
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderColor: currentRoute.dashed === dashed || (currentRoute.dashed === undefined && dashed) ? '#fff' : 'rgba(255,255,255,0.2)',
+                            transform: currentRoute.dashed === dashed || (currentRoute.dashed === undefined && dashed) ? 'scale(1.05)' : 'scale(1)',
+                          }}
+                        >
+                          <svg width="40" height="4" viewBox="0 0 40 4">
+                            {dashed ? (
+                              <>
+                                <rect x="0" y="0" width="8" height="4" rx="2" fill={currentRoute.color || '#FF0000'} />
+                                <rect x="12" y="0" width="8" height="4" rx="2" fill={currentRoute.color || '#FF0000'} />
+                                <rect x="24" y="0" width="8" height="4" rx="2" fill={currentRoute.color || '#FF0000'} />
+                                <rect x="36" y="0" width="4" height="4" rx="2" fill={currentRoute.color || '#FF0000'} />
+                              </>
+                            ) : (
+                              <rect x="0" y="0" width="40" height="4" rx="2" fill={currentRoute.color || '#FF0000'} />
+                            )}
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
