@@ -74,7 +74,7 @@ export function AddListDialog({
       fetchTrips();
       if (editList) {
         setNewListName(editList.name);
-        setSelectedTripId(editList.connectedTrip?._id || editList.connectedMap?._id || '');
+        setSelectedTripId(editList.connectedTrips?.[0]?._id || editList.connectedMap?._id || '');
         if (editList.image) {
           setExistingImage(editList.image);
         }

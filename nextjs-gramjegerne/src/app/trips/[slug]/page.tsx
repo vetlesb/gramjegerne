@@ -120,7 +120,7 @@ export default function TripDetailPage() {
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
-            "connectedLists": *[_type == "list" && connectedTrip._ref == ^._id]{
+            "connectedLists": *[_type == "list" && ^._id in connectedTrips[]._ref]{
               _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
@@ -128,7 +128,7 @@ export default function TripDetailPage() {
                 "item": item->{_id, name, weight, calories}
               }
             },
-            "connectedMaps": *[_type == "map" && connectedTrip._ref == ^._id]{
+            "connectedMaps": *[_type == "map" && ^._id in connectedTrips[]._ref]{
               _id, name, image, shareId,
               "owner": user->{_id, name},
               "routes": routes[]{_key, waypoints, elevationGain},
@@ -142,7 +142,7 @@ export default function TripDetailPage() {
             "category": category->{_id, title},
             "owner": user->{_id, name, email, image},
             "participants": *[_type == "user" && ^._id in sharedTrips[].trip._ref]{_id, name, email, image},
-            "connectedLists": *[_type == "list" && connectedTrip._ref == ^._id]{
+            "connectedLists": *[_type == "list" && ^._id in connectedTrips[]._ref]{
               _id, name, slug, image,
               "owner": user->{_id, name},
               "items": items[]{
@@ -150,7 +150,7 @@ export default function TripDetailPage() {
                 "item": item->{_id, name, weight, calories}
               }
             },
-            "connectedMaps": *[_type == "map" && connectedTrip._ref == ^._id]{
+            "connectedMaps": *[_type == "map" && ^._id in connectedTrips[]._ref]{
               _id, name, image, shareId,
               "owner": user->{_id, name},
               "routes": routes[]{_key, waypoints, elevationGain},
@@ -173,11 +173,12 @@ export default function TripDetailPage() {
   }, [fetchTrip]);
 
   const handleDisconnectList = async (listId: string) => {
+    if (!trip) return;
     try {
       const response = await fetch('/api/connectListToTrip', {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({listId}),
+        body: JSON.stringify({listId, tripId: trip._id}),
       });
 
       if (!response.ok) throw new Error('Failed to disconnect list');
@@ -189,11 +190,12 @@ export default function TripDetailPage() {
   };
 
   const handleDisconnectMap = async (mapId: string) => {
+    if (!trip) return;
     try {
       const response = await fetch('/api/connectMapToTrip', {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({mapId}),
+        body: JSON.stringify({mapId, tripId: trip._id}),
       });
 
       if (!response.ok) throw new Error('Failed to disconnect map');

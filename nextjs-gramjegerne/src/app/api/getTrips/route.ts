@@ -33,7 +33,7 @@ export async function GET() {
       shareId,
       isShared,
       "category": category->{_id, title},
-      "connectedListsCount": count(*[_type == "list" && connectedTrip._ref == ^._id]),
+      "connectedListsCount": count(*[_type == "list" && ^._id in connectedTrips[]._ref]),
       "participantCount": count(*[_type == "user" && ^._id in sharedTrips[].trip._ref]) + 1
     }`;
 

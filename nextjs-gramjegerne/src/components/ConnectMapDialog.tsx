@@ -2,23 +2,19 @@
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {Button} from '@/components/Button';
-import {useEffect, useState} from 'react';
+import {MapCardCompact, type CompactMap} from '@/components/MapCard/MapCardCompact';
+import {urlFor} from '@/sanity/images';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSession} from 'next-auth/react';
+import {toast} from 'sonner';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
-
-interface UserMap {
-  _id: string;
-  name: string;
-  connectedTrip?: {_id: string};
-}
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 interface ConnectMapDialogProps {
   tripId: string;
@@ -28,13 +24,20 @@ interface ConnectMapDialogProps {
 }
 
 export function ConnectMapDialog({tripId, open, onOpenChange, onSuccess}: ConnectMapDialogProps) {
+  const {t} = useLanguage();
   const {data: session} = useSession();
-  const [maps, setMaps] = useState<UserMap[]>([]);
+  const [maps, setMaps] = useState<CompactMap[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open || !session?.user?.id) return;
+
+    // Reset state on open
+    setSearchQuery('');
+    setSelectedIds(new Set());
 
     const fetchMaps = async () => {
       setIsLoading(true);
@@ -42,10 +45,19 @@ export function ConnectMapDialog({tripId, open, onOpenChange, onSuccess}: Connec
         const query = groq`*[_type == "map" && user._ref == $userId] | order(name asc) {
           _id,
           name,
-          "connectedTrip": connectedTrip->{_id}
+          image,
+          "connectedTripIds": connectedTrips[]._ref,
+          "campingSpotsCount": count(campingSpots),
+          "routesCount": count(routes)
         }`;
         const data = await client.fetch(query, {userId: session.user.id});
-        setMaps(data.filter((m: UserMap) => m.connectedTrip?._id !== tripId));
+        // Only show maps not already connected to this trip
+        setMaps(
+          data.filter(
+            (m: CompactMap & {connectedTripIds?: string[]}) =>
+              !m.connectedTripIds?.includes(tripId),
+          ),
+        );
       } catch (error) {
         console.error('Error fetching maps:', error);
       } finally {
@@ -56,21 +68,50 @@ export function ConnectMapDialog({tripId, open, onOpenChange, onSuccess}: Connec
     fetchMaps();
   }, [open, session?.user?.id, tripId]);
 
-  const handleConnect = async (mapId: string) => {
+  const filteredMaps = useMemo(() => {
+    if (!searchQuery) return maps;
+    const q = searchQuery.toLowerCase();
+    return maps.filter((m) => m.name.toLowerCase().includes(q));
+  }, [maps, searchQuery]);
+
+  const handleToggle = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleBatchConnect = async () => {
+    const count = selectedIds.size;
     setIsConnecting(true);
     try {
-      const response = await fetch('/api/connectMapToTrip', {
-        method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({mapId, tripId}),
-      });
-
-      if (!response.ok) throw new Error('Failed to connect map');
-
+      for (const mapId of selectedIds) {
+        const response = await fetch('/api/connectMapToTrip', {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({mapId, tripId}),
+        });
+        if (!response.ok) throw new Error(`Failed to connect map ${mapId}`);
+      }
       if (onSuccess) await onSuccess();
       onOpenChange(false);
+      toast.success(
+        count === 1
+          ? t.trips.mapConnected
+          : t.trips.mapsConnected.replace('{count}', String(count)),
+        {duration: 3000, position: 'bottom-center'},
+      );
     } catch (error) {
-      console.error('Error connecting map:', error);
+      console.error('Error connecting maps:', error);
+      toast.error('Failed to connect. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     } finally {
       setIsConnecting(false);
     }
@@ -78,44 +119,57 @@ export function ConnectMapDialog({tripId, open, onOpenChange, onSuccess}: Connec
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+      <DialogContent className="dialog p-4 max-w-lg md:p-5 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-accent font-normal pb-4">
-            Connect a map
+          <DialogTitle className="text-2xl text-accent font-normal">
+            {t.maps.connectMap}
           </DialogTitle>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
-          </div>
-        ) : maps.length === 0 ? (
-          <p className="text-lg py-4">No available maps to connect. Create a map first.</p>
-        ) : (
-          <div className="flex flex-col gap-y-2 py-4">
-            {maps.map((map) => (
-              <Button
-                key={map._id}
-                variant="tertiary"
-                onClick={() => handleConnect(map._id)}
-                disabled={isConnecting}
-                className="flex items-center justify-between w-full text-left"
-              >
-                <span className="text-lg">{map.name}</span>
-                {map.connectedTrip && (
-                  <span className="text-sm text-white/50">Connected to another trip</span>
-                )}
-              </Button>
-            ))}
-          </div>
-        )}
+        <label className="flex flex-col pt-2 gap-y-2 text-lg">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full max-w-full p-4 mb-1"
+            placeholder={t.misc.searchMaps}
+          />
+        </label>
+
+        <div className="flex-grow overflow-y-auto max-h-[60vh] no-scrollbar">
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
+            </div>
+          ) : maps.length === 0 ? (
+            <p className="text-lg py-4">{t.maps.noMapsToConnect}</p>
+          ) : filteredMaps.length === 0 ? (
+            <p className="text-lg py-4">{t.misc.noMatches}</p>
+          ) : (
+            <ul className="flex flex-col gap-y-1">
+              {filteredMaps.map((map) => (
+                <MapCardCompact
+                  key={map._id}
+                  map={map}
+                  isSelected={selectedIds.has(map._id)}
+                  onClick={() => handleToggle(map._id)}
+                  imageUrlBuilder={(asset) => urlFor(asset)}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <button type="button" className="button-secondary">
-              Cancel
-            </button>
-          </DialogClose>
+          <button
+            onClick={handleBatchConnect}
+            disabled={selectedIds.size === 0 || isConnecting}
+            className="button-primary-accent flex-1 mt-4"
+          >
+            {selectedIds.size === 0
+              ? t.trips.connectMap
+              : `${t.trips.connectMap} (${selectedIds.size})`}
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

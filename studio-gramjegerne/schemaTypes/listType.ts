@@ -153,11 +153,11 @@ const fields = [
     description: 'Optional map connection for map integration',
   }),
   defineField({
-    name: 'connectedTrip',
-    type: 'reference',
-    to: [{type: 'trip'}],
-    title: 'Connected Trip',
-    description: 'Optional trip this list is part of',
+    name: 'connectedTrips',
+    type: 'array',
+    of: [{type: 'reference', to: [{type: 'trip'}]}],
+    title: 'Connected Trips',
+    description: 'Trips this list is part of',
   }),
 ];
 

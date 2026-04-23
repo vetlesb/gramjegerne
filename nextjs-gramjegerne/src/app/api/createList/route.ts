@@ -87,10 +87,13 @@ export async function POST(request: Request) {
         },
       }),
       ...(connectedTripId && {
-        connectedTrip: {
-          _type: 'reference',
-          _ref: connectedTripId,
-        },
+        connectedTrips: [
+          {
+            _key: nanoid(),
+            _type: 'reference',
+            _ref: connectedTripId,
+          },
+        ],
       }),
     };
 

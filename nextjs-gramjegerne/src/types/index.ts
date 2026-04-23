@@ -97,11 +97,11 @@ export interface ListDocument {
     name: string;
     slug: {current: string};
   };
-  connectedTrip?: {
+  connectedTrips?: Array<{
     _id: string;
     name: string;
     slug: {current: string};
-  };
+  }>;
   _createdAt: string;
   _updatedAt: string;
   items: Array<{

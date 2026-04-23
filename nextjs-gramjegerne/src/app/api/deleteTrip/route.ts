@@ -39,22 +39,32 @@ export async function DELETE(request: NextRequest) {
 
     // Disconnect any lists referencing this trip
     const connectedLists = await client.fetch(
-      `*[_type == "list" && connectedTrip._ref == $tripId]._id`,
+      `*[_type == "list" && $tripId in connectedTrips[]._ref]{_id, connectedTrips}`,
       {tripId},
     );
 
-    for (const listId of connectedLists) {
-      await client.patch(listId).unset(['connectedTrip']).commit();
+    for (const list of connectedLists) {
+      const keysToRemove = (list.connectedTrips || [])
+        .filter((ref: {_ref: string; _key: string}) => ref._ref === tripId)
+        .map((ref: {_key: string}) => `connectedTrips[_key=="${ref._key}"]`);
+      if (keysToRemove.length > 0) {
+        await client.patch(list._id).unset(keysToRemove).commit();
+      }
     }
 
     // Disconnect any maps referencing this trip
     const connectedMaps = await client.fetch(
-      `*[_type == "map" && connectedTrip._ref == $tripId]._id`,
+      `*[_type == "map" && $tripId in connectedTrips[]._ref]{_id, connectedTrips}`,
       {tripId},
     );
 
-    for (const mapId of connectedMaps) {
-      await client.patch(mapId).unset(['connectedTrip']).commit();
+    for (const map of connectedMaps) {
+      const keysToRemove = (map.connectedTrips || [])
+        .filter((ref: {_ref: string; _key: string}) => ref._ref === tripId)
+        .map((ref: {_key: string}) => `connectedTrips[_key=="${ref._key}"]`);
+      if (keysToRemove.length > 0) {
+        await client.patch(map._id).unset(keysToRemove).commit();
+      }
     }
 
     // Remove from any users' sharedTrips arrays

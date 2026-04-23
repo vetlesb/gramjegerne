@@ -2,24 +2,19 @@
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {Button} from '@/components/Button';
-import {useEffect, useState} from 'react';
+import {ListCardCompact, type CompactList} from '@/components/ListCard/ListCardCompact';
+import {urlFor} from '@/sanity/images';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useSession} from 'next-auth/react';
+import {toast} from 'sonner';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
-
-interface UserList {
-  _id: string;
-  name: string;
-  slug: {current: string};
-  connectedTrip?: {_id: string};
-}
+import {useLanguage} from '@/i18n/LanguageProvider';
 
 interface ConnectListDialogProps {
   tripId: string;
@@ -29,13 +24,20 @@ interface ConnectListDialogProps {
 }
 
 export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: ConnectListDialogProps) {
+  const {t} = useLanguage();
   const {data: session} = useSession();
-  const [lists, setLists] = useState<UserList[]>([]);
+  const [lists, setLists] = useState<CompactList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open || !session?.user?.id) return;
+
+    // Reset state on open
+    setSearchQuery('');
+    setSelectedIds(new Set());
 
     const fetchLists = async () => {
       setIsLoading(true);
@@ -44,11 +46,21 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
           _id,
           name,
           slug,
-          "connectedTrip": connectedTrip->{_id}
+          image,
+          "connectedTripIds": connectedTrips[]._ref,
+          "items": items[]{
+            quantity,
+            "weight": item->weight.weight
+          }
         }`;
         const data = await client.fetch(query, {userId: session.user.id});
         // Only show lists not already connected to this trip
-        setLists(data.filter((l: UserList) => l.connectedTrip?._id !== tripId));
+        setLists(
+          data.filter(
+            (l: CompactList & {connectedTripIds?: string[]}) =>
+              !l.connectedTripIds?.includes(tripId),
+          ),
+        );
       } catch (error) {
         console.error('Error fetching lists:', error);
       } finally {
@@ -59,21 +71,50 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
     fetchLists();
   }, [open, session?.user?.id, tripId]);
 
-  const handleConnect = async (listId: string) => {
+  const filteredLists = useMemo(() => {
+    if (!searchQuery) return lists;
+    const q = searchQuery.toLowerCase();
+    return lists.filter((l) => l.name.toLowerCase().includes(q));
+  }, [lists, searchQuery]);
+
+  const handleToggle = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleBatchConnect = async () => {
+    const count = selectedIds.size;
     setIsConnecting(true);
     try {
-      const response = await fetch('/api/connectListToTrip', {
-        method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({listId, tripId}),
-      });
-
-      if (!response.ok) throw new Error('Failed to connect list');
-
+      for (const listId of selectedIds) {
+        const response = await fetch('/api/connectListToTrip', {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({listId, tripId}),
+        });
+        if (!response.ok) throw new Error(`Failed to connect list ${listId}`);
+      }
       if (onSuccess) await onSuccess();
       onOpenChange(false);
+      toast.success(
+        count === 1
+          ? t.trips.listConnected
+          : t.trips.listsConnected.replace('{count}', String(count)),
+        {duration: 3000, position: 'bottom-center'},
+      );
     } catch (error) {
-      console.error('Error connecting list:', error);
+      console.error('Error connecting lists:', error);
+      toast.error('Failed to connect. Please try again.', {
+        duration: 3000,
+        position: 'bottom-center',
+      });
     } finally {
       setIsConnecting(false);
     }
@@ -81,44 +122,57 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="dialog p-10 rounded-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+      <DialogContent className="dialog p-4 max-w-lg md:p-5 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-accent font-normal pb-4">
-            Connect a packing list
+          <DialogTitle className="text-2xl text-accent font-normal">
+            {t.trips.connectAList}
           </DialogTitle>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
-          </div>
-        ) : lists.length === 0 ? (
-          <p className="text-lg py-4">No available lists to connect. Create a list first.</p>
-        ) : (
-          <div className="flex flex-col gap-y-2 py-4">
-            {lists.map((list) => (
-              <Button
-                key={list._id}
-                variant="tertiary"
-                onClick={() => handleConnect(list._id)}
-                disabled={isConnecting}
-                className="flex items-center justify-between w-full text-left"
-              >
-                <span className="text-lg">{list.name}</span>
-                {list.connectedTrip && (
-                  <span className="text-sm text-white/50">Connected to another trip</span>
-                )}
-              </Button>
-            ))}
-          </div>
-        )}
+        <label className="flex flex-col pt-2 gap-y-2 text-lg">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full max-w-full p-4 mb-1"
+            placeholder={t.misc.searchLists}
+          />
+        </label>
+
+        <div className="flex-grow overflow-y-auto max-h-[60vh] no-scrollbar">
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
+            </div>
+          ) : lists.length === 0 ? (
+            <p className="text-lg py-4">{t.trips.noListsToConnect}</p>
+          ) : filteredLists.length === 0 ? (
+            <p className="text-lg py-4">{t.misc.noMatches}</p>
+          ) : (
+            <ul className="flex flex-col gap-y-1">
+              {filteredLists.map((list) => (
+                <ListCardCompact
+                  key={list._id}
+                  list={list}
+                  isSelected={selectedIds.has(list._id)}
+                  onClick={() => handleToggle(list._id)}
+                  imageUrlBuilder={(asset) => urlFor(asset)}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <button type="button" className="button-secondary">
-              Cancel
-            </button>
-          </DialogClose>
+          <button
+            onClick={handleBatchConnect}
+            disabled={selectedIds.size === 0 || isConnecting}
+            className="button-primary-accent flex-1 mt-4"
+          >
+            {selectedIds.size === 0
+              ? t.trips.connectList
+              : `${t.trips.connectList} (${selectedIds.size})`}
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

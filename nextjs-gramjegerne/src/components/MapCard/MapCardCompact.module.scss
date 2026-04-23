@@ -1,0 +1,61 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.card {
+  @include card;
+  @include flex-start;
+  gap: $spacing-md;
+  padding: $spacing-sm;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: var(--bg-primary-hover);
+  }
+
+  &--selected {
+    background-color: var(--bg-checked);
+  }
+}
+
+.image {
+  width: 48px;
+  height: 48px;
+  border-radius: $border-radius-md;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.imagePlaceholder {
+  @include flex-center;
+  width: 48px;
+  height: 48px;
+  border-radius: $border-radius-md;
+  background: var(--bg-dimmed-hover);
+  flex-shrink: 0;
+}
+
+.content {
+  @include flex-column;
+  gap: $spacing-xs;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: $font-size-md;
+  color: var(--fg-accent);
+  font-weight: 400;
+  @include text-truncate;
+}
+
+.metadata {
+  @include flex-start;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.connectedLabel {
+  font-size: $font-size-sm;
+  color: var(--fg-primary);
+  opacity: 0.5;
+}

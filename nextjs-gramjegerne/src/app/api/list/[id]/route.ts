@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {client} from '@/lib/sanity';
 import {getUserSession} from '@/lib/auth-helpers';
 import {handleApiError} from '@/lib/errorHandler';
+import {nanoid} from 'nanoid';
 import type {NextRequest} from 'next/server';
 
 interface UpdateData {
@@ -18,10 +19,11 @@ interface UpdateData {
     _type: 'reference';
     _ref: string;
   } | null;
-  connectedTrip?: {
+  connectedTrips?: Array<{
+    _key: string;
     _type: 'reference';
     _ref: string;
-  } | null;
+  }> | null;
   [key: string]: unknown;
 }
 
@@ -98,12 +100,15 @@ export async function PATCH(request: NextRequest) {
     // Handle connected trip
     const connectedTripId = formData.get('connectedTripId');
     if (connectedTripId) {
-      updateData.connectedTrip = {
-        _type: 'reference',
-        _ref: connectedTripId.toString(),
-      };
+      updateData.connectedTrips = [
+        {
+          _key: nanoid(),
+          _type: 'reference',
+          _ref: connectedTripId.toString(),
+        },
+      ];
     } else if (connectedTripId === '') {
-      updateData.connectedTrip = null;
+      updateData.connectedTrips = null;
     }
 
     // Handle image upload

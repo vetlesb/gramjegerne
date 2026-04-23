@@ -10,7 +10,6 @@ import {PackingListItem} from '@/components/PackingListItem';
 import {client} from '@/sanity/client';
 import {nanoid} from 'nanoid';
 import {useSession} from 'next-auth/react';
-import Image from 'next/image';
 import {usePathname, useSearchParams, useRouter} from 'next/navigation';
 import {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {toast} from 'sonner';
@@ -36,6 +35,8 @@ import {
   type List,
   type ListItem,
 } from './utils';
+import {AddGearDialog} from '@/components/AddGearDialog';
+import type {AddGearItem} from '@/components/AddGearDialog';
 import {useLanguage} from '@/i18n/LanguageProvider';
 import styles from './page.module.scss';
 
@@ -81,7 +82,6 @@ export default function ListPage() {
   const [selectedItems, setSelectedItems] = useState<ListItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery] = useState('');
-  const [tempSelectedItems, setTempSelectedItems] = useState<Item[]>([]);
   const [sortBy, setSortBy] = useState<'name' | 'weight-low' | 'weight-high' | 'calories'>('name');
   const pathname = usePathname();
   const listSlug = pathname?.split('/')[2];
@@ -102,9 +102,6 @@ export default function ListPage() {
   const [tempQuantityInputs, setTempQuantityInputs] = useState<{
     [key: string]: string;
   }>({});
-
-  // Add a new state for dialog search
-  const [dialogSearchQuery, setDialogSearchQuery] = useState('');
 
   // Add to gear dialog state (shared mode)
   const [addToGearItem, setAddToGearItem] = useState<{
@@ -453,18 +450,6 @@ export default function ListPage() {
     }
   }, [searchParams, categories, selectedCategory, showOnBodyOnly, slugToCategoryId]);
 
-  // Update handleTempItemToggle to track existing overrides
-  const handleTempItemToggle = useCallback((item: Item) => {
-    setTempSelectedItems((prev) => {
-      const isSelected = prev.some((selected) => selected._id === item._id);
-      if (isSelected) {
-        return prev.filter((selected) => selected._id !== item._id);
-      } else {
-        return [...prev, item];
-      }
-    });
-  }, []);
-
   async function handleRemoveFromList(itemToRemove: Item) {
     if (!list) return;
 
@@ -539,32 +524,11 @@ export default function ListPage() {
     return sortListItems(items, sortBy);
   }, [selectedItems, selectedCategory, searchQuery, showOnBodyOnly, sortBy]);
 
-  // Update the filteredItemsForDialog to use dialogSearchQuery instead
-  const filteredItemsForDialog = useMemo(() => {
-    return items
-      .filter((item) => {
-        const matchesSearch = dialogSearchQuery
-          ? item.name.toLowerCase().includes(dialogSearchQuery.toLowerCase()) ||
-            item.category.title.toLowerCase().includes(dialogSearchQuery.toLowerCase())
-          : true;
-        const notAlreadyInList = !selectedItems.some(
-          (selectedItem) => selectedItem.item?._id === item._id,
-        );
-        return matchesSearch && notAlreadyInList;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, 'nb'));
-  }, [items, dialogSearchQuery, selectedItems]);
-
-  // Update the dialog open handler to clear the dialog search
-  function handleDialogOpenChange(isOpen: boolean) {
-    setIsDialogOpen(isOpen);
-    if (isOpen) {
-      setTempSelectedItems([]); // Clear temp selection when dialog opens
-      setDialogSearchQuery(''); // Clear dialog search query when dialog opens
-    } else {
-      setTempSelectedItems([]); // Clear temp selection when dialog closes
-    }
-  }
+  // Set of item IDs already in the packing list (for AddGearDialog filtering)
+  const existingItemIds = useMemo(
+    () => new Set(selectedItems.map((li) => li.item?._id).filter(Boolean) as string[]),
+    [selectedItems],
+  );
 
   // Update the categoryTotals calculation
   const {categoryTotals, grandTotal, categoryTotalsMap} = useMemo(() => {
@@ -723,13 +687,13 @@ export default function ListPage() {
     );
   }
 
-  // Add these handler functions
-  const handleSaveChanges = async () => {
+  // Handler for adding items from the AddGearDialog
+  const handleAddGearConfirm = async (itemsToAddList: AddGearItem[]) => {
     if (!list) return;
 
     // Store previous state for rollback
     const previousItems = selectedItems;
-    const itemsToAdd = tempSelectedItems.length;
+    const itemsToAdd = itemsToAddList.length;
 
     try {
       // Create a Map to store unique items by their item._id
@@ -743,7 +707,7 @@ export default function ListPage() {
       });
 
       // Then add new items, but only if they don't already exist
-      tempSelectedItems.forEach((item) => {
+      itemsToAddList.forEach((item) => {
         if (!uniqueItems.has(item._id)) {
           uniqueItems.set(item._id, {
             _key: nanoid(),
@@ -761,7 +725,6 @@ export default function ListPage() {
 
       // Optimistic update: Update UI immediately
       setSelectedItems(cleanedItems);
-      setTempSelectedItems([]);
       setIsDialogOpen(false);
 
       // Show toast notification
@@ -972,102 +935,14 @@ export default function ListPage() {
 
         {/* Add Item Dialog - controlled by ActionBar */}
         {!isSharedMode && (
-          <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-            {/* Updated DialogContent */}
-            <DialogContent className="dialog p-4 max-w-lg md:p-5 rounded-2xl h-[80vh] no-scrollbar flex flex-col">
-              <DialogHeader>
-                <DialogTitle className="text-2xl text-accent font-normal">{t.gear.addGear}</DialogTitle>
-              </DialogHeader>
-              {/* Search Bar */}
-              <label className="flex flex-col pt-2 gap-y-2 text-lg">
-                <input
-                  type="text"
-                  value={dialogSearchQuery}
-                  onChange={(e) => setDialogSearchQuery(e.target.value)}
-                  className="w-full max-w-full p-4 mb-1"
-                  placeholder={t.misc.searchGearOrCategory}
-                />
-              </label>
-
-              {/* Container for the list of items */}
-              <div className="flex-grow overflow-y-auto max-h-[60vh] no-scrollbar">
-                {items.length === 0 ? (
-                  <p>Loading gear...</p>
-                ) : filteredItemsForDialog.length === 0 ? (
-                  <p>No matches</p>
-                ) : (
-                  <ul className="flex flex-col">
-                    {filteredItemsForDialog.map((item) => (
-                      <li
-                        key={item._id}
-                        className={`product-search flex items-center gap-4 py-2 cursor-pointer ${
-                          tempSelectedItems.some((selected) => selected._id === item._id)
-                            ? 'active'
-                            : ''
-                        }`}
-                        onClick={() => handleTempItemToggle(item)}
-                      >
-                        <div className="flex flex-grow items-center gap-x-4">
-                          <div className="h-12 w-12">
-                            {item?.image ? (
-                              <Image
-                                className="rounded-md h-full w-full object-cover"
-                                src={urlFor(item.image).url()}
-                                alt={`Bilde av ${item?.name || 'item'}`}
-                                width={96}
-                                height={96}
-                              />
-                            ) : (
-                              <div className="h-12 w-12 rounded-md bg-dimmed flex items-center justify-center">
-                                <Icon name="add" width={16} height={16} />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-y-1">
-                            <h2 className="text-md text-accent">{item?.name}</h2>
-                            <div className="flex flex-wrap gap-x-1">
-                              {item?.size && (
-                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
-                                  <Icon name="size" width={16} height={16} />
-                                  {item.size}
-                                </p>
-                              )}
-                              {item?.weight && (
-                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
-                                  <Icon name="weight" width={16} height={16} />
-                                  {item.weight.weight} {item.weight.unit}
-                                </p>
-                              )}
-                              {item?.calories && item.calories > 0 && (
-                                <p className="tag-search w-fit items-center gap-x-1 flex flex-wrap">
-                                  <Icon name="calories" width={16} height={16} />
-                                  {item.calories} kcal
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <DialogFooter>
-                <button
-                  onClick={handleSaveChanges}
-                  disabled={tempSelectedItems.length === 0}
-                  className="button-primary-accent flex-1 mt-4"
-                >
-                  {tempSelectedItems.length === 0
-                    ? t.actions.add
-                    : tempSelectedItems.length === 1
-                      ? `${t.actions.add} 1 item`
-                      : `${t.actions.add} ${tempSelectedItems.length} items`}
-                </button>
-                <DialogClose asChild></DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <AddGearDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            items={items}
+            existingItemIds={existingItemIds}
+            onConfirm={handleAddGearConfirm}
+            imageUrlBuilder={(asset) => urlFor(asset).url()}
+          />
         )}
 
         {/* Category Filter + OnBody button */}
