@@ -177,7 +177,7 @@ export function TripCard({
               <Tag iconName="user">{participantCount}</Tag>
             )}
             {distance != null && distance > 0 && (
-              <Tag iconName="route">{distance.toFixed(1)} km</Tag>
+              <Tag>{distance.toFixed(1)} km</Tag>
             )}
             {elevation != null && elevation > 0 && (
               <Tag>↗ {Math.round(elevation)} m</Tag>

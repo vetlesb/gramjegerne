@@ -3,8 +3,8 @@
 import {useSession, signOut} from 'next-auth/react';
 import {useTheme} from '@/components/ThemeProvider';
 import {useLanguage} from '@/i18n/LanguageProvider';
-import {Icon} from '@/components/Icon';
 import {Button} from '@/components/Button/Button';
+import {ToggleButton} from '@/components/Button/ToggleButton';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import Image from 'next/image';
 
@@ -76,15 +76,13 @@ export function SettingsDialog({open, onOpenChange}: SettingsDialogProps) {
             <h2 className="text-lg font-medium">{t.settings.language}</h2>
             <div className="flex flex-row gap-2 flex-wrap">
               {languages.map((lang) => (
-                <button
+                <ToggleButton
                   key={lang.value}
+                  active={language === lang.value}
                   onClick={() => setLanguage(lang.value)}
-                  className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
-                    language === lang.value ? 'bg-accent text-secondary' : 'bg-primary menu-item'
-                  }`}
                 >
                   {lang.label}
-                </button>
+                </ToggleButton>
               ))}
             </div>
           </section>
@@ -94,16 +92,14 @@ export function SettingsDialog({open, onOpenChange}: SettingsDialogProps) {
             <h2 className="text-lg font-medium">{t.settings.theme}</h2>
             <div className="flex flex-row gap-2 flex-wrap">
               {themeOptions.map((opt) => (
-                <button
+                <ToggleButton
                   key={opt.value}
+                  active={theme === opt.value}
+                  iconName={opt.icon}
                   onClick={() => setTheme(opt.value)}
-                  className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
-                    theme === opt.value ? 'bg-accent text-secondary' : 'bg-primary menu-item'
-                  }`}
                 >
-                  <Icon name={opt.icon} width={24} height={24} />
                   {t.settings.themes[opt.key]}
-                </button>
+                </ToggleButton>
               ))}
             </div>
           </section>
@@ -113,15 +109,13 @@ export function SettingsDialog({open, onOpenChange}: SettingsDialogProps) {
             <h2 className="text-lg font-medium">{t.settings.currency}</h2>
             <div className="flex flex-row gap-2 flex-wrap">
               {currencies.map((cur) => (
-                <button
+                <ToggleButton
                   key={cur.value}
+                  active={currency === cur.value}
                   onClick={() => setCurrency(cur.value)}
-                  className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
-                    currency === cur.value ? 'bg-accent text-secondary' : 'bg-primary menu-item'
-                  }`}
                 >
                   {cur.label}
-                </button>
+                </ToggleButton>
               ))}
             </div>
           </section>

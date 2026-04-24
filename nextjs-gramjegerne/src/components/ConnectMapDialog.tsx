@@ -48,7 +48,8 @@ export function ConnectMapDialog({tripId, open, onOpenChange, onSuccess}: Connec
           image,
           "connectedTripIds": connectedTrips[]._ref,
           "campingSpotsCount": count(campingSpots),
-          "routesCount": count(routes)
+          "routesCount": count(routes),
+          "routes": routes[]{waypoints, elevationGain}
         }`;
         const data = await client.fetch(query, {userId: session.user.id});
         // Only show maps not already connected to this trip

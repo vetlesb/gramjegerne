@@ -88,18 +88,24 @@ export function Navbar() {
                 </li>
                 <li>
                   <button
-                    className={`text-center flex items-center justify-center ${isSettingsOpen ? 'menu-active' : 'menu-item'}`}
-                    style={{minHeight: 46}}
+                    className={`text-lg text-center block w-full md:hidden ${isSettingsOpen ? 'menu-active' : 'menu-item'}`}
                     onClick={() => {
                       setIsMenuOpen(false);
                       setIsSettingsOpen(true);
                     }}
+                  >
+                    {t.nav.settings}
+                  </button>
+                  <button
+                    className={`hidden md:flex items-center justify-center ${isSettingsOpen ? 'menu-active' : 'menu-item'}`}
+                    style={{minHeight: 46}}
+                    onClick={() => setIsSettingsOpen(true)}
                     aria-label={t.nav.settings}
                     title={t.nav.settings}
                   >
                     <Icon name="settings" width={20} height={20} />
                   </button>
-                  </li>
+                </li>
               </ul>
             )}
           </div>

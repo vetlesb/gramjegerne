@@ -176,10 +176,10 @@ export function MapCard({
 
           <div className={styles.metadata}>
             {mode === 'shared' && ownerName && <Tag iconName="user">{ownerName}</Tag>}
-            {totalDistance > 0 && <Tag iconName="route">{totalDistance.toFixed(1)} km</Tag>}
-            {totalElevation > 0 && <Tag iconName="viewpoint">{Math.round(totalElevation)} m</Tag>}
+            {totalDistance > 0 && <Tag>{totalDistance.toFixed(1)} km</Tag>}
+            {totalElevation > 0 && <Tag>↗ {Math.round(totalElevation)} m</Tag>}
             {campingSpotsCount != null && campingSpotsCount > 0 && (
-              <Tag iconName="location">{campingSpotsCount} {t.misc.spots}</Tag>
+              <Tag iconName="locationpin">{campingSpotsCount} {t.misc.spots}</Tag>
             )}
             {routesCount != null && routesCount > 0 && (
               <Tag iconName="route">{routesCount} {t.misc.routes}</Tag>

@@ -50,7 +50,9 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
           "connectedTripIds": connectedTrips[]._ref,
           "items": items[]{
             quantity,
-            "weight": item->weight.weight
+            onBody,
+            "weight": item->weight.weight,
+            "calories": item->calories
           }
         }`;
         const data = await client.fetch(query, {userId: session.user.id});

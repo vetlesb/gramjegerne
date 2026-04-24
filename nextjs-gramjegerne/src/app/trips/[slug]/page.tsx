@@ -334,7 +334,7 @@ export default function TripDetailPage() {
                     </Tag>
                   )}
                   {mainMapStats && mainMapStats.distance > 0 && (
-                    <Tag variant="primary" iconName="route">
+                    <Tag variant="primary">
                       {mainMapStats.distance.toFixed(1)} km
                     </Tag>
                   )}

@@ -25,6 +25,7 @@ import {BackpackIcon} from './icons/BackpackIcon';
 import {DuplicateIcon} from './icons/DuplicateIcon';
 import {CheckmarkIcon} from './icons/CheckmarkIcon';
 import {LocationIcon} from './icons/LocationIcon';
+import {LocationPinIcon} from './icons/LocationPinIcon';
 import {UndoIcon} from './icons/UndoIcon';
 import {FishingIcon} from './icons/FishingIcon';
 import {ViewpointIcon} from './icons/ViewpointIcon';
@@ -65,6 +66,7 @@ const iconMap = {
   duplicate: DuplicateIcon,
   checkmark: CheckmarkIcon,
   location: LocationIcon,
+  locationpin: LocationPinIcon,
   undo: UndoIcon,
   fishing: FishingIcon,
   viewpoint: ViewpointIcon,

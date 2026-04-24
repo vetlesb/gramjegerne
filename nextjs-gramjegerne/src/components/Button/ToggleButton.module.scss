@@ -1,0 +1,50 @@
+@use '@/styles/abstracts/mixins' as *;
+
+.toggleButton {
+  @include flex-center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  white-space: nowrap;
+  color: var(--fg-primary);
+  background-color: var(--bg-primary);
+  border-radius: $border-radius-full;
+  font-size: $font-size-lg;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast, border-color $transition-fast;
+  flex-shrink: 0;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-primary-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @include focus-ring;
+}
+
+// ============================================
+// Active State
+// ============================================
+
+.toggleButton--active {
+  background-color: var(--bg-accent);
+  color: var(--fg-secondary);
+  border-color: var(--bg-accent);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-accent);
+    color: var(--fg-secondary);
+  }
+}
+
+// ============================================
+// Elements
+// ============================================
+
+.icon {
+  flex-shrink: 0;
+}
