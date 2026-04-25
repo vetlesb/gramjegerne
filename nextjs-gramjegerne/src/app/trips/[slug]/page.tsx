@@ -306,6 +306,10 @@ export default function TripDetailPage() {
     );
   }
 
+  if (isLoading) {
+    return null;
+  }
+
   if (!trip) {
     return (
       <ProtectedRoute>

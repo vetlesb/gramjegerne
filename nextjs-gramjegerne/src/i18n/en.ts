@@ -112,7 +112,7 @@ const en = {
   // Lists
   lists: {
     title: 'Lists',
-    addList: 'Add List',
+    addList: 'Add list',
     newList: 'New',
     editList: 'Edit',
     listCreated: 'List created!',
@@ -139,7 +139,7 @@ const en = {
   // Trips
   trips: {
     title: 'Trips',
-    addTrip: 'Add Trip',
+    addTrip: 'Add trip',
     saveTrip: 'Save trip',
     editTrip: 'Edit trip',
     deleteTrip: 'Are you sure you want to delete this trip?',

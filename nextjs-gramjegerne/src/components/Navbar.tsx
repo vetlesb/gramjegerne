@@ -61,7 +61,7 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
-                    className={`text-lg text-center block w-full ${pathname === '/lists' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname.startsWith('/lists') ? 'menu-active' : 'menu-item'}`}
                     href="/lists"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -70,7 +70,7 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
-                    className={`text-lg text-center block w-full ${pathname === '/trips' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname.startsWith('/trips') ? 'menu-active' : 'menu-item'}`}
                     href="/trips"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -79,7 +79,7 @@ export function Navbar() {
                 </li>
                 <li>
                   <Link
-                    className={`text-lg text-center block w-full ${pathname === '/maps' ? 'menu-active' : 'menu-item'}`}
+                    className={`text-lg text-center block w-full ${pathname.startsWith('/maps') ? 'menu-active' : 'menu-item'}`}
                     href="/maps"
                     onClick={() => setIsMenuOpen(false)}
                   >

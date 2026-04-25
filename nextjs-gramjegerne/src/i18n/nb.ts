@@ -114,8 +114,8 @@ const nb: Translations = {
   // Lists
   lists: {
     title: 'Lister',
-    addList: 'Legg til liste',
-    newList: 'Ny',
+    addList: 'Opprett liste',
+    newList: 'Opprett liste',
     editList: 'Rediger',
     listCreated: 'Liste opprettet!',
     listUpdated: 'Liste oppdatert!',
@@ -141,7 +141,7 @@ const nb: Translations = {
   // Trips
   trips: {
     title: 'Turer',
-    addTrip: 'Legg til tur',
+    addTrip: 'Opprett tur',
     saveTrip: 'Lagre tur',
     editTrip: 'Rediger tur',
     deleteTrip: 'Er du sikker på at du vil slette denne turen?',
@@ -164,7 +164,7 @@ const nb: Translations = {
     createTripToStart: 'Opprett en tur for å begynne å planlegge med venner.',
     savedToMyTrips: 'Allerede lagret - Se tur',
     saveToMyTrips: 'Lagre i mine turer',
-    newTrip: 'Ny tur',
+    newTrip: 'Opprett tur',
     startDate: 'Startdato',
     endDate: 'Sluttdato',
     descriptionPlaceholder: 'Valgfri beskrivelse...',
@@ -176,7 +176,7 @@ const nb: Translations = {
   // Maps
   maps: {
     title: 'Kart',
-    newMap: 'Nytt kart',
+    newMap: 'Opprett kart',
     addNewMap: 'Legg til nytt kart',
     editMap: 'Rediger kart',
     mapName: 'Kartnavn',

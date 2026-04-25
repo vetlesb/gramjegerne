@@ -45,7 +45,7 @@
   left: 0; /* Align left edge with button */
   top: calc(100% + $spacing-xs);
   background-color: var(--bg-primary);
-  border: 1px solid var(--fg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: $border-radius-md;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 20;
