@@ -13,6 +13,7 @@ import '@/styles/globals.scss';
 import {Providers} from './providers';
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {SettingsSync} from '@/components/SettingsSync';
+import {RegisterSW} from '@/components/RegisterSW';
 
 const apfel = localFont({
   src: [
@@ -46,10 +47,18 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
   return (
     <html lang="en">
+      <head>
+        <meta name="theme-color" content="#1f261c" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Gramjegerne" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
           <Providers>
+            <RegisterSW />
             <SettingsSync />
             {!isAuthPage && !isMapsPage && !isSharedMapPage && !isSharedListPage && !isTestPage && <Navbar />}
             {children}
