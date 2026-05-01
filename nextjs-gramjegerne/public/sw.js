@@ -1,14 +1,16 @@
 // Gramjegerne service worker
 // Bump CACHE_VERSION to invalidate all caches.
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
   sanityImages: `sanity-images-${CACHE_VERSION}`,
   staticResources: `static-resources-${CACHE_VERSION}`,
   fonts: `fonts-${CACHE_VERSION}`,
+  offline: `offline-${CACHE_VERSION}`,
 };
 const ALL_CACHE_NAMES = Object.values(CACHES);
+const OFFLINE_URL = '/offline.html';
 
 const TILE_HOST_PATTERNS = [
   /^https:\/\/cache\.kartverket\.no\//i,
@@ -18,7 +20,13 @@ const TILE_HOST_PATTERNS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(self.skipWaiting());
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHES.offline);
+      await cache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
+      await self.skipWaiting();
+    })(),
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -92,9 +100,19 @@ async function networkFirst(request, cacheName, timeoutMs) {
     }
     return response;
   } catch {
-    const cached = await cache.match(request);
+    const cached =
+      (await cache.match(request)) ?? (await cache.match(request, {ignoreSearch: true}));
     if (cached) return cached;
-    throw new Error('offline and no cached response');
+    if (request.mode === 'navigate' || request.destination === 'document') {
+      const offlineCache = await caches.open(CACHES.offline);
+      const offline = await offlineCache.match(OFFLINE_URL);
+      if (offline) return offline;
+    }
+    return new Response('Offline', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: {'Content-Type': 'text/plain; charset=UTF-8'},
+    });
   }
 }
 

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f261c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Offline · Gramjegerne</title>
+  <style>
+    :root {
+      --bg: #1f261c;
+      --fg: #eaffe2;
+      --muted: rgba(234, 255, 226, 0.6);
+      --accent: #b4ed9f;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-hover: rgba(255, 255, 255, 0.1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: max(2rem, env(safe-area-inset-top)) 1.25rem max(2rem, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 0.75rem;
+      color: var(--muted);
+      align-self: flex-start;
+    }
+    .indicator-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: #f59e0b;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 1.625rem;
+      color: var(--accent);
+      margin: 0;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .bundle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .bundle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.625rem;
+      background: var(--surface);
+      color: var(--fg);
+      text-decoration: none;
+      transition: background-color 120ms;
+    }
+    .bundle:active { background: var(--surface-hover); }
+    @media (hover: hover) {
+      .bundle:hover { background: var(--surface-hover); }
+    }
+    .bundle-name {
+      font-size: 1.05rem;
+      font-weight: 500;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bundle-size {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+    .empty {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 0.625rem;
+      line-height: 1.5;
+    }
+    .actions {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .button-ghost {
+      display: block;
+      padding: 0.875rem 1rem;
+      text-align: center;
+      color: var(--fg);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.625rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="indicator"><span class="indicator-dot"></span><span>Offline</span></div>
+  <h1>You're offline</h1>
+  <p id="lead">Loading saved maps…</p>
+  <div class="bundle-list" id="bundles"></div>
+  <div class="empty" id="empty" hidden>
+    No maps saved offline yet. Open a trip while online and tap the menu → Save offline to make it available here.
+  </div>
+  <div class="actions">
+    <a class="button-ghost" href="/maps">Open maps</a>
+  </div>
+
+  <script>
+    (function () {
+      var listEl = document.getElementById('bundles');
+      var emptyEl = document.getElementById('empty');
+      var leadEl = document.getElementById('lead');
+
+      function fmtBytes(b) {
+        if (!b) return '';
+        if (b < 1024 * 1024) return Math.round(b / 1024) + ' KB';
+        if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB';
+        return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+      }
+
+      function render(bundles) {
+        if (!bundles.length) {
+          leadEl.textContent = 'Nothing saved offline yet.';
+          emptyEl.hidden = false;
+          return;
+        }
+        leadEl.textContent = bundles.length + ' map' + (bundles.length === 1 ? '' : 's') + ' available offline:';
+        var frag = document.createDocumentFragment();
+        bundles.forEach(function (b) {
+          var a = document.createElement('a');
+          a.href = '/maps?trip=' + encodeURIComponent(b.mapId);
+          a.className = 'bundle';
+          var name = document.createElement('span');
+          name.className = 'bundle-name';
+          name.textContent = (b.mapDocSnapshot && b.mapDocSnapshot.name) || 'Map';
+          a.appendChild(name);
+          var size = document.createElement('span');
+          size.className = 'bundle-size';
+          size.textContent = fmtBytes(b.bytes);
+          a.appendChild(size);
+          frag.appendChild(a);
+        });
+        listEl.appendChild(frag);
+      }
+
+      function showFailure() {
+        leadEl.textContent = "Couldn't read your saved offline maps.";
+        emptyEl.hidden = false;
+      }
+
+      try {
+        if (!('indexedDB' in window)) return showFailure();
+        var req = indexedDB.open('gramjegerne-offline-maps', 1);
+        req.onerror = showFailure;
+        req.onsuccess = function () {
+          var db = req.result;
+          if (!db.objectStoreNames.contains('mapBundles')) return render([]);
+          var getAll = db.transaction('mapBundles', 'readonly').objectStore('mapBundles').getAll();
+          getAll.onsuccess = function () {
+            var bundles = (getAll.result || []).slice();
+            bundles.sort(function (a, b) {
+              return (b.downloadedAt || '').localeCompare(a.downloadedAt || '');
+            });
+            render(bundles);
+          };
+          getAll.onerror = showFailure;
+        };
+      } catch (e) {
+        showFailure();
+      }
+
+      window.addEventListener('online', function () {
+        window.location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>
