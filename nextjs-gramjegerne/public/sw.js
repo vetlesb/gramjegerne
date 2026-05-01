@@ -1,6 +1,8 @@
 // Gramjegerne service worker
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
+// Bump on every meaningful SW change so we can verify update-on-device.
+const SW_BUILD = '2026-05-01-vary-fix';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -59,6 +61,13 @@ self.addEventListener('activate', (event) => {
       await self.clients.claim();
     })(),
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'GET_VERSION') {
+    const port = event.ports && event.ports[0];
+    if (port) port.postMessage({version: SW_BUILD});
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -121,12 +130,19 @@ async function networkFirst(request, cacheName, timeoutMs) {
     }
     return response;
   } catch {
-    let cached = await cache.match(request);
-    if (!cached) cached = await cache.match(request, {ignoreSearch: true});
+    let cached = await cache.match(request, {ignoreVary: true});
+    if (!cached) cached = await cache.match(request, {ignoreSearch: true, ignoreVary: true});
     if (!cached && (request.mode === 'navigate' || request.destination === 'document')) {
       // Defensive: some WebKit versions ignore the ignoreSearch option, so
       // fall back to a manual scan of cache keys with the same pathname.
       cached = await matchSamePath(cache, request);
+      // Last resort: hardcode /maps as a fallback for /maps* navigations.
+      if (!cached) {
+        const u = new URL(request.url);
+        if (u.pathname.startsWith('/maps')) {
+          cached = await cache.match('/maps', {ignoreVary: true});
+        }
+      }
     }
     if (cached) return cached;
     if (request.mode === 'navigate' || request.destination === 'document') {
@@ -148,7 +164,7 @@ async function matchSamePath(cache, request) {
     const keys = await cache.keys();
     for (const key of keys) {
       if (new URL(key.url).pathname === targetPath) {
-        return cache.match(key);
+        return cache.match(key, {ignoreVary: true});
       }
     }
   } catch {

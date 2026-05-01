@@ -162,6 +162,7 @@
     <div class="diag-row"><span class="diag-key">Bundles</span><span id="diag-bundles"></span></div>
     <div class="diag-row"><span class="diag-key">Standalone</span><span id="diag-standalone"></span></div>
     <div class="diag-row"><span class="diag-key">Pages cache</span><span id="diag-cache"></span></div>
+    <div class="diag-row"><span class="diag-key">SW build</span><span id="diag-sw"></span></div>
   </div>
 
   <script>
@@ -177,6 +178,7 @@
       var diagBundles = document.getElementById('diag-bundles');
       var diagStandalone = document.getElementById('diag-standalone');
       var diagCache = document.getElementById('diag-cache');
+      var diagSw = document.getElementById('diag-sw');
 
       diagEl.hidden = false;
       diagUrl.textContent = window.location.pathname + window.location.search;
@@ -187,6 +189,28 @@
       diagIdb.textContent = 'opening…';
       diagBundles.textContent = '—';
       diagCache.textContent = 'loading…';
+      diagSw.textContent = 'querying…';
+
+      (function probeSW() {
+        try {
+          if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+            diagSw.textContent = 'no controller';
+            return;
+          }
+          var ch = new MessageChannel();
+          var done = false;
+          ch.port1.onmessage = function (e) {
+            done = true;
+            diagSw.textContent = (e.data && e.data.version) || '(no reply)';
+          };
+          setTimeout(function () {
+            if (!done) diagSw.textContent = 'timeout (old SW?)';
+          }, 2000);
+          navigator.serviceWorker.controller.postMessage({type: 'GET_VERSION'}, [ch.port2]);
+        } catch (e) {
+          diagSw.textContent = 'error: ' + (e && e.message);
+        }
+      })();
 
       (async function listCache() {
         try {
