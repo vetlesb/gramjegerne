@@ -2,7 +2,7 @@
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
 // Bump on every meaningful SW change so we can verify update-on-device.
-const SW_BUILD = '2026-05-01-vary-fix';
+const SW_BUILD = '2026-05-01-rewrap';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -144,11 +144,11 @@ async function networkFirst(request, cacheName, timeoutMs) {
         }
       }
     }
-    if (cached) return cached;
+    if (cached) return rewrapForNavigation(cached, request);
     if (request.mode === 'navigate' || request.destination === 'document') {
       const offlineCache = await caches.open(CACHES.offline);
       const offline = await offlineCache.match(OFFLINE_URL);
-      if (offline) return offline;
+      if (offline) return rewrapForNavigation(offline, request);
     }
     return new Response('Offline', {
       status: 503,
@@ -156,6 +156,25 @@ async function networkFirst(request, cacheName, timeoutMs) {
       headers: {'Content-Type': 'text/plain; charset=UTF-8'},
     });
   }
+}
+
+function rewrapForNavigation(response, request) {
+  // For navigations served from a cache entry whose stored URL differs from
+  // the navigated URL (any of our fallback paths: ignoreSearch, matchSamePath,
+  // hardcoded /maps), iOS Safari adopts response.url as the document URL —
+  // dropping the ?trip=<id> query the user actually asked for. Rewrap into a
+  // fresh Response so the browser keeps the navigation URL.
+  if (request.mode !== 'navigate' && request.destination !== 'document') {
+    return response;
+  }
+  if (!response || !response.url || response.url === request.url) {
+    return response;
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
 
 async function matchSamePath(cache, request) {

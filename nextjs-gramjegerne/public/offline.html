@@ -162,6 +162,7 @@
     <div class="diag-row"><span class="diag-key">Bundles</span><span id="diag-bundles"></span></div>
     <div class="diag-row"><span class="diag-key">Standalone</span><span id="diag-standalone"></span></div>
     <div class="diag-row"><span class="diag-key">Pages cache</span><span id="diag-cache"></span></div>
+    <div class="diag-row"><span class="diag-key">Tiles</span><span id="diag-tiles"></span></div>
     <div class="diag-row"><span class="diag-key">SW build</span><span id="diag-sw"></span></div>
   </div>
 
@@ -179,6 +180,7 @@
       var diagStandalone = document.getElementById('diag-standalone');
       var diagCache = document.getElementById('diag-cache');
       var diagSw = document.getElementById('diag-sw');
+      var diagTiles = document.getElementById('diag-tiles');
 
       diagEl.hidden = false;
       diagUrl.textContent = window.location.pathname + window.location.search;
@@ -190,6 +192,43 @@
       diagBundles.textContent = '—';
       diagCache.textContent = 'loading…';
       diagSw.textContent = 'querying…';
+      diagTiles.textContent = 'counting…';
+
+      (function countTiles() {
+        try {
+          if (!('indexedDB' in window)) {
+            diagTiles.textContent = 'unavailable';
+            return;
+          }
+          var openReq = indexedDB.open('leaflet.offline');
+          openReq.onerror = function () {
+            diagTiles.textContent = 'open error';
+          };
+          openReq.onsuccess = function () {
+            var db = openReq.result;
+            // leaflet.offline 3.x uses 'tileStore' object store
+            var storeNames = Array.prototype.slice.call(db.objectStoreNames);
+            var storeName = storeNames.indexOf('tileStore') !== -1 ? 'tileStore' : storeNames[0];
+            if (!storeName) {
+              diagTiles.textContent = '0 (no store; available: ' + storeNames.join(',') + ')';
+              return;
+            }
+            try {
+              var countReq = db.transaction(storeName, 'readonly').objectStore(storeName).count();
+              countReq.onsuccess = function () {
+                diagTiles.textContent = String(countReq.result) + ' (' + storeName + ')';
+              };
+              countReq.onerror = function () {
+                diagTiles.textContent = 'count error';
+              };
+            } catch (e) {
+              diagTiles.textContent = 'tx error: ' + (e && e.message);
+            }
+          };
+        } catch (e) {
+          diagTiles.textContent = 'error: ' + (e && e.message);
+        }
+      })();
 
       (function probeSW() {
         try {
