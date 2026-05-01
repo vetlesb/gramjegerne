@@ -161,6 +161,7 @@
     <div class="diag-row"><span class="diag-key">IndexedDB</span><span id="diag-idb"></span></div>
     <div class="diag-row"><span class="diag-key">Bundles</span><span id="diag-bundles"></span></div>
     <div class="diag-row"><span class="diag-key">Standalone</span><span id="diag-standalone"></span></div>
+    <div class="diag-row"><span class="diag-key">Pages cache</span><span id="diag-cache"></span></div>
   </div>
 
   <script>
@@ -175,6 +176,7 @@
       var diagIdb = document.getElementById('diag-idb');
       var diagBundles = document.getElementById('diag-bundles');
       var diagStandalone = document.getElementById('diag-standalone');
+      var diagCache = document.getElementById('diag-cache');
 
       diagEl.hidden = false;
       diagUrl.textContent = window.location.pathname + window.location.search;
@@ -184,6 +186,37 @@
           : (window.navigator && window.navigator.standalone ? 'yes (iOS)' : 'no');
       diagIdb.textContent = 'opening…';
       diagBundles.textContent = '—';
+      diagCache.textContent = 'loading…';
+
+      (async function listCache() {
+        try {
+          if (!('caches' in window)) {
+            diagCache.textContent = 'no Cache API';
+            return;
+          }
+          var names = await caches.keys();
+          var pagesName = names.find(function (n) { return n.indexOf('pages') === 0; });
+          if (!pagesName) {
+            diagCache.textContent = '(no pages-* cache; available: ' + names.join(', ') + ')';
+            return;
+          }
+          var c = await caches.open(pagesName);
+          var keys = await c.keys();
+          if (!keys.length) {
+            diagCache.textContent = pagesName + ' is empty';
+            return;
+          }
+          var paths = keys.slice(0, 12).map(function (k) {
+            try {
+              var u = new URL(k.url);
+              return u.pathname + u.search;
+            } catch (e) { return k.url; }
+          });
+          diagCache.textContent = pagesName + ' (' + keys.length + '): ' + paths.join(' | ');
+        } catch (e) {
+          diagCache.textContent = 'error: ' + (e && e.message);
+        }
+      })();
 
       // Detect bounce-back: this page was served by the SW at a non-/
       // navigation (e.g. /maps?trip=...), meaning the cache miss fell
