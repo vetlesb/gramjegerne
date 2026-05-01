@@ -325,10 +325,10 @@
           size.textContent = fmtBytes(b.bytes);
           btn.appendChild(size);
           btn.addEventListener('click', function () {
-            // Stash a backup so the maps page can recover the selection even
-            // if iOS Safari's SW handling drops the trip query param.
-            try { sessionStorage.setItem('offlineSelectedTrip', b.mapId); } catch (e) {}
-            go('/maps?trip=' + encodeURIComponent(b.mapId));
+            // Path-based route — survives iOS SW URL handling more reliably
+            // than ?trip= query params, and lands on the lightweight trip
+            // page that doesn't need the overview/list infrastructure.
+            go('/maps/' + encodeURIComponent(b.mapId));
           });
           frag.appendChild(btn);
         });

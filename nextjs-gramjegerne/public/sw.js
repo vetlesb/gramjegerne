@@ -2,7 +2,7 @@
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
 // Bump on every meaningful SW change so we can verify update-on-device.
-const SW_BUILD = '2026-05-01-rewrap2';
+const SW_BUILD = '2026-05-02-trip-route';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -136,10 +136,14 @@ async function networkFirst(request, cacheName, timeoutMs) {
       // Defensive: some WebKit versions ignore the ignoreSearch option, so
       // fall back to a manual scan of cache keys with the same pathname.
       cached = await matchSamePath(cache, request);
-      // Last resort: hardcode /maps as a fallback for /maps* navigations.
+      // Last resort: route-aware fallbacks. /maps/<id> pages all hydrate the
+      // same way from URL params, so any cached /maps/<other-id> works as a
+      // shell. /maps proper falls back to the overview shell.
       if (!cached) {
         const u = new URL(request.url);
-        if (u.pathname.startsWith('/maps')) {
+        if (u.pathname.startsWith('/maps/')) {
+          cached = await matchPathPrefix(cache, '/maps/');
+        } else if (u.pathname === '/maps') {
           cached = await cache.match('/maps', {ignoreVary: true});
         }
       }
@@ -180,6 +184,20 @@ async function rewrapForNavigation(response, request) {
   } catch {
     return response;
   }
+}
+
+async function matchPathPrefix(cache, prefix) {
+  try {
+    const keys = await cache.keys();
+    for (const key of keys) {
+      if (new URL(key.url).pathname.startsWith(prefix)) {
+        return cache.match(key, {ignoreVary: true});
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
 }
 
 async function matchSamePath(cache, request) {

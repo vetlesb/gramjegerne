@@ -107,7 +107,23 @@ export async function downloadBundle(
     mapDocSnapshot: map,
   };
   await putBundle(bundle);
+
+  // Warm the SW pages cache for the trip's view route so it works offline
+  // even if the user has never navigated there directly. The SW's
+  // networkFirst will cache this fetch under the path key.
+  warmTripRouteCache(map._id);
+
   return bundle;
+}
+
+function warmTripRouteCache(mapId: string): void {
+  if (typeof fetch === 'undefined') return;
+  fetch(`/maps/${encodeURIComponent(mapId)}`, {
+    credentials: 'same-origin',
+    cache: 'reload',
+  }).catch(() => {
+    // best-effort
+  });
 }
 
 async function runWorker(
