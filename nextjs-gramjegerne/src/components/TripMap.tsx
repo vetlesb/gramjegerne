@@ -1,6 +1,7 @@
 'use client';
 import {useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback} from 'react';
 import * as L from 'leaflet';
+import {tileLayerOffline} from 'leaflet.offline';
 import {CampingSpot, Route} from '@/types';
 import {useDebounce} from '@/hooks/useDebounce';
 import CompassWidget from './CompassWidget';
@@ -65,6 +66,10 @@ export interface TripMapRef {
   restoreView: (view: {center: {lat: number; lng: number}; zoom: number}) => void;
   zoomToCoordinates: (lat: number, lng: number, zoom?: number) => void;
   zoomToBounds: (coordinates: Array<{lat: number; lng: number}>) => void;
+  setCoverageOverlay: (
+    bboxes: Array<{minLng: number; minLat: number; maxLng: number; maxLat: number}>,
+  ) => void;
+  clearCoverageOverlay: () => void;
 }
 
 const TripMap = forwardRef<TripMapRef, TripMapProps>(
@@ -118,6 +123,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocationMarker, setUserLocationMarker] = useState<L.Marker | null>(null);
     const gridScaleLabelRef = useRef<L.Control | null>(null);
+    const coverageLayerRef = useRef<L.LayerGroup | null>(null);
 
     // Update currentLayer and switch map tiles when defaultTileLayer prop changes
     useEffect(() => {
@@ -135,7 +141,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         // Add new layer
         const baseMaps: Record<string, L.TileLayer> = {
-          'Kartverket Raster': L.tileLayer(
+          'Kartverket Raster': tileLayerOffline(
             'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
             {
               attribution: '© Kartverket',
@@ -347,6 +353,42 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             duration: 0.5,
           });
         },
+        setCoverageOverlay: (bboxes) => {
+          const map = mapInstanceRef.current;
+          if (!map) return;
+          if (coverageLayerRef.current) {
+            map.removeLayer(coverageLayerRef.current);
+            coverageLayerRef.current = null;
+          }
+          if (bboxes.length === 0) return;
+          const accent =
+            getComputedStyle(document.documentElement).getPropertyValue('--bg-accent').trim() ||
+            '#b4ed9f';
+          const group = L.layerGroup();
+          for (const b of bboxes) {
+            L.rectangle(
+              [
+                [b.minLat, b.minLng],
+                [b.maxLat, b.maxLng],
+              ],
+              {
+                color: accent,
+                weight: 1,
+                fillColor: accent,
+                fillOpacity: 0.15,
+                interactive: false,
+              },
+            ).addTo(group);
+          }
+          group.addTo(map);
+          coverageLayerRef.current = group;
+        },
+        clearCoverageOverlay: () => {
+          const map = mapInstanceRef.current;
+          if (!map || !coverageLayerRef.current) return;
+          map.removeLayer(coverageLayerRef.current);
+          coverageLayerRef.current = null;
+        },
       }),
       [],
     );
@@ -367,7 +409,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
       // Define base maps with optimized tile loading
       const baseMaps = {
-        'Kartverket Raster': L.tileLayer(
+        'Kartverket Raster': tileLayerOffline(
           'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
           {
             attribution: '© Kartverket',
@@ -646,7 +688,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                 });
                 // Add new layer
                 const baseMaps = {
-                  'Kartverket Raster': L.tileLayer(
+                  'Kartverket Raster': tileLayerOffline(
                     'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
                     {
                       attribution: '© Kartverket',

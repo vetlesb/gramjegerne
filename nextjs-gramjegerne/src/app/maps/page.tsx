@@ -13,9 +13,31 @@ import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
 import {toast} from 'sonner';
 import dynamicImport from 'next/dynamic';
-import {MapShareButton} from '@/components/MapShareButton';
 import type {TripMapRef} from '@/components/TripMap';
+import type {Bundle} from '@/services/offlineMaps';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
+
+function bundleToListItem(bundle: Bundle): MapListItem {
+  const snap = bundle.mapDocSnapshot;
+  return {
+    _id: snap._id,
+    name: snap.name,
+    description: snap.description,
+    image: snap.image,
+    startDate: snap.startDate,
+    endDate: snap.endDate,
+    campingSpotsCount: snap.campingSpots?.length ?? 0,
+    routesCount: snap.routes?.length ?? 0,
+    routes: (snap.routes ?? []).map((r) => ({
+      waypoints: r.waypoints ?? [],
+      elevationGain: r.elevationGain,
+    })),
+    campingSpots: (snap.campingSpots ?? []).map((s) => ({category: s.category})),
+    defaultTileLayer: snap.defaultTileLayer,
+    _createdAt: snap._createdAt,
+    _updatedAt: snap._updatedAt,
+  };
+}
 
 // Dynamically import TripMap to avoid SSR issues with Leaflet
 const TripMap = dynamicImport(() => import('@/components/TripMap'), {
@@ -26,6 +48,12 @@ const TripMap = dynamicImport(() => import('@/components/TripMap'), {
     </div>
   ),
 });
+
+// Defer offlineMaps service (touches IndexedDB at module load) to client only.
+const MapActionsMenu = dynamicImport(
+  () => import('@/components/MapActionsMenu').then((m) => ({default: m.MapActionsMenu})),
+  {ssr: false},
+);
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +76,7 @@ function MapsPageContent() {
   const fromTrip = searchParams.get('fromTrip');
   const [selectedTripData, setSelectedTripData] = useState<MapDocument | null>(null);
   const [isSharedMode, setIsSharedMode] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   // Full trips with spots/routes for map display
   const [allTripsData, setAllTripsData] = useState<MapDocument[]>([]);
@@ -65,6 +94,17 @@ function MapsPageContent() {
       }
     } catch (error) {
       console.error('Failed to fetch trips:', error);
+      try {
+        const {listBundles} = await import('@/services/offlineMaps');
+        const bundles = await listBundles();
+        if (bundles.length > 0) {
+          setTripPlans(bundles.map(bundleToListItem));
+          toast.info('Showing offline trips', {duration: 2500, position: 'bottom-center'});
+          return;
+        }
+      } catch (fallbackErr) {
+        console.warn('Offline list fallback failed:', fallbackErr);
+      }
       toast.error('Failed to load trips');
     }
   }, []);
@@ -183,10 +223,25 @@ function MapsPageContent() {
       const trip = await client.fetch(query, {tripId, userId: session.user.id});
       setSelectedTripData(trip);
       setIsSharedMode(false);
+      setIsOfflineMode(false);
     } catch (error) {
       console.error('Failed to fetch trip details:', error);
+      try {
+        const {getBundle} = await import('@/services/offlineMaps');
+        const bundle = await getBundle(tripId);
+        if (bundle) {
+          setSelectedTripData(bundle.mapDocSnapshot);
+          setIsSharedMode(false);
+          setIsOfflineMode(true);
+          toast.info('Showing offline copy', {duration: 2500, position: 'bottom-center'});
+          return;
+        }
+      } catch (fallbackErr) {
+        console.warn('Offline fallback failed:', fallbackErr);
+      }
       toast.error('Failed to load trip details');
       setSelectedTripData(null);
+      setIsOfflineMode(false);
     }
   }, [session?.user?.id]);
 
@@ -230,6 +285,7 @@ function MapsPageContent() {
       if (trip) {
         setSelectedTripData(trip);
         setIsSharedMode(true);
+        setIsOfflineMode(false);
       } else {
         toast.error('Shared trip not found');
         router.push('/maps');
@@ -263,6 +319,7 @@ function MapsPageContent() {
       // Overview mode
       setSelectedTripData(null);
       setIsSharedMode(false);
+      setIsOfflineMode(false);
     }
   }, [selectedTripId, shareId, fetchTripDetails, fetchSharedTrip]);
 
@@ -930,15 +987,21 @@ function MapsPageContent() {
                       {isSharedMode && selectedTripData.user && typeof selectedTripData.user === 'object' && 'name' in selectedTripData.user && (
                         <span className="text-xs text-white/50">Shared by {(selectedTripData.user as {name: string}).name}</span>
                       )}
+                      {isOfflineMode && (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-white/60 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-accent)]" aria-hidden />
+                          Offline copy
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Share Button - only in edit mode */}
+                    {/* Map actions (Share + Save offline) - own maps only */}
                     {!isSharedMode && (
-                      <MapShareButton
-                        mapId={selectedTripData._id}
+                      <MapActionsMenu
+                        map={selectedTripData}
                         shareId={selectedTripData.shareId}
-                        mapName={selectedTripData.name}
+                        mapRef={mapRef}
                       />
                     )}
                     {/* Mobile Close Dock Button */}

@@ -31,6 +31,6 @@ export default withAuth(
 export const config = {
   matcher: [
     // Update matcher to exclude share routes along with other public paths
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth|share).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icons|public|auth|share).*)',
   ],
 };
