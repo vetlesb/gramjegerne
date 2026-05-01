@@ -24,6 +24,14 @@ self.addEventListener('install', (event) => {
     (async () => {
       const offlineCache = await caches.open(CACHES.offline);
       await offlineCache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
+      // One-time purge of the pages cache: prior versions of this SW cached
+      // redirected (signin) responses under /, /maps, etc. Drop everything
+      // and let networkFirst re-populate with real responses.
+      try {
+        await caches.delete(CACHES.pages);
+      } catch {
+        // ignore
+      }
       // Best-effort precache of the maps shell so bundle links from the
       // offline page can render even if the user hasn't navigated to /maps
       // since the SW installed.
@@ -107,7 +115,8 @@ async function networkFirst(request, cacheName, timeoutMs) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetchWithTimeout(request, timeoutMs);
-    if (response && response.ok) {
+    // Don't cache redirected responses (auth bounce → signin would poison the cache).
+    if (response && response.ok && !response.redirected) {
       cache.put(request, response.clone()).catch(() => {});
     }
     return response;

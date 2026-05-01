@@ -126,6 +126,19 @@
       width: 100%;
       cursor: pointer;
     }
+    .diag {
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      border-radius: 0.5rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .diag-row { display: flex; gap: 0.5rem; }
+    .diag-key { opacity: 0.7; min-width: 5.5rem; }
   </style>
 </head>
 <body>
@@ -143,6 +156,12 @@
   <div class="actions">
     <button class="button-ghost" id="btn-maps" type="button">Open maps</button>
   </div>
+  <div class="diag" id="diag" hidden>
+    <div class="diag-row"><span class="diag-key">URL</span><span id="diag-url"></span></div>
+    <div class="diag-row"><span class="diag-key">IndexedDB</span><span id="diag-idb"></span></div>
+    <div class="diag-row"><span class="diag-key">Bundles</span><span id="diag-bundles"></span></div>
+    <div class="diag-row"><span class="diag-key">Standalone</span><span id="diag-standalone"></span></div>
+  </div>
 
   <script>
     (function () {
@@ -151,6 +170,20 @@
       var leadEl = document.getElementById('lead');
       var bouncedEl = document.getElementById('bouncedback');
       var btnMaps = document.getElementById('btn-maps');
+      var diagEl = document.getElementById('diag');
+      var diagUrl = document.getElementById('diag-url');
+      var diagIdb = document.getElementById('diag-idb');
+      var diagBundles = document.getElementById('diag-bundles');
+      var diagStandalone = document.getElementById('diag-standalone');
+
+      diagEl.hidden = false;
+      diagUrl.textContent = window.location.pathname + window.location.search;
+      diagStandalone.textContent =
+        window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
+          ? 'yes'
+          : (window.navigator && window.navigator.standalone ? 'yes (iOS)' : 'no');
+      diagIdb.textContent = 'opening…';
+      diagBundles.textContent = '—';
 
       // Detect bounce-back: this page was served by the SW at a non-/
       // navigation (e.g. /maps?trip=...), meaning the cache miss fell
@@ -203,30 +236,44 @@
         listEl.appendChild(frag);
       }
 
-      function showFailure() {
+      function showFailure(reason) {
         leadEl.textContent = "Couldn't read your saved offline maps.";
         emptyEl.hidden = false;
+        if (reason) diagIdb.textContent = 'error: ' + reason;
       }
 
       try {
-        if (!('indexedDB' in window)) return showFailure();
+        if (!('indexedDB' in window)) {
+          diagIdb.textContent = 'unavailable';
+          return showFailure('IndexedDB unavailable');
+        }
         var req = indexedDB.open('gramjegerne-offline-maps', 1);
-        req.onerror = showFailure;
+        req.onerror = function () {
+          showFailure((req.error && req.error.message) || 'open failed');
+        };
         req.onsuccess = function () {
           var db = req.result;
-          if (!db.objectStoreNames.contains('mapBundles')) return render([]);
+          var hasStore = db.objectStoreNames.contains('mapBundles');
+          diagIdb.textContent = 'opened (store: ' + (hasStore ? 'yes' : 'no') + ')';
+          if (!hasStore) {
+            diagBundles.textContent = '0';
+            return render([]);
+          }
           var getAll = db.transaction('mapBundles', 'readonly').objectStore('mapBundles').getAll();
           getAll.onsuccess = function () {
             var bundles = (getAll.result || []).slice();
             bundles.sort(function (a, b) {
               return (b.downloadedAt || '').localeCompare(a.downloadedAt || '');
             });
+            diagBundles.textContent = String(bundles.length);
             render(bundles);
           };
-          getAll.onerror = showFailure;
+          getAll.onerror = function () {
+            showFailure((getAll.error && getAll.error.message) || 'getAll failed');
+          };
         };
       } catch (e) {
-        showFailure();
+        showFailure(e && e.message);
       }
 
       window.addEventListener('online', function () {
