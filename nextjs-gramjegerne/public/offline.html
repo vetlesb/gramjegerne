@@ -373,7 +373,8 @@
       }
 
       window.addEventListener('online', function () {
-        window.location.reload();
+        // When the network comes back, exit the offline shell.
+        window.location.replace('/');
       });
     })();
   </script>

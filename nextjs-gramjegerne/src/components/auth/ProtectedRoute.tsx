@@ -43,11 +43,24 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
 
   useEffect(() => {
     // Don't do anything while loading or if already redirected
-    if (status !== 'unauthenticated' || hasRedirected) return;
+    if (hasRedirected) return;
 
-    // When offline we can't sign in anyway — let the page render and fall
-    // back to its own offline data path (e.g. IDB bundle on /maps).
-    if (isOffline) return;
+    // When offline + on a route that requires Sanity (gear, lists, trips),
+    // bounce to the offline page so the user gets the bundle list rather
+    // than an infinite loader.
+    if (isOffline && status === 'unauthenticated') {
+      const offlineCapable =
+        pathname.startsWith('/maps') ||
+        pathname.startsWith('/share') ||
+        pathname === '/offline.html';
+      if (!offlineCapable) {
+        setHasRedirected(true);
+        window.location.replace('/offline.html');
+      }
+      return;
+    }
+
+    if (status !== 'unauthenticated') return;
 
     // Check if this is a public share - don't redirect if it is
     if (typeof window === 'undefined') return;

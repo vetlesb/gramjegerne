@@ -2,7 +2,7 @@
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
 // Bump on every meaningful SW change so we can verify update-on-device.
-const SW_BUILD = '2026-05-01-rewrap';
+const SW_BUILD = '2026-05-01-rewrap2';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -158,23 +158,28 @@ async function networkFirst(request, cacheName, timeoutMs) {
   }
 }
 
-function rewrapForNavigation(response, request) {
+async function rewrapForNavigation(response, request) {
   // For navigations served from a cache entry whose stored URL differs from
-  // the navigated URL (any of our fallback paths: ignoreSearch, matchSamePath,
-  // hardcoded /maps), iOS Safari adopts response.url as the document URL —
-  // dropping the ?trip=<id> query the user actually asked for. Rewrap into a
-  // fresh Response so the browser keeps the navigation URL.
+  // the navigated URL (any of our fallback paths), iOS Safari adopts
+  // response.url as the document URL — dropping the ?trip=<id> query. Rewrap
+  // into a fresh Response from the body bytes so the browser keeps the
+  // navigation URL.
   if (request.mode !== 'navigate' && request.destination !== 'document') {
     return response;
   }
   if (!response || !response.url || response.url === request.url) {
     return response;
   }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers,
-  });
+  try {
+    const buf = await response.arrayBuffer();
+    return new Response(buf, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  } catch {
+    return response;
+  }
 }
 
 async function matchSamePath(cache, request) {
