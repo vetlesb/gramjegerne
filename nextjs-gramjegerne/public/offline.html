@@ -325,6 +325,9 @@
           size.textContent = fmtBytes(b.bytes);
           btn.appendChild(size);
           btn.addEventListener('click', function () {
+            // Stash a backup so the maps page can recover the selection even
+            // if iOS Safari's SW handling drops the trip query param.
+            try { sessionStorage.setItem('offlineSelectedTrip', b.mapId); } catch (e) {}
             go('/maps?trip=' + encodeURIComponent(b.mapId));
           });
           frag.appendChild(btn);

@@ -79,6 +79,19 @@ function MapsPageContent() {
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [offlineTripId, setOfflineTripId] = useState<string | null>(null);
 
+  // Seed offline trip selection from sessionStorage on first mount —
+  // backup for cases where the SW dropped the ?trip=<id> query during the
+  // navigation from offline.html.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = window.sessionStorage.getItem('offlineSelectedTrip');
+      if (stored) setOfflineTripId(stored);
+    } catch {
+      // ignore — sessionStorage may be blocked
+    }
+  }, []);
+
   // Full trips with spots/routes for map display
   const [allTripsData, setAllTripsData] = useState<MapDocument[]>([]);
 
@@ -186,8 +199,7 @@ function MapsPageContent() {
 
   // Fetch full trip details for editing
   const fetchTripDetails = useCallback(async (tripId: string) => {
-    // No session (e.g. offline JWT can't validate): try IDB bundle directly.
-    if (!session?.user?.id) {
+    const tryOfflineBundle = async (): Promise<boolean> => {
       try {
         const {getBundle} = await import('@/services/offlineMaps');
         const bundle = await getBundle(tripId);
@@ -196,10 +208,20 @@ function MapsPageContent() {
           setIsSharedMode(false);
           setIsOfflineMode(true);
           toast.info('Showing offline copy', {duration: 2500, position: 'bottom-center'});
+          return true;
         }
       } catch (err) {
-        console.warn('Offline-only trip lookup failed:', err);
+        console.warn('Offline bundle lookup failed:', err);
       }
+      return false;
+    };
+
+    // No session (e.g. offline JWT can't validate): only IDB can answer.
+    if (!session?.user?.id) {
+      if (await tryOfflineBundle()) return;
+      toast.error('No offline copy of this trip on this device');
+      setSelectedTripData(null);
+      setIsOfflineMode(false);
       return;
     }
 
@@ -237,28 +259,23 @@ function MapsPageContent() {
       }`;
 
       const trip = await client.fetch(query, {tripId, userId: session.user.id});
-      setSelectedTripData(trip);
-      setIsSharedMode(false);
-      setIsOfflineMode(false);
+      if (trip) {
+        setSelectedTripData(trip);
+        setIsSharedMode(false);
+        setIsOfflineMode(false);
+        return;
+      }
+      // Sanity returned null — fall through to IDB
     } catch (error) {
       console.error('Failed to fetch trip details:', error);
-      try {
-        const {getBundle} = await import('@/services/offlineMaps');
-        const bundle = await getBundle(tripId);
-        if (bundle) {
-          setSelectedTripData(bundle.mapDocSnapshot);
-          setIsSharedMode(false);
-          setIsOfflineMode(true);
-          toast.info('Showing offline copy', {duration: 2500, position: 'bottom-center'});
-          return;
-        }
-      } catch (fallbackErr) {
-        console.warn('Offline fallback failed:', fallbackErr);
-      }
-      toast.error('Failed to load trip details');
-      setSelectedTripData(null);
-      setIsOfflineMode(false);
+      // fall through to IDB
     }
+
+    if (await tryOfflineBundle()) return;
+
+    toast.error('Failed to load trip details');
+    setSelectedTripData(null);
+    setIsOfflineMode(false);
   }, [session?.user?.id]);
 
   // Fetch shared trip by shareId
@@ -389,12 +406,18 @@ function MapsPageContent() {
   }, [fetchTrips, fetchAllTripsData]);
 
   // Handle trip selection via query params.
-  // Always set the offline state too — navigator.onLine can lie on iOS, and
-  // when offline App Router's RSC fetch behind router.push stalls, leaving
-  // selectedTripId from the URL stale. effectiveTripId prefers the URL value
-  // over offlineTripId, so online users still get URL-driven selection.
+  // Always set the offline state and sessionStorage backup — navigator.onLine
+  // can lie on iOS and the SW can drop the URL's ?trip= during navigation, so
+  // we need a non-URL source of truth that survives both cases. URL-driven
+  // selectedTripId still wins when present, so online users keep URL state.
   const handleSelectTrip = useCallback((tripId: string | null) => {
     setOfflineTripId(tripId);
+    try {
+      if (tripId) window.sessionStorage.setItem('offlineSelectedTrip', tripId);
+      else window.sessionStorage.removeItem('offlineSelectedTrip');
+    } catch {
+      // ignore — sessionStorage may be blocked
+    }
     if (tripId) {
       router.push(`/maps?trip=${tripId}`);
     } else {
