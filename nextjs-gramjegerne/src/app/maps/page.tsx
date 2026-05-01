@@ -219,7 +219,16 @@ function MapsPageContent() {
     // No session (e.g. offline JWT can't validate): only IDB can answer.
     if (!session?.user?.id) {
       if (await tryOfflineBundle()) return;
-      toast.error('No offline copy of this trip on this device');
+      try {
+        const {listBundles} = await import('@/services/offlineMaps');
+        const have = (await listBundles()).map((b) => b.mapId);
+        toast.error(
+          `No offline copy. Looking for "${tripId}". Have: ${have.length === 0 ? '(none)' : have.join(', ')}`,
+          {duration: 12000},
+        );
+      } catch {
+        toast.error(`No offline copy. Looking for "${tripId}".`, {duration: 12000});
+      }
       setSelectedTripData(null);
       setIsOfflineMode(false);
       return;
