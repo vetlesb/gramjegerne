@@ -421,7 +421,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             errorTileUrl: '',
             // Conservative performance improvements
             updateInterval: 150, // Smooth updates without overwhelming server
-            detectRetina: true, // Better quality on high-DPI displays
+            // detectRetina disabled: it requests tiles at zoom+1, which the
+            // offline bundle (z10–14) doesn't have, leaving the map grey
+            // when offline.
           },
         ),
         OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {

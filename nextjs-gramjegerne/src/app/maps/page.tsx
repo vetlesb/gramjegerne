@@ -77,6 +77,7 @@ function MapsPageContent() {
   const [selectedTripData, setSelectedTripData] = useState<MapDocument | null>(null);
   const [isSharedMode, setIsSharedMode] = useState(false);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [offlineTripId, setOfflineTripId] = useState<string | null>(null);
 
   // Full trips with spots/routes for map display
   const [allTripsData, setAllTripsData] = useState<MapDocument[]>([]);
@@ -322,21 +323,23 @@ function MapsPageContent() {
     loadData();
   }, [fetchTrips, fetchSharedMaps, fetchAllTripsData]);
 
-  // Load selected trip details or shared trip when query param changes
+  // Load selected trip details or shared trip when query param changes.
+  // Offline trip selections come through offlineTripId (URL stays at /maps).
   useEffect(() => {
+    const effectiveTripId = selectedTripId ?? offlineTripId;
     if (shareId) {
       // Shared mode - fetch by shareId
       fetchSharedTrip(shareId);
-    } else if (selectedTripId) {
-      // Edit mode - fetch by tripId
-      fetchTripDetails(selectedTripId);
+    } else if (effectiveTripId) {
+      // Edit mode - fetch by tripId (may resolve from Sanity or IDB bundle)
+      fetchTripDetails(effectiveTripId);
     } else {
       // Overview mode
       setSelectedTripData(null);
       setIsSharedMode(false);
       setIsOfflineMode(false);
     }
-  }, [selectedTripId, shareId, fetchTripDetails, fetchSharedTrip]);
+  }, [selectedTripId, offlineTripId, shareId, fetchTripDetails, fetchSharedTrip]);
 
   const handleRemoveSharedMap = async (mapId: string) => {
     try {
@@ -387,6 +390,13 @@ function MapsPageContent() {
 
   // Handle trip selection via query params
   const handleSelectTrip = useCallback((tripId: string | null) => {
+    // Offline: skip the router (App Router's RSC fetch stalls without
+    // network) and drive trip state directly. URL stays at /maps but the
+    // page renders the trip view via the offline state.
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setOfflineTripId(tripId);
+      return;
+    }
     if (tripId) {
       router.push(`/maps?trip=${tripId}`);
     } else {
