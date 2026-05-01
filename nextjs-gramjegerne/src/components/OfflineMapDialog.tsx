@@ -112,7 +112,7 @@ export function OfflineMapDialog({open, onOpenChange, map, mapRef, onBundleChang
 
   return (
     <Dialog open={open} onOpenChange={isDownloading ? undefined : onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md bg-dimmed rounded-lg border-0">
         <DialogHeader>
           <DialogTitle>Offline maps</DialogTitle>
         </DialogHeader>

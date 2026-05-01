@@ -99,7 +99,7 @@ export function MapActionsMenu({map, shareId, mapRef}: Props) {
             )}
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[180px]">
+        <DropdownMenuContent align="end" className="z-[1100] min-w-[180px] bg-dimmed border-0">
           <DropdownMenuItem onSelect={handleShare} disabled={isGeneratingLink}>
             <Icon name="link" width={16} height={16} className="mr-2" />
             <span>{isGeneratingLink ? 'Generating link…' : 'Share map'}</span>
