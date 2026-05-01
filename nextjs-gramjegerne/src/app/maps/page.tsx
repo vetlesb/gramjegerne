@@ -388,15 +388,13 @@ function MapsPageContent() {
     await fetchAllTripsData();
   }, [fetchTrips, fetchAllTripsData]);
 
-  // Handle trip selection via query params
+  // Handle trip selection via query params.
+  // Always set the offline state too — navigator.onLine can lie on iOS, and
+  // when offline App Router's RSC fetch behind router.push stalls, leaving
+  // selectedTripId from the URL stale. effectiveTripId prefers the URL value
+  // over offlineTripId, so online users still get URL-driven selection.
   const handleSelectTrip = useCallback((tripId: string | null) => {
-    // Offline: skip the router (App Router's RSC fetch stalls without
-    // network) and drive trip state directly. URL stays at /maps but the
-    // page renders the trip view via the offline state.
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      setOfflineTripId(tripId);
-      return;
-    }
+    setOfflineTripId(tripId);
     if (tripId) {
       router.push(`/maps?trip=${tripId}`);
     } else {
