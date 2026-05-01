@@ -146,8 +146,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             {
               attribution: '© Kartverket',
               maxZoom: 18,
-              minNativeZoom: 10,
-              maxNativeZoom: 14,
             },
           ),
           'ESRI Satellite': L.tileLayer(
@@ -416,11 +414,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           {
             attribution: '© Kartverket',
             maxZoom: 18,
-            // Cap tile requests to the offline-saved range; Leaflet upscales
-            // z14 tiles past z14 and downscales z10 tiles below z10 so the
-            // map never goes grey when zooming.
-            minNativeZoom: 10,
-            maxNativeZoom: 14,
             crossOrigin: 'anonymous',
             updateWhenIdle: false,
             updateWhenZooming: true,
@@ -702,8 +695,6 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                     {
                       attribution: '© Kartverket',
                       maxZoom: 18,
-                      minNativeZoom: 10,
-                      maxNativeZoom: 14,
                     },
                   ),
                   OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
