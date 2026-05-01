@@ -22,8 +22,20 @@ const TILE_HOST_PATTERNS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(CACHES.offline);
-      await cache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
+      const offlineCache = await caches.open(CACHES.offline);
+      await offlineCache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
+      // Best-effort precache of the maps shell so bundle links from the
+      // offline page can render even if the user hasn't navigated to /maps
+      // since the SW installed.
+      try {
+        const res = await fetch('/maps', {credentials: 'same-origin', cache: 'reload'});
+        if (res.ok && !res.redirected) {
+          const pagesCache = await caches.open(CACHES.pages);
+          await pagesCache.put('/maps', res);
+        }
+      } catch {
+        // Best-effort only; install must not fail.
+      }
       await self.skipWaiting();
     })(),
   );
@@ -100,8 +112,13 @@ async function networkFirst(request, cacheName, timeoutMs) {
     }
     return response;
   } catch {
-    const cached =
-      (await cache.match(request)) ?? (await cache.match(request, {ignoreSearch: true}));
+    let cached = await cache.match(request);
+    if (!cached) cached = await cache.match(request, {ignoreSearch: true});
+    if (!cached && (request.mode === 'navigate' || request.destination === 'document')) {
+      // Defensive: some WebKit versions ignore the ignoreSearch option, so
+      // fall back to a manual scan of cache keys with the same pathname.
+      cached = await matchSamePath(cache, request);
+    }
     if (cached) return cached;
     if (request.mode === 'navigate' || request.destination === 'document') {
       const offlineCache = await caches.open(CACHES.offline);
@@ -114,6 +131,21 @@ async function networkFirst(request, cacheName, timeoutMs) {
       headers: {'Content-Type': 'text/plain; charset=UTF-8'},
     });
   }
+}
+
+async function matchSamePath(cache, request) {
+  try {
+    const targetPath = new URL(request.url).pathname;
+    const keys = await cache.keys();
+    for (const key of keys) {
+      if (new URL(key.url).pathname === targetPath) {
+        return cache.match(key);
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
 }
 
 async function staleWhileRevalidate(request, cacheName, maxEntries) {

@@ -73,6 +73,11 @@
       color: var(--fg);
       text-decoration: none;
       transition: background-color 120ms;
+      border: 0;
+      width: 100%;
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
     }
     .bundle:active { background: var(--surface-hover); }
     @media (hover: hover) {
@@ -112,23 +117,31 @@
       padding: 0.875rem 1rem;
       text-align: center;
       color: var(--fg);
+      background: transparent;
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 0.625rem;
       text-decoration: none;
+      font: inherit;
       font-size: 0.95rem;
+      width: 100%;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="indicator"><span class="indicator-dot"></span><span>Offline</span></div>
-  <h1>You're offline</h1>
+  <div class="indicator"><span class="indicator-dot"></span><span id="indicator-text">Offline</span></div>
+  <h1 id="heading">You're offline</h1>
   <p id="lead">Loading saved maps…</p>
+  <div id="bouncedback" class="empty" hidden>
+    Tapped a map but nothing happened? The map page itself isn't in the local cache yet, so the SW served this fallback again.
+    Connect to the network, open the map page online once, then come back offline.
+  </div>
   <div class="bundle-list" id="bundles"></div>
   <div class="empty" id="empty" hidden>
     No maps saved offline yet. Open a trip while online and tap the menu → Save offline to make it available here.
   </div>
   <div class="actions">
-    <a class="button-ghost" href="/maps">Open maps</a>
+    <button class="button-ghost" id="btn-maps" type="button">Open maps</button>
   </div>
 
   <script>
@@ -136,6 +149,23 @@
       var listEl = document.getElementById('bundles');
       var emptyEl = document.getElementById('empty');
       var leadEl = document.getElementById('lead');
+      var bouncedEl = document.getElementById('bouncedback');
+      var btnMaps = document.getElementById('btn-maps');
+
+      // Detect bounce-back: this page was served by the SW at a non-/
+      // navigation (e.g. /maps?trip=...), meaning the cache miss fell
+      // through. Show an explanatory message so the user isn't confused.
+      var path = window.location.pathname;
+      if (path !== '/' && path !== '/offline.html') {
+        bouncedEl.hidden = false;
+      }
+
+      function go(url) {
+        // JS navigation is more reliable than <a href> in iOS standalone PWAs.
+        window.location.assign(url);
+      }
+
+      btnMaps.addEventListener('click', function () { go('/maps'); });
 
       function fmtBytes(b) {
         if (!b) return '';
@@ -153,18 +183,22 @@
         leadEl.textContent = bundles.length + ' map' + (bundles.length === 1 ? '' : 's') + ' available offline:';
         var frag = document.createDocumentFragment();
         bundles.forEach(function (b) {
-          var a = document.createElement('a');
-          a.href = '/maps?trip=' + encodeURIComponent(b.mapId);
-          a.className = 'bundle';
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bundle';
+          btn.dataset.mapId = b.mapId;
           var name = document.createElement('span');
           name.className = 'bundle-name';
           name.textContent = (b.mapDocSnapshot && b.mapDocSnapshot.name) || 'Map';
-          a.appendChild(name);
+          btn.appendChild(name);
           var size = document.createElement('span');
           size.className = 'bundle-size';
           size.textContent = fmtBytes(b.bytes);
-          a.appendChild(size);
-          frag.appendChild(a);
+          btn.appendChild(size);
+          btn.addEventListener('click', function () {
+            go('/maps?trip=' + encodeURIComponent(b.mapId));
+          });
+          frag.appendChild(btn);
         });
         listEl.appendChild(frag);
       }
