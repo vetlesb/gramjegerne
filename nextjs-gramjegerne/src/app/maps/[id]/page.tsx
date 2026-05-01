@@ -59,52 +59,57 @@ export default function TripPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
+    if (!tripId || tripId === '_warmup') {
+      // _warmup is the placeholder shell precached by the SW. Don't try to
+      // load that as if it were a real trip — params.id will update once
+      // hydration resolves the real URL.
+      return;
+    }
 
     let cancelled = false;
 
-    const load = async () => {
-      const tryBundle = async () => {
-        try {
-          const {getBundle} = await import('@/services/offlineMaps');
-          const bundle = await getBundle(tripId);
-          if (bundle && !cancelled) {
-            setTrip(bundle.mapDocSnapshot);
-            setIsOffline(true);
-            setLoadState('loaded');
-            return true;
-          }
-        } catch (err) {
-          console.warn('Bundle lookup failed:', err);
+    const tryBundle = async () => {
+      try {
+        const {getBundle} = await import('@/services/offlineMaps');
+        const bundle = await getBundle(tripId);
+        if (bundle && !cancelled) {
+          setTrip(bundle.mapDocSnapshot);
+          setIsOffline(true);
+          setLoadState('loaded');
+          return true;
         }
-        return false;
-      };
-
-      // Try Sanity first when we have a session.
-      if (session?.user?.id) {
-        try {
-          const result = (await client.fetch(TRIP_QUERY, {
-            tripId,
-            userId: session.user.id,
-          })) as MapDocument | null;
-          if (cancelled) return;
-          if (result) {
-            setTrip(result);
-            setIsOffline(false);
-            setLoadState('loaded');
-            return;
-          }
-          // Sanity returned null — could mean trip moved or we're cached but
-          // returning empty. Fall through to bundle.
-        } catch {
-          // Likely offline; fall through to bundle.
-        }
+      } catch (err) {
+        console.warn('Bundle lookup failed:', err);
       }
+      return false;
+    };
 
-      if (cancelled) return;
-      if (await tryBundle()) return;
-
-      if (cancelled) return;
-      setLoadState('missing');
+    const load = async () => {
+      try {
+        if (session?.user?.id) {
+          try {
+            const result = (await client.fetch(TRIP_QUERY, {
+              tripId,
+              userId: session.user.id,
+            })) as MapDocument | null;
+            if (cancelled) return;
+            if (result) {
+              setTrip(result);
+              setIsOffline(false);
+              setLoadState('loaded');
+              return;
+            }
+          } catch {
+            // Likely offline; fall through to bundle.
+          }
+        }
+        if (cancelled) return;
+        if (await tryBundle()) return;
+        if (!cancelled) setLoadState('missing');
+      } catch (err) {
+        console.error('Trip load failed:', err);
+        if (!cancelled) setLoadState('missing');
+      }
     };
 
     load();
