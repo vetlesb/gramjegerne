@@ -185,7 +185,22 @@ function MapsPageContent() {
 
   // Fetch full trip details for editing
   const fetchTripDetails = useCallback(async (tripId: string) => {
-    if (!session?.user?.id) return;
+    // No session (e.g. offline JWT can't validate): try IDB bundle directly.
+    if (!session?.user?.id) {
+      try {
+        const {getBundle} = await import('@/services/offlineMaps');
+        const bundle = await getBundle(tripId);
+        if (bundle) {
+          setSelectedTripData(bundle.mapDocSnapshot);
+          setIsSharedMode(false);
+          setIsOfflineMode(true);
+          toast.info('Showing offline copy', {duration: 2500, position: 'bottom-center'});
+        }
+      } catch (err) {
+        console.warn('Offline-only trip lookup failed:', err);
+      }
+      return;
+    }
 
     try {
       const query = groq`*[_type == "map" && _id == $tripId && user._ref == $userId][0] {

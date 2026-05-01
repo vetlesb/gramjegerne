@@ -14,10 +14,23 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   const {data: session, status} = useSession();
   const router = useRouter();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== 'undefined' && !navigator.onLine,
+  );
   const isLoading = status === 'loading';
   const showLoader = useDelayedLoader(isLoading, 300);
 
   const pathname = usePathname();
+
+  useEffect(() => {
+    const update = () => setIsOffline(!navigator.onLine);
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
 
   // Helper function to check if current URL is a public share
   const checkIsPublicShare = () => {
@@ -32,6 +45,10 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
     // Don't do anything while loading or if already redirected
     if (status !== 'unauthenticated' || hasRedirected) return;
 
+    // When offline we can't sign in anyway — let the page render and fall
+    // back to its own offline data path (e.g. IDB bundle on /maps).
+    if (isOffline) return;
+
     // Check if this is a public share - don't redirect if it is
     if (typeof window === 'undefined') return;
     const searchParams = new URLSearchParams(window.location.search);
@@ -45,7 +62,7 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
       setHasRedirected(true);
       router.replace('/auth/signin');
     }
-  }, [status, router, hasRedirected, pathname]);
+  }, [status, router, hasRedirected, pathname, isOffline]);
 
   if (showLoader) {
     return (
@@ -63,8 +80,8 @@ export function ProtectedRoute({children}: ProtectedRouteProps) {
   // Allow public share links without session
   if (!session) {
     const isPublicShare = checkIsPublicShare();
-    
-    if (!isPublicShare) {
+
+    if (!isPublicShare && !isOffline) {
       return null;
     }
   }
