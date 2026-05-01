@@ -2,7 +2,7 @@
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
 // Bump on every meaningful SW change so we can verify update-on-device.
-const SW_BUILD = '2026-05-02-trip-route2';
+const SW_BUILD = '2026-05-02-precache-chunks';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -34,24 +34,14 @@ self.addEventListener('install', (event) => {
       } catch {
         // ignore
       }
-      // Best-effort precache of the maps shells so bundle links from the
-      // offline page can render even if the user hasn't navigated there
-      // since the SW installed. /maps gives us the overview; /maps/<any>
-      // gives us the trip-page shell that hydrates from URL params, which
-      // we use as a fallback for any /maps/<id> navigation.
+      // Precache the maps shells AND every /_next/static/ asset they
+      // reference, so bundle links from the offline page render fully
+      // even before the user has navigated there. Without the asset
+      // precache, the browser would try to load JS chunks offline and
+      // throw ChunkLoadError, crashing the page tree.
       try {
-        const pagesCache = await caches.open(CACHES.pages);
-        const overview = await fetch('/maps', {credentials: 'same-origin', cache: 'reload'});
-        if (overview.ok && !overview.redirected) {
-          await pagesCache.put('/maps', overview);
-        }
-        const tripShell = await fetch('/maps/_warmup', {
-          credentials: 'same-origin',
-          cache: 'reload',
-        });
-        if (tripShell.ok && !tripShell.redirected) {
-          await pagesCache.put('/maps/_warmup', tripShell);
-        }
+        await precacheShellWithAssets('/maps');
+        await precacheShellWithAssets('/maps/_warmup');
       } catch {
         // Best-effort only; install must not fail.
       }
@@ -169,6 +159,33 @@ async function networkFirst(request, cacheName, timeoutMs) {
       headers: {'Content-Type': 'text/plain; charset=UTF-8'},
     });
   }
+}
+
+async function precacheShellWithAssets(url) {
+  const res = await fetch(url, {credentials: 'same-origin', cache: 'reload'});
+  if (!res.ok || res.redirected) return;
+  const html = await res.clone().text();
+  const pagesCache = await caches.open(CACHES.pages);
+  await pagesCache.put(url, res);
+
+  // Find every /_next/static/... URL the shell references — script chunks,
+  // stylesheets, modulepreloads, RSC payloads, etc. Cache them all so the
+  // browser can render the page offline without a network round trip.
+  const matches = html.matchAll(/(?:src|href)="(\/_next\/static\/[^"]+)"/g);
+  const assetUrls = Array.from(new Set(Array.from(matches, (m) => m[1])));
+  if (assetUrls.length === 0) return;
+
+  const staticCache = await caches.open(CACHES.staticResources);
+  await Promise.all(
+    assetUrls.map(async (assetUrl) => {
+      try {
+        const assetRes = await fetch(assetUrl, {credentials: 'same-origin', cache: 'reload'});
+        if (assetRes.ok) await staticCache.put(assetUrl, assetRes);
+      } catch {
+        // skip individual failures
+      }
+    }),
+  );
 }
 
 async function rewrapForNavigation(response, request) {
