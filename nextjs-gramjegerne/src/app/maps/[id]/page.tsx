@@ -49,7 +49,7 @@ const TRIP_QUERY = groq`*[_type == "map" && _id == $tripId && user._ref == $user
 export default function TripPage() {
   const params = useParams();
   const router = useRouter();
-  const {data: session, status} = useSession();
+  const {data: session} = useSession();
   const tripId = decodeURIComponent(params.id as string);
 
   const [trip, setTrip] = useState<MapDocument | null>(null);
@@ -58,7 +58,6 @@ export default function TripPage() {
   const mapRef = useRef<TripMapRef>(null);
 
   useEffect(() => {
-    if (status === 'loading') return;
     if (!tripId || tripId === '_warmup') {
       // _warmup is the placeholder shell precached by the SW. Don't try to
       // load that as if it were a real trip — params.id will update once
@@ -68,55 +67,53 @@ export default function TripPage() {
 
     let cancelled = false;
 
-    const tryBundle = async () => {
+    const load = async () => {
+      // Try IDB bundle first — fastest path, works offline, has the snapshot
+      // taken at save time. Online users with a fresh session will then
+      // re-resolve via Sanity below if no bundle exists.
       try {
         const {getBundle} = await import('@/services/offlineMaps');
         const bundle = await getBundle(tripId);
-        if (bundle && !cancelled) {
+        if (cancelled) return;
+        if (bundle) {
           setTrip(bundle.mapDocSnapshot);
           setIsOffline(true);
           setLoadState('loaded');
-          return true;
+          return;
         }
       } catch (err) {
         console.warn('Bundle lookup failed:', err);
       }
-      return false;
-    };
 
-    const load = async () => {
-      try {
-        if (session?.user?.id) {
-          try {
-            const result = (await client.fetch(TRIP_QUERY, {
-              tripId,
-              userId: session.user.id,
-            })) as MapDocument | null;
-            if (cancelled) return;
-            if (result) {
-              setTrip(result);
-              setIsOffline(false);
-              setLoadState('loaded');
-              return;
-            }
-          } catch {
-            // Likely offline; fall through to bundle.
+      if (cancelled) return;
+
+      // No bundle: try Sanity if we have a session.
+      if (session?.user?.id) {
+        try {
+          const result = (await client.fetch(TRIP_QUERY, {
+            tripId,
+            userId: session.user.id,
+          })) as MapDocument | null;
+          if (cancelled) return;
+          if (result) {
+            setTrip(result);
+            setIsOffline(false);
+            setLoadState('loaded');
+            return;
           }
+        } catch {
+          // Likely offline.
         }
-        if (cancelled) return;
-        if (await tryBundle()) return;
-        if (!cancelled) setLoadState('missing');
-      } catch (err) {
-        console.error('Trip load failed:', err);
-        if (!cancelled) setLoadState('missing');
       }
+
+      if (!cancelled) setLoadState('missing');
     };
 
     load();
     return () => {
       cancelled = true;
     };
-  }, [tripId, session?.user?.id, status]);
+  }, [tripId, session?.user?.id]);
 
   const goBack = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -163,28 +160,21 @@ export default function TripPage() {
 
   return (
     <div className="w-full h-screen relative bg-primary">
-      <div className="absolute top-0 left-0 right-0 z-[1001] flex items-center gap-3 p-4 bg-dimmed/80 backdrop-blur">
-        <button
-          onClick={goBack}
-          className="button-ghost p-2"
-          title="Back"
-          aria-label="Back"
-        >
-          <Icon name="chevrondown" width={20} height={20} className="rotate-90" />
-        </button>
-        <div className="flex flex-col min-w-0 flex-1">
-          <h1 className="text-lg lg:text-xl text-accent font-medium truncate">{trip.name}</h1>
-          {isOffline && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-white/60">
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-[var(--bg-accent)]"
-                aria-hidden
-              />
-              Offline copy
-            </span>
-          )}
+      <button
+        onClick={goBack}
+        className="absolute top-4 left-4 z-[1001] bg-dimmed/90 backdrop-blur rounded-lg p-3 hover:bg-dimmed-hover shadow-lg"
+        title="Back"
+        aria-label="Back"
+      >
+        <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
+      </button>
+
+      {isOffline && (
+        <div className="absolute top-4 right-4 z-[1001] bg-dimmed/90 backdrop-blur rounded-full px-3 py-1.5 shadow-lg inline-flex items-center gap-2 text-xs text-white/80">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-accent)]" aria-hidden />
+          Offline copy
         </div>
-      </div>
+      )}
 
       <div className="w-full h-full">
         <TripMap
