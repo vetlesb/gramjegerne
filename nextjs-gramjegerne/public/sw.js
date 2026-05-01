@@ -2,7 +2,7 @@
 // Bump CACHE_VERSION to invalidate all caches.
 const CACHE_VERSION = 'v2';
 // Bump on every meaningful SW change so we can verify update-on-device.
-const SW_BUILD = '2026-05-02-trip-route';
+const SW_BUILD = '2026-05-02-trip-route2';
 const CACHES = {
   pages: `pages-${CACHE_VERSION}`,
   apiMaps: `api-maps-${CACHE_VERSION}`,
@@ -34,14 +34,23 @@ self.addEventListener('install', (event) => {
       } catch {
         // ignore
       }
-      // Best-effort precache of the maps shell so bundle links from the
-      // offline page can render even if the user hasn't navigated to /maps
-      // since the SW installed.
+      // Best-effort precache of the maps shells so bundle links from the
+      // offline page can render even if the user hasn't navigated there
+      // since the SW installed. /maps gives us the overview; /maps/<any>
+      // gives us the trip-page shell that hydrates from URL params, which
+      // we use as a fallback for any /maps/<id> navigation.
       try {
-        const res = await fetch('/maps', {credentials: 'same-origin', cache: 'reload'});
-        if (res.ok && !res.redirected) {
-          const pagesCache = await caches.open(CACHES.pages);
-          await pagesCache.put('/maps', res);
+        const pagesCache = await caches.open(CACHES.pages);
+        const overview = await fetch('/maps', {credentials: 'same-origin', cache: 'reload'});
+        if (overview.ok && !overview.redirected) {
+          await pagesCache.put('/maps', overview);
+        }
+        const tripShell = await fetch('/maps/_warmup', {
+          credentials: 'same-origin',
+          cache: 'reload',
+        });
+        if (tripShell.ok && !tripShell.redirected) {
+          await pagesCache.put('/maps/_warmup', tripShell);
         }
       } catch {
         // Best-effort only; install must not fail.
