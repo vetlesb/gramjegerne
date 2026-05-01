@@ -86,7 +86,13 @@ export function OfflineMapDialog({open, onOpenChange, map, mapRef, onBundleChang
         toast.info('Download cancelled');
       } else {
         console.error('offline download failed', err);
-        toast.error('Could not save offline copy');
+        const detail =
+          err instanceof Error
+            ? `${err.name}: ${err.message}`
+            : typeof err === 'string'
+              ? err
+              : 'unknown error';
+        toast.error(`Could not save offline copy — ${detail}`, {duration: 8000});
       }
     } finally {
       setProgress(null);
