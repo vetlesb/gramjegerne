@@ -153,9 +153,6 @@
   <div class="empty" id="empty" hidden>
     No maps saved offline yet. Open a trip while online and tap the menu → Save offline to make it available here.
   </div>
-  <div class="actions">
-    <button class="button-ghost" id="btn-maps" type="button">Open maps</button>
-  </div>
   <div class="diag" id="diag" hidden>
     <div class="diag-row"><span class="diag-key">URL</span><span id="diag-url"></span></div>
     <div class="diag-row"><span class="diag-key">IndexedDB</span><span id="diag-idb"></span></div>
@@ -172,7 +169,6 @@
       var emptyEl = document.getElementById('empty');
       var leadEl = document.getElementById('lead');
       var bouncedEl = document.getElementById('bouncedback');
-      var btnMaps = document.getElementById('btn-maps');
       var diagEl = document.getElementById('diag');
       var diagUrl = document.getElementById('diag-url');
       var diagIdb = document.getElementById('diag-idb');
@@ -293,8 +289,6 @@
         // JS navigation is more reliable than <a href> in iOS standalone PWAs.
         window.location.assign(url);
       }
-
-      btnMaps.addEventListener('click', function () { go('/maps'); });
 
       function fmtBytes(b) {
         if (!b) return '';
