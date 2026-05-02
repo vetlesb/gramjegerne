@@ -47,11 +47,42 @@ const TRIP_QUERY = groq`*[_type == "map" && _id == $tripId && user._ref == $user
   user {_ref}
 }`;
 
+function readTripIdFromUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const match = window.location.pathname.match(/^\/maps\/([^/?#]+)/);
+  if (!match) return '';
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
 export default function TripPage() {
   const params = useParams();
   const router = useRouter();
   const {data: session} = useSession();
-  const tripId = decodeURIComponent(params.id as string);
+
+  // Prefer the live URL over the params hook — when the SW serves a cached
+  // /maps/_warmup shell at URL /maps/<real-id>, the params hook can hydrate
+  // to "_warmup" while window.location reflects the real id.
+  const [tripId, setTripId] = useState<string>(() => {
+    const fromParams = (params?.id as string | undefined) ?? '';
+    if (fromParams && fromParams !== '_warmup') {
+      try {
+        return decodeURIComponent(fromParams);
+      } catch {
+        return fromParams;
+      }
+    }
+    return readTripIdFromUrl();
+  });
+
+  useEffect(() => {
+    const fromUrl = readTripIdFromUrl();
+    if (fromUrl && fromUrl !== tripId) setTripId(fromUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [trip, setTrip] = useState<MapDocument | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'missing'>('loading');
