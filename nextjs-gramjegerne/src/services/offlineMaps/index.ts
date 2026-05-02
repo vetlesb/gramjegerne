@@ -15,6 +15,7 @@ import {
   KARTVERKET_TEMPLATE,
   type TileCoord,
   estimateBytes,
+  getNorwayBaseTiles,
   getTilesForCoverage,
   tileToUrl,
 } from './geometry';
@@ -48,9 +49,33 @@ const DEFAULT_CONCURRENCY = 6;
 
 export const DEFAULT_BUNDLE_OPTIONS: BundleOptions = {
   layer: KARTVERKET_LAYER_NAME,
-  zoomRange: [10, 14],
+  zoomRange: [7, 14],
   bufferKm: 2,
 };
+
+// Country-wide low-zoom base pack — downloaded once on first save offline so
+// the map always has at least country/regional context tiles, even outside
+// the saved trip corridor.
+const BASE_PACK_ZOOM_RANGE: [number, number] = [1, 6];
+const BASE_PACK_FLAG = 'gramjegerne-base-pack-v1';
+
+function isBasePackInstalled(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(BASE_PACK_FLAG) === 'installed';
+  } catch {
+    return false;
+  }
+}
+
+function markBasePackInstalled(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(BASE_PACK_FLAG, 'installed');
+  } catch {
+    // ignore
+  }
+}
 
 export function estimateBundle(map: MapDocument, options: BundleOptions): BundleEstimate {
   const tiles = getTilesForCoverage(map, {
@@ -70,10 +95,16 @@ export async function downloadBundle(
 ): Promise<Bundle> {
   await requestPersistedStorage();
 
-  const tiles = getTilesForCoverage(map, {
+  // On first save ever, prepend country-wide low-zoom tiles so the map has
+  // base context outside the trip corridor. Subsequent saves skip this.
+  const baseTiles = isBasePackInstalled() ? [] : getNorwayBaseTiles(BASE_PACK_ZOOM_RANGE);
+
+  const bundleTiles = getTilesForCoverage(map, {
     zoomRange: options.zoomRange,
     bufferKm: options.bufferKm,
   });
+
+  const tiles = [...baseTiles, ...bundleTiles];
 
   const progress: DownloadProgress = {
     total: tiles.length,
@@ -95,10 +126,21 @@ export async function downloadBundle(
     throw new DOMException('Download aborted', 'AbortError');
   }
 
+  // Mark base pack installed only if we actually attempted it AND the
+  // overall download wasn't catastrophic — at least most base tiles must
+  // have made it through (allowing a few network blips).
+  if (baseTiles.length > 0) {
+    const baseFailures = Math.max(0, progress.failed - Math.floor(bundleTiles.length * 0.1));
+    if (baseFailures < baseTiles.length * 0.5) {
+      markBasePackInstalled();
+    }
+  }
+
   const bundle: Bundle = {
     mapId: map._id,
     mapUpdatedAt: map._updatedAt,
     layer: options.layer,
+    // Persist only the trip-specific range, not the base pack range.
     zoomRange: options.zoomRange,
     bufferKm: options.bufferKm,
     tileCount: progress.completed,

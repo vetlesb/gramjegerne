@@ -59,6 +59,11 @@ interface TripMapProps {
   // Add button callbacks
   onStartAddingSpot?: () => void;
   onStartAddingRoute?: () => void;
+  // Offline mode: cap Kartverket layer to the saved zoom range so Leaflet
+  // upscales/downscales beyond it instead of going grey, and disables
+  // detectRetina (which would request tiles a zoom higher than the bundle).
+  offlineMode?: boolean;
+  offlineZoomRange?: [number, number];
 }
 
 export interface TripMapRef {
@@ -107,6 +112,9 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Add button callbacks
       onStartAddingSpot,
       onStartAddingRoute,
+      // Offline tile constraints
+      offlineMode = false,
+      offlineZoomRange,
     },
     ref,
   ) => {
@@ -114,6 +122,20 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
     const mapInstanceRef = useRef<L.Map | null>(null);
     const [isMapReady, setIsMapReady] = useState(false);
     const [mapError] = useState<string | null>(null);
+
+    // Kartverket layer options — branch on offlineMode so the constrained
+    // zoom range only applies on the offline trip page, not in /maps online.
+    const kartverketOpts = (extra?: L.TileLayerOptions): L.TileLayerOptions => ({
+      attribution: '© Kartverket',
+      maxZoom: 18,
+      ...(offlineMode
+        ? {
+            minNativeZoom: offlineZoomRange?.[0] ?? 1,
+            maxNativeZoom: offlineZoomRange?.[1] ?? 14,
+          }
+        : {detectRetina: true}),
+      ...extra,
+    });
 
     const [tilesLoading, setTilesLoading] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
@@ -143,10 +165,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
         const baseMaps: Record<string, L.TileLayer> = {
           'Kartverket Raster': tileLayerOffline(
             'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
-            {
-              attribution: '© Kartverket',
-              maxZoom: 18,
-            },
+            kartverketOpts(),
           ),
           'ESRI Satellite': L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -411,20 +430,14 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       const baseMaps = {
         'Kartverket Raster': tileLayerOffline(
           'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
-          {
-            attribution: '© Kartverket',
-            maxZoom: 18,
+          kartverketOpts({
             crossOrigin: 'anonymous',
             updateWhenIdle: false,
             updateWhenZooming: true,
             keepBuffer: 3,
             errorTileUrl: '',
-            // Conservative performance improvements
-            updateInterval: 150, // Smooth updates without overwhelming server
-            // detectRetina disabled: it requests tiles at zoom+1, which the
-            // offline bundle (z10–14) doesn't have, leaving the map grey
-            // when offline.
-          },
+            updateInterval: 150,
+          }),
         ),
         OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenTopoMap contributors',
@@ -692,10 +705,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
                 const baseMaps = {
                   'Kartverket Raster': tileLayerOffline(
                     'https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png',
-                    {
-                      attribution: '© Kartverket',
-                      maxZoom: 18,
-                    },
+                    kartverketOpts(),
                   ),
                   OpenTopoMap: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenTopoMap contributors',

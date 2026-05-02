@@ -88,6 +88,7 @@ export default function TripPage() {
   const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'missing'>('loading');
   const [loadStep, setLoadStep] = useState<string>('mounted');
   const [isOffline, setIsOffline] = useState(false);
+  const [bundleZoomRange, setBundleZoomRange] = useState<[number, number] | null>(null);
   const mapRef = useRef<TripMapRef>(null);
 
   useEffect(() => {
@@ -116,6 +117,7 @@ export default function TripPage() {
           resolved = true;
           clearTimeout(timeout);
           setTrip(bundle.mapDocSnapshot);
+          setBundleZoomRange(bundle.zoomRange);
           setIsOffline(true);
           setLoadState('loaded');
           return;
@@ -241,6 +243,8 @@ export default function TripPage() {
           showCampSpots
           showFishingSpots
           showViewpointSpots
+          offlineMode={isOffline}
+          offlineZoomRange={bundleZoomRange ?? undefined}
         />
       </div>
     </div>

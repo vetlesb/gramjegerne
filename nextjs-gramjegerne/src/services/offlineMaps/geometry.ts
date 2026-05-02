@@ -131,6 +131,30 @@ export function getTilesForCoverage(
   return tiles;
 }
 
+// Norway + Svalbard bounding box for base-pack tile lookup.
+export const NORWAY_BBOX: Bbox = {
+  minLng: 4,
+  minLat: 57,
+  maxLng: 35,
+  maxLat: 81,
+};
+
+export function getNorwayBaseTiles(zoomRange: [number, number]): TileCoord[] {
+  const [minZoom, maxZoom] = zoomRange;
+  if (minZoom > maxZoom) return [];
+  const seen = new Set<string>();
+  const tiles: TileCoord[] = [];
+  for (let z = minZoom; z <= maxZoom; z++) {
+    for (const tile of tilesForBbox(NORWAY_BBOX, z)) {
+      const key = `${tile.z}/${tile.x}/${tile.y}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      tiles.push(tile);
+    }
+  }
+  return tiles;
+}
+
 // Bytes-per-tile estimate for Kartverket toporaster PNGs (empirical).
 export const KARTVERKET_AVG_BYTES_PER_TILE = 20_000;
 
