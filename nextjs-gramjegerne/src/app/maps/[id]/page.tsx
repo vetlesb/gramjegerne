@@ -91,6 +91,10 @@ export default function TripPage() {
   const [bundleZoomRange, setBundleZoomRange] = useState<[number, number] | null>(null);
   const [showCompass, setShowCompass] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
+  const [showRoutes, setShowRoutes] = useState(true);
+  const [showCampSpots, setShowCampSpots] = useState(true);
+  const [showFishingSpots, setShowFishingSpots] = useState(true);
+  const [showViewpointSpots, setShowViewpointSpots] = useState(true);
   const mapRef = useRef<TripMapRef>(null);
 
   useEffect(() => {
@@ -234,15 +238,20 @@ export default function TripPage() {
           defaultTileLayer={layerName}
           isReadOnly
           autoFitBounds
-          showRoutes
-          showCampSpots
-          showFishingSpots
-          showViewpointSpots
+          showRoutes={showRoutes}
+          onToggleRoutes={() => setShowRoutes((v) => !v)}
+          showCampSpots={showCampSpots}
+          onToggleCampSpots={() => setShowCampSpots((v) => !v)}
+          showFishingSpots={showFishingSpots}
+          onToggleFishingSpots={() => setShowFishingSpots((v) => !v)}
+          showViewpointSpots={showViewpointSpots}
+          onToggleViewpointSpots={() => setShowViewpointSpots((v) => !v)}
           showCompass={showCompass}
           onToggleCompass={() => setShowCompass((v) => !v)}
           showGrid={showGrid}
           onToggleGrid={() => setShowGrid((v) => !v)}
           hideLayerControl
+          hideSearch
           offlineMode={isOffline}
           offlineZoomRange={bundleZoomRange ?? undefined}
         />

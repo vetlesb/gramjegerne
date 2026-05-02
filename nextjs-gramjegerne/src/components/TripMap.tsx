@@ -67,6 +67,9 @@ interface TripMapProps {
   // Hide the "select tile layer" toolbar button. Useful on offline-only
   // pages where alternative layers (ESRI, OSM, OpenTopoMap) aren't cached.
   hideLayerControl?: boolean;
+  // Hide the place-search input. Nominatim requires network, so it's not
+  // useful on the offline trip page.
+  hideSearch?: boolean;
 }
 
 export interface TripMapRef {
@@ -119,6 +122,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       offlineMode = false,
       offlineZoomRange,
       hideLayerControl = false,
+      hideSearch = false,
     },
     ref,
   ) => {
@@ -1529,6 +1533,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         {/* Map Controls Overlay */}
         {/* Search - Top Center */}
+        {!hideSearch && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] w-full max-w-xs sm:max-w-sm lg:max-w-md px-16 lg:px-4">
           <div className="relative">
             <input
@@ -1578,6 +1583,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
             </div>
           )}
         </div>
+        )}
 
         {/* Compass Widget */}
         {showCompass && <CompassWidget className="absolute border-0 bottom-4 left-4 z-[1000]" />}
