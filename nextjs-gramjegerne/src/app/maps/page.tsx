@@ -216,21 +216,12 @@ function MapsPageContent() {
       return false;
     };
 
-    // No session (e.g. offline JWT can't validate): only IDB can answer.
+    // Session not yet hydrated. fetchTripDetails will run again with a new
+    // useCallback identity once session.user.id resolves; in the meantime,
+    // attempt the offline bundle silently. Don't show any error toast — a
+    // null session here is usually transient on initial render.
     if (!session?.user?.id) {
-      if (await tryOfflineBundle()) return;
-      try {
-        const {listBundles} = await import('@/services/offlineMaps');
-        const have = (await listBundles()).map((b) => b.mapId);
-        toast.error(
-          `No offline copy. Looking for "${tripId}". Have: ${have.length === 0 ? '(none)' : have.join(', ')}`,
-          {duration: 12000},
-        );
-      } catch {
-        toast.error(`No offline copy. Looking for "${tripId}".`, {duration: 12000});
-      }
-      setSelectedTripData(null);
-      setIsOfflineMode(false);
+      await tryOfflineBundle();
       return;
     }
 
