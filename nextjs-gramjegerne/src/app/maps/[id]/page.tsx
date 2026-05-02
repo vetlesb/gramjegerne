@@ -9,6 +9,7 @@ import dynamicImport from 'next/dynamic';
 import {Icon} from '@/components/Icon';
 import type {MapDocument} from '@/types';
 import type {TripMapRef} from '@/components/TripMap';
+import {getBundle} from '@/services/offlineMaps/bundleStore';
 
 // Defer TripMap to client only (Leaflet hits window at module load).
 const TripMap = dynamicImport(() => import('@/components/TripMap'), {
@@ -72,7 +73,6 @@ export default function TripPage() {
       // taken at save time. Online users with a fresh session will then
       // re-resolve via Sanity below if no bundle exists.
       try {
-        const {getBundle} = await import('@/services/offlineMaps');
         const bundle = await getBundle(tripId);
         if (cancelled) return;
         if (bundle) {
