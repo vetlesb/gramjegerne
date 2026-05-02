@@ -55,26 +55,31 @@ export default function TripPage() {
 
   const [trip, setTrip] = useState<MapDocument | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'missing'>('loading');
+  const [loadStep, setLoadStep] = useState<string>('mounted');
   const [isOffline, setIsOffline] = useState(false);
   const mapRef = useRef<TripMapRef>(null);
 
   useEffect(() => {
     if (!tripId || tripId === '_warmup') {
-      // _warmup is the placeholder shell precached by the SW. Don't try to
-      // load that as if it were a real trip — params.id will update once
-      // hydration resolves the real URL.
       return;
     }
 
     let cancelled = false;
+    setLoadStep('starting');
+
+    const timeout = setTimeout(() => {
+      if (!cancelled && trip === null) {
+        console.warn('Trip load timed out at step:', loadStep);
+        setLoadState('missing');
+      }
+    }, 6000);
 
     const load = async () => {
-      // Try IDB bundle first — fastest path, works offline, has the snapshot
-      // taken at save time. Online users with a fresh session will then
-      // re-resolve via Sanity below if no bundle exists.
       try {
+        setLoadStep('opening idb');
         const bundle = await getBundle(tripId);
         if (cancelled) return;
+        setLoadStep('idb returned');
         if (bundle) {
           setTrip(bundle.mapDocSnapshot);
           setIsOffline(true);
@@ -83,13 +88,14 @@ export default function TripPage() {
         }
       } catch (err) {
         console.warn('Bundle lookup failed:', err);
+        setLoadStep('idb error: ' + (err instanceof Error ? err.message : String(err)));
       }
 
       if (cancelled) return;
 
-      // No bundle: try Sanity if we have a session.
       if (session?.user?.id) {
         try {
+          setLoadStep('fetching from sanity');
           const result = (await client.fetch(TRIP_QUERY, {
             tripId,
             userId: session.user.id,
@@ -101,9 +107,12 @@ export default function TripPage() {
             setLoadState('loaded');
             return;
           }
-        } catch {
-          // Likely offline.
+          setLoadStep('sanity returned null');
+        } catch (err) {
+          setLoadStep('sanity error: ' + (err instanceof Error ? err.message : 'unknown'));
         }
+      } else {
+        setLoadStep('no session, skipping sanity');
       }
 
       if (!cancelled) setLoadState('missing');
@@ -112,7 +121,9 @@ export default function TripPage() {
     load();
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tripId, session?.user?.id]);
 
   const goBack = useCallback(() => {
@@ -126,8 +137,9 @@ export default function TripPage() {
 
   if (loadState === 'loading') {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-primary text-white/50">
-        Loading trip…
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-primary text-white/50 gap-2 px-6 text-center">
+        <div>Loading trip…</div>
+        <div className="text-xs text-white/30 font-mono">{loadStep}</div>
       </div>
     );
   }
@@ -141,6 +153,7 @@ export default function TripPage() {
           this map on this device.
         </p>
         <p className="text-white/40 text-sm font-mono break-all">id: {tripId}</p>
+        <p className="text-white/30 text-xs font-mono break-all">last step: {loadStep}</p>
         <div className="flex gap-2">
           <button onClick={goBack} className="button-ghost px-4 py-2">
             Back
