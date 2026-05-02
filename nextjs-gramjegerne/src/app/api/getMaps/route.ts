@@ -20,7 +20,7 @@ export async function GET() {
     }
 
     // Fetch maps for the user
-    const mapsQuery = `*[_type == "map" && user._ref == $userId] | order(_createdAt desc) {
+    const mapsQuery = `*[_type == "map" && user._ref == $userId] | order(_updatedAt desc) {
       _id,
       _createdAt,
       _updatedAt,

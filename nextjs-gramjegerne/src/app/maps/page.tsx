@@ -1121,7 +1121,10 @@ function MapsPageContent() {
                       <p className="text-white/50 text-sm">No camping spots added yet.</p>
                     ) : (
                       <div className="space-y-1 lg:space-y-2">
-                        {(selectedTripData.campingSpots || [])
+                        {[...(selectedTripData.campingSpots || [])]
+                          .sort((a, b) =>
+                            (a.name || '').localeCompare(b.name || '', 'nb', {numeric: true}),
+                          )
                           .filter(
                             (spot) =>
                               spotCategoryFilter === 'all' || spot.category === spotCategoryFilter
@@ -1179,7 +1182,11 @@ function MapsPageContent() {
                       <p className="text-white/50 text-sm">No routes added yet.</p>
                     ) : (
                       <div className="space-y-1 lg:space-y-2">
-                        {(selectedTripData.routes || []).map((route) => (
+                        {[...(selectedTripData.routes || [])]
+                          .sort((a, b) =>
+                            (a.name || '').localeCompare(b.name || '', 'nb', {numeric: true}),
+                          )
+                          .map((route) => (
                           <div key={route._key} className="map-card p-1 lg:p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleZoomToRoute(route)}>
