@@ -64,6 +64,9 @@ interface TripMapProps {
   // detectRetina (which would request tiles a zoom higher than the bundle).
   offlineMode?: boolean;
   offlineZoomRange?: [number, number];
+  // Hide the "select tile layer" toolbar button. Useful on offline-only
+  // pages where alternative layers (ESRI, OSM, OpenTopoMap) aren't cached.
+  hideLayerControl?: boolean;
 }
 
 export interface TripMapRef {
@@ -115,6 +118,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       // Offline tile constraints
       offlineMode = false,
       offlineZoomRange,
+      hideLayerControl = false,
     },
     ref,
   ) => {
@@ -649,6 +653,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           div.style.gap = '4px';
 
           // Map Layer Button with Popover
+          if (!hideLayerControl) {
           const layerBtnContainer = L.DomUtil.create('div', '', div);
           layerBtnContainer.style.position = 'relative';
           layerBtnContainer.style.marginBottom = '4px';
@@ -762,6 +767,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
           document.addEventListener('click', function () {
             if (popover) popover.style.display = 'none';
           });
+          } // end of if (!hideLayerControl)
 
           // Add button with popover (only show if not in read-only mode)
           if (!isReadOnly) {

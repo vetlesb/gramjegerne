@@ -89,6 +89,8 @@ export default function TripPage() {
   const [loadStep, setLoadStep] = useState<string>('mounted');
   const [isOffline, setIsOffline] = useState(false);
   const [bundleZoomRange, setBundleZoomRange] = useState<[number, number] | null>(null);
+  const [showCompass, setShowCompass] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
   const mapRef = useRef<TripMapRef>(null);
 
   useEffect(() => {
@@ -217,19 +219,12 @@ export default function TripPage() {
     <div className="w-full h-screen relative bg-primary">
       <button
         onClick={goBack}
-        className="absolute top-4 left-4 z-[1001] bg-dimmed/90 backdrop-blur rounded-lg p-3 hover:bg-dimmed-hover shadow-lg"
+        className="absolute top-4 left-4 z-[1001] bg-dimmed rounded-lg p-3 hover:bg-dimmed-hover shadow-lg"
         title="Back"
         aria-label="Back"
       >
         <Icon name="chevrondown" width={20} height={20} className="rotate-90 text-white" />
       </button>
-
-      {isOffline && (
-        <div className="absolute top-4 right-4 z-[1001] bg-dimmed/90 backdrop-blur rounded-full px-3 py-1.5 shadow-lg inline-flex items-center gap-2 text-xs text-white/80">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-accent)]" aria-hidden />
-          Offline copy
-        </div>
-      )}
 
       <div className="w-full h-full">
         <TripMap
@@ -243,6 +238,11 @@ export default function TripPage() {
           showCampSpots
           showFishingSpots
           showViewpointSpots
+          showCompass={showCompass}
+          onToggleCompass={() => setShowCompass((v) => !v)}
+          showGrid={showGrid}
+          onToggleGrid={() => setShowGrid((v) => !v)}
+          hideLayerControl
           offlineMode={isOffline}
           offlineZoomRange={bundleZoomRange ?? undefined}
         />
