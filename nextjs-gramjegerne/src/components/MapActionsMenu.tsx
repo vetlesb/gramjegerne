@@ -24,8 +24,26 @@ export function MapActionsMenu({map, shareId, mapRef}: Props) {
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   const [offlineDialogOpen, setOfflineDialogOpen] = useState(false);
   const [bundle, setBundle] = useState<Bundle | null>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const check = () => {
+      const mq = window.matchMedia?.('(display-mode: standalone)').matches ?? false;
+      const ios = (window.navigator as Navigator & {standalone?: boolean}).standalone ?? false;
+      setIsStandalone(mq || ios);
+    };
+    check();
+    const mql = window.matchMedia?.('(display-mode: standalone)');
+    mql?.addEventListener?.('change', check);
+    return () => mql?.removeEventListener?.('change', check);
+  }, []);
+
+  useEffect(() => {
+    if (!isStandalone) {
+      setBundle(null);
+      return;
+    }
     let cancelled = false;
     getBundle(map._id)
       .then((b) => {
@@ -35,7 +53,7 @@ export function MapActionsMenu({map, shareId, mapRef}: Props) {
     return () => {
       cancelled = true;
     };
-  }, [map._id]);
+  }, [map._id, isStandalone]);
 
   const isStale = bundle ? bundle.mapUpdatedAt !== map._updatedAt : false;
 
@@ -104,10 +122,12 @@ export function MapActionsMenu({map, shareId, mapRef}: Props) {
             <Icon name="link" width={16} height={16} className="mr-2" />
             <span>{isGeneratingLink ? 'Generating link…' : 'Share map'}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setOfflineDialogOpen(true)}>
-            <Icon name="document" width={16} height={16} className="mr-2" />
-            <span>{offlineLabel}</span>
-          </DropdownMenuItem>
+          {isStandalone && (
+            <DropdownMenuItem onSelect={() => setOfflineDialogOpen(true)}>
+              <Icon name="document" width={16} height={16} className="mr-2" />
+              <span>{offlineLabel}</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
