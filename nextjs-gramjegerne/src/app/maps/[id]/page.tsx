@@ -96,10 +96,11 @@ export default function TripPage() {
     }
 
     let cancelled = false;
+    let resolved = false;
     setLoadStep('starting');
 
     const timeout = setTimeout(() => {
-      if (!cancelled && trip === null) {
+      if (!cancelled && !resolved) {
         console.warn('Trip load timed out at step:', loadStep);
         setLoadState('missing');
       }
@@ -112,6 +113,8 @@ export default function TripPage() {
         if (cancelled) return;
         setLoadStep('idb returned');
         if (bundle) {
+          resolved = true;
+          clearTimeout(timeout);
           setTrip(bundle.mapDocSnapshot);
           setIsOffline(true);
           setLoadState('loaded');
@@ -133,6 +136,8 @@ export default function TripPage() {
           })) as MapDocument | null;
           if (cancelled) return;
           if (result) {
+            resolved = true;
+            clearTimeout(timeout);
             setTrip(result);
             setIsOffline(false);
             setLoadState('loaded');
@@ -146,7 +151,11 @@ export default function TripPage() {
         setLoadStep('no session, skipping sanity');
       }
 
-      if (!cancelled) setLoadState('missing');
+      if (!cancelled) {
+        resolved = true;
+        clearTimeout(timeout);
+        setLoadState('missing');
+      }
     };
 
     load();
