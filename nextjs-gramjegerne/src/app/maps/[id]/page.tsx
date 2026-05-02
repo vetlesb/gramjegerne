@@ -89,8 +89,10 @@ export default function TripPage() {
   const [loadStep, setLoadStep] = useState<string>('mounted');
   const [isOffline, setIsOffline] = useState(false);
   const [bundleZoomRange, setBundleZoomRange] = useState<[number, number] | null>(null);
-  const [showCompass, setShowCompass] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
+  // Compass needs device-orientation permission — don't activate it
+  // automatically. Grid is opt-in for visual clarity.
+  const [showCompass, setShowCompass] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const [showRoutes, setShowRoutes] = useState(true);
   const [showCampSpots, setShowCampSpots] = useState(true);
   const [showFishingSpots, setShowFishingSpots] = useState(true);
