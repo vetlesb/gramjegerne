@@ -4,6 +4,7 @@
 
 import {CategoryCombobox} from '@/components/CategoryCombobox';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
 
@@ -19,6 +20,7 @@ interface NewItemFormProps {
 
 function NewItemForm({onSuccess}: NewItemFormProps) {
   const {t, currencyLabel} = useLanguage();
+  const {gearImagesEnabled} = useImagePrefs();
   // State Definitions
   const [name, setName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
@@ -311,36 +313,38 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
         </div>
 
         {/* Image Upload */}
-        <div>
-          <label className="flex flex-col gap-y-2">
-            {t.labels.image}
-            <input
-              type="file"
-              className="w-full max-w-full p-4"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </label>
-          {imagePreview && (
-            <div className="mt-4 relative">
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                width={96}
-                height={96}
-                className="h-24 w-24 object-cover rounded-md"
+        {gearImagesEnabled && (
+          <div>
+            <label className="flex flex-col gap-y-2">
+              {t.labels.image}
+              <input
+                type="file"
+                className="w-full max-w-full p-4"
+                accept="image/*"
+                onChange={handleImageChange}
               />
-              <button
-                type="button"
-                onClick={handleImageRemoval}
-                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                title="Remove image"
-              >
-                &times;
-              </button>
-            </div>
-          )}
-        </div>
+            </label>
+            {imagePreview && (
+              <div className="mt-4 relative">
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  onClick={handleImageRemoval}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  title="Remove image"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Description */}
         <div className="flex flex-col">

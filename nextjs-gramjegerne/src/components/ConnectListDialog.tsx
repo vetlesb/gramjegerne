@@ -15,6 +15,7 @@ import {toast} from 'sonner';
 import {client} from '@/sanity/client';
 import {groq} from 'next-sanity';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 interface ConnectListDialogProps {
   tripId: string;
@@ -25,6 +26,7 @@ interface ConnectListDialogProps {
 
 export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: ConnectListDialogProps) {
   const {t} = useLanguage();
+  const {packingListImagesEnabled} = useImagePrefs();
   const {data: session} = useSession();
   const [lists, setLists] = useState<CompactList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -159,6 +161,7 @@ export function ConnectListDialog({tripId, open, onOpenChange, onSuccess}: Conne
                   isSelected={selectedIds.has(list._id)}
                   onClick={() => handleToggle(list._id)}
                   imageUrlBuilder={(asset) => urlFor(asset)}
+                  showImage={packingListImagesEnabled}
                 />
               ))}
             </ul>

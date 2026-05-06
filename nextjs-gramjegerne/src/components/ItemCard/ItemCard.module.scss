@@ -4,7 +4,7 @@
   @include card;
   transition: background-color $transition-fast;
   padding: $spacing-sm $spacing-md $spacing-sm $spacing-sm;
-  
+
   &--checked {
     background-color: var(--bg-checked);
   }

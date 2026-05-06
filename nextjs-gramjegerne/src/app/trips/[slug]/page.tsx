@@ -19,6 +19,7 @@ import Image from 'next/image';
 import imageUrlBuilder from '@sanity/image-url';
 import {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 const builder = imageUrlBuilder(client);
 function urlFor(source: SanityImageSource) {
@@ -91,6 +92,7 @@ interface TripDetail {
 
 export default function TripDetailPage() {
   const {t} = useLanguage();
+  const {packingListImagesEnabled} = useImagePrefs();
   const {data: session} = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -456,6 +458,7 @@ export default function TripDetailPage() {
                       ownerName={isListOwner ? undefined : list.owner.name}
                       onRemove={isListOwner ? () => handleDisconnectList(list._id) : undefined}
                       imageUrlBuilder={(asset) => urlForImage(asset)}
+                      showImage={packingListImagesEnabled}
                     />
                   );
                 })}

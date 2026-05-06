@@ -1,5 +1,6 @@
 'use client';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
 
@@ -33,6 +34,7 @@ interface EditItemFormProps {
 
 export function EditItemForm({item, onSuccess}: EditItemFormProps) {
   const {t, currencyLabel} = useLanguage();
+  const {gearImagesEnabled} = useImagePrefs();
   const [name, setName] = useState<string>(item.name);
   const [slug, setSlug] = useState<string>(item.slug);
   const [image, setImage] = useState<File | null>(null);
@@ -270,28 +272,30 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
         </div>
 
         {/* Image Upload */}
-        <div>
-          <label className="flex flex-col gap-y-2">
-            {t.labels.image}
-            <input
-              type="file"
-              className="w-full max-w-full p-4"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </label>
-          {(imagePreview || item.image) && (
-            <div className="mt-4 relative">
-              <Image
-                src={imagePreview || item.image?.asset?.url || ''}
-                alt={`Preview of ${name}`}
-                width={96}
-                height={96}
-                className="h-24 w-24 object-cover rounded-md"
+        {gearImagesEnabled && (
+          <div>
+            <label className="flex flex-col gap-y-2">
+              {t.labels.image}
+              <input
+                type="file"
+                className="w-full max-w-full p-4"
+                accept="image/*"
+                onChange={handleImageChange}
               />
-            </div>
-          )}
-        </div>
+            </label>
+            {(imagePreview || item.image) && (
+              <div className="mt-4 relative">
+                <Image
+                  src={imagePreview || item.image?.asset?.url || ''}
+                  alt={`Preview of ${name}`}
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 object-cover rounded-md"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Description */}
         <div className="flex flex-col">

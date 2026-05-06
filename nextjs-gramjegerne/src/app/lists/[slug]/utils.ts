@@ -75,7 +75,8 @@ export function SHARED_LIST_QUERY(slug: string) {
   "user": user->{
     _id,
     name,
-    email
+    email,
+    gearImagesEnabled
   },
   "connectedMap": connectedMap->{
     _id,
@@ -209,6 +210,7 @@ export interface List {
     _id: string;
     name: string;
     email: string;
+    gearImagesEnabled?: boolean;
   };
   connectedMap?: {
     _id: string;

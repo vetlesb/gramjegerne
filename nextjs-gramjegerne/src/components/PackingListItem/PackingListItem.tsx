@@ -48,6 +48,11 @@ export interface PackingListItemProps {
 
   // Image URL helper
   imageUrlBuilder?: (asset: ImageAsset) => string;
+
+  // When false, the image container (and its placeholder + check overlay) is
+  // hidden entirely. The checked state is surfaced as an inline checkmark
+  // beside the title instead.
+  showImage?: boolean;
 }
 
 export function PackingListItem({
@@ -61,6 +66,7 @@ export function PackingListItem({
   onDelete,
   onAddToGear,
   imageUrlBuilder,
+  showImage = true,
 }: PackingListItemProps) {
   const {t} = useLanguage();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -102,30 +108,37 @@ export function PackingListItem({
     >
       <div className={styles.listLayout}>
         {/* Image */}
-        <div className={styles.imageContainer}>
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={listItem.item?.name || 'Item'}
-              width={64}
-              height={64}
-              className={styles.image}
-            />
-          ) : (
-            <div className={styles.imagePlaceholder} />
-          )}
+        {showImage && (
+          <div className={styles.imageContainer}>
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={listItem.item?.name || 'Item'}
+                width={64}
+                height={64}
+                className={styles.image}
+              />
+            ) : (
+              <div className={styles.imagePlaceholder} />
+            )}
 
-          {/* Checkmark overlay when packed */}
-          {listItem.checked && (
-            <div className={styles.checkmarkOverlay}>
-              <Icon name="checkmark" width={16} height={16} />
-            </div>
-          )}
-        </div>
+            {/* Checkmark overlay when packed */}
+            {listItem.checked && (
+              <div className={styles.checkmarkOverlay}>
+                <Icon name="checkmark" width={16} height={16} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className={styles.content}>
-          <h2 className={styles.title}>{listItem.item?.name || 'Unnamed Item'}</h2>
+          <div style={{display: 'flex', alignItems: 'center', gap: 8, minWidth: 0}}>
+            {!showImage && listItem.checked && (
+              <Icon name="checkmark" width={16} height={16} />
+            )}
+            <h2 className={styles.title}>{listItem.item?.name || 'Unnamed Item'}</h2>
+          </div>
           <div className={styles.metadata}>
             {/* Quantity - Editable input in editable mode, tag in readonly mode */}
             {!isReadonly ? (

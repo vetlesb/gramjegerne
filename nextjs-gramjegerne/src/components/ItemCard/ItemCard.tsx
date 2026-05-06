@@ -35,6 +35,9 @@ export interface ItemCardProps {
   
   // Image URL helper
   imageUrlBuilder?: (asset: ImageAsset) => string;
+
+  // When false, hides the image and the placeholder entirely.
+  showImage?: boolean;
 }
 
 export function ItemCard({
@@ -49,6 +52,7 @@ export function ItemCard({
   onBodyChange,
   onRemoveFromList,
   imageUrlBuilder,
+  showImage = true,
 }: ItemCardProps) {
   const {formatPrice} = useLanguage();
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -88,7 +92,7 @@ export function ItemCard({
       <li className={styles.card}>
         <div className={styles.gearLayout}>
           {/* Image */}
-          {imageUrl ? (
+          {showImage && (imageUrl ? (
             <Image
               src={imageUrl}
               alt={item.name}
@@ -104,7 +108,7 @@ export function ItemCard({
             />
           ) : (
             <div className={styles.imagePlaceholder} />
-          )}
+          ))}
 
           {/* Content */}
           <div className={styles.content}>
@@ -208,44 +212,46 @@ export function ItemCard({
       <li className={styles.cardGrid}>
         <div className={styles.gridLayout}>
           {/* Image with overlay actions */}
-          <div className={styles.imageContainer}>
-            <div className={styles.overlayActions}>
-              <IconButton
-                iconName="edit"
-                variant="trans"
-                onClick={() => onEdit?.(item)}
-                aria-label="Edit item"
-                title="Edit item"
-              />
-              <IconButton
-                iconName="delete"
-                variant="trans"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.(item._id);
-                }}
-                aria-label="Delete item"
-                title="Delete item"
-              />
+          {showImage && (
+            <div className={styles.imageContainer}>
+              <div className={styles.overlayActions}>
+                <IconButton
+                  iconName="edit"
+                  variant="trans"
+                  onClick={() => onEdit?.(item)}
+                  aria-label="Edit item"
+                  title="Edit item"
+                />
+                <IconButton
+                  iconName="delete"
+                  variant="trans"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(item._id);
+                  }}
+                  aria-label="Delete item"
+                  title="Delete item"
+                />
+              </div>
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={item.name}
+                  width={800}
+                  height={800}
+                  className={styles.gridImage}
+                  onClick={() => {
+                    if (onImageClick) {
+                      onImageClick(imageUrl, item.name);
+                    }
+                  }}
+                  style={{cursor: onImageClick ? 'pointer' : 'default'}}
+                />
+              ) : (
+                <div className={styles.gridImagePlaceholder} />
+              )}
             </div>
-            {imageUrl ? (
-              <Image
-                src={imageUrl}
-                alt={item.name}
-                width={800}
-                height={800}
-                className={styles.gridImage}
-                onClick={() => {
-                  if (onImageClick) {
-                    onImageClick(imageUrl, item.name);
-                  }
-                }}
-                style={{cursor: onImageClick ? 'pointer' : 'default'}}
-              />
-            ) : (
-              <div className={styles.gridImagePlaceholder} />
-            )}
-          </div>
+          )}
 
           {/* Content */}
           <div className={styles.gridContent}>
@@ -294,7 +300,7 @@ export function ItemCard({
       <li className={`${styles.card} ${listItem.checked ? styles['card--checked'] : ''}`}>
         <div className={styles.listLayout}>
           {/* Image */}
-          {imageUrl ? (
+          {showImage && (imageUrl ? (
             <Image
               src={imageUrl}
               alt={item.name}
@@ -310,7 +316,7 @@ export function ItemCard({
             />
           ) : (
             <div className={styles.imagePlaceholder} />
-          )}
+          ))}
 
           {/* Content */}
           <div className={styles.content}>

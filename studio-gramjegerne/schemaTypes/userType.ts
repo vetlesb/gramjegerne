@@ -33,6 +33,18 @@ export const userType = defineType({
       description: "The URL of the user's Google profile image",
     }),
     defineField({
+      name: 'gearImagesEnabled',
+      title: 'Show gear images',
+      type: 'boolean',
+      description: 'When false, gear item images are hidden across the app and the upload field is hidden in gear forms.',
+    }),
+    defineField({
+      name: 'packingListImagesEnabled',
+      title: 'Show packing list cover images',
+      type: 'boolean',
+      description: 'When false, packing list cover images are hidden and the upload field is hidden in list forms.',
+    }),
+    defineField({
       name: 'sharedLists',
       title: 'Shared Lists',
       type: 'array',

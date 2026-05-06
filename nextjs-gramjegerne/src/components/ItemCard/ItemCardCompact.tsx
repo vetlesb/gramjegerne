@@ -20,9 +20,16 @@ interface ItemCardCompactProps {
   isSelected: boolean;
   onClick: () => void;
   imageUrlBuilder: (asset: {_ref: string}) => string;
+  showImage?: boolean;
 }
 
-export function ItemCardCompact({item, isSelected, onClick, imageUrlBuilder}: ItemCardCompactProps) {
+export function ItemCardCompact({
+  item,
+  isSelected,
+  onClick,
+  imageUrlBuilder,
+  showImage = true,
+}: ItemCardCompactProps) {
   const imageUrl = item.image?.asset ? imageUrlBuilder(item.image.asset) : null;
 
   return (
@@ -30,7 +37,7 @@ export function ItemCardCompact({item, isSelected, onClick, imageUrlBuilder}: It
       className={clsx(styles.card, isSelected && styles['card--selected'])}
       onClick={onClick}
     >
-      {imageUrl ? (
+      {showImage && (imageUrl ? (
         <Image
           className={styles.image}
           src={imageUrl}
@@ -42,7 +49,7 @@ export function ItemCardCompact({item, isSelected, onClick, imageUrlBuilder}: It
         <div className={styles.imagePlaceholder}>
           <Icon name="add" width={16} height={16} />
         </div>
-      )}
+      ))}
       <div className={styles.content}>
         <h2 className={styles.title}>{item.name}</h2>
         <div className={styles.metadata}>

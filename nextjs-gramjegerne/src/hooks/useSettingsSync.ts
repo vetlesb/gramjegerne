@@ -5,7 +5,7 @@ import {useEffect, useRef} from 'react';
 /**
  * Saves a single setting to the server (fire-and-forget).
  */
-export function saveSettingToServer(key: string, value: string) {
+export function saveSettingToServer(key: string, value: string | boolean) {
   fetch('/api/userSettings', {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
@@ -23,6 +23,8 @@ export function useSettingsSync(
     setTheme: (theme: string) => void;
     setLanguage: (language: string) => void;
     setCurrency: (currency: string) => void;
+    setGearImagesEnabled: (enabled: boolean) => void;
+    setPackingListImagesEnabled: (enabled: boolean) => void;
   },
   enabled: boolean,
 ) {
@@ -48,6 +50,23 @@ export function useSettingsSync(
         if (data.currency && data.currency !== localStorage.getItem('currency')) {
           localStorage.setItem('currency', data.currency);
           setters.setCurrency(data.currency);
+        }
+        if (typeof data.gearImagesEnabled === 'boolean') {
+          const stored = localStorage.getItem('gearImagesEnabled');
+          if (stored !== String(data.gearImagesEnabled)) {
+            localStorage.setItem('gearImagesEnabled', String(data.gearImagesEnabled));
+            setters.setGearImagesEnabled(data.gearImagesEnabled);
+          }
+        }
+        if (typeof data.packingListImagesEnabled === 'boolean') {
+          const stored = localStorage.getItem('packingListImagesEnabled');
+          if (stored !== String(data.packingListImagesEnabled)) {
+            localStorage.setItem(
+              'packingListImagesEnabled',
+              String(data.packingListImagesEnabled),
+            );
+            setters.setPackingListImagesEnabled(data.packingListImagesEnabled);
+          }
         }
       })
       .catch((err) => console.error('Failed to load settings:', err));

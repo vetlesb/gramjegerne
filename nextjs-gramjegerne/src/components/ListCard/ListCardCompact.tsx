@@ -26,6 +26,7 @@ interface ListCardCompactProps {
   onClick: () => void;
   imageUrlBuilder: (asset: {_ref: string}) => string;
   connectedLabel?: string;
+  showImage?: boolean;
 }
 
 export function ListCardCompact({
@@ -34,6 +35,7 @@ export function ListCardCompact({
   onClick,
   imageUrlBuilder,
   connectedLabel,
+  showImage = true,
 }: ListCardCompactProps) {
   const imageUrl = list.image?.asset ? imageUrlBuilder(list.image.asset) : null;
 
@@ -59,7 +61,7 @@ export function ListCardCompact({
       className={clsx(styles.card, isSelected && styles['card--selected'])}
       onClick={onClick}
     >
-      {imageUrl ? (
+      {showImage && (imageUrl ? (
         <Image
           className={styles.image}
           src={imageUrl}
@@ -71,7 +73,7 @@ export function ListCardCompact({
         <div className={styles.imagePlaceholder}>
           <Icon name="list" width={16} height={16} />
         </div>
-      )}
+      ))}
       <div className={styles.content}>
         <h2 className={styles.title}>{list.name}</h2>
         <div className={styles.metadata}>

@@ -57,6 +57,9 @@ export interface ListCardProps {
 
   // Image URL helper
   imageUrlBuilder?: (asset: ImageAsset) => string;
+
+  // When false, the cover image area (and its overlay actions) is hidden.
+  showImage?: boolean;
 }
 
 export function ListCard({
@@ -74,6 +77,7 @@ export function ListCard({
   onDelete,
   onRemove,
   imageUrlBuilder,
+  showImage = true,
 }: ListCardProps) {
   const {t} = useLanguage();
   const router = useRouter();
@@ -151,6 +155,7 @@ export function ListCard({
         onClick={viewMode === 'list' ? handleClick : undefined}
       >
         {/* Image */}
+        {showImage && (
         <div className={styles.imageContainer}>
           {/* Overlay actions - only in grid view */}
           {viewMode === 'grid' && (
@@ -204,21 +209,22 @@ export function ListCard({
           )}
 
           {imageUrl ? (
-            <Image 
-              src={imageUrl} 
-              alt={name} 
-              width={800} 
-              height={450} 
+            <Image
+              src={imageUrl}
+              alt={name}
+              width={800}
+              height={450}
               className={styles.image}
               onClick={viewMode === 'grid' ? handleClick : undefined}
             />
           ) : (
-            <div 
+            <div
               className={styles.imagePlaceholder}
               onClick={viewMode === 'grid' ? handleClick : undefined}
             />
           )}
         </div>
+        )}
 
         {/* Content */}
         <div className={styles.content}>

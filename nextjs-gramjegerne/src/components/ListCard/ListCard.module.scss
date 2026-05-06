@@ -45,7 +45,7 @@
   align-items: center;
   padding: 0.5rem 1rem 0.5rem 0.5rem;
   cursor: pointer;
-  
+
   @include mobile {
     grid-template-columns: 64px 1fr;
     gap: $spacing-sm;

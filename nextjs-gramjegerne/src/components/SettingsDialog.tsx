@@ -2,6 +2,7 @@
 
 import {useSession, signOut} from 'next-auth/react';
 import {useTheme} from '@/components/ThemeProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 import {useLanguage} from '@/i18n/LanguageProvider';
 import {Button} from '@/components/Button/Button';
 import {ToggleButton} from '@/components/Button/ToggleButton';
@@ -37,6 +38,12 @@ export function SettingsDialog({open, onOpenChange}: SettingsDialogProps) {
   const {data: session} = useSession();
   const {theme, setTheme} = useTheme();
   const {language, setLanguage, currency, setCurrency, t} = useLanguage();
+  const {
+    gearImagesEnabled,
+    packingListImagesEnabled,
+    setGearImagesEnabled,
+    setPackingListImagesEnabled,
+  } = useImagePrefs();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,6 +124,44 @@ export function SettingsDialog({open, onOpenChange}: SettingsDialogProps) {
                   {cur.label}
                 </ToggleButton>
               ))}
+            </div>
+          </section>
+
+          {/* Gear images */}
+          <section className="flex flex-col gap-4">
+            <h2 className="text-lg font-medium">{t.settings.gearImages}</h2>
+            <div className="flex flex-row gap-2 flex-wrap">
+              <ToggleButton
+                active={gearImagesEnabled}
+                onClick={() => setGearImagesEnabled(true)}
+              >
+                {t.settings.enabled}
+              </ToggleButton>
+              <ToggleButton
+                active={!gearImagesEnabled}
+                onClick={() => setGearImagesEnabled(false)}
+              >
+                {t.settings.disabled}
+              </ToggleButton>
+            </div>
+          </section>
+
+          {/* Packing list images */}
+          <section className="flex flex-col gap-4">
+            <h2 className="text-lg font-medium">{t.settings.packingListImages}</h2>
+            <div className="flex flex-row gap-2 flex-wrap">
+              <ToggleButton
+                active={packingListImagesEnabled}
+                onClick={() => setPackingListImagesEnabled(true)}
+              >
+                {t.settings.enabled}
+              </ToggleButton>
+              <ToggleButton
+                active={!packingListImagesEnabled}
+                onClick={() => setPackingListImagesEnabled(false)}
+              >
+                {t.settings.disabled}
+              </ToggleButton>
             </div>
           </section>
         </div>

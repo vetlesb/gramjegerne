@@ -38,10 +38,12 @@ import {
 import {AddGearDialog} from '@/components/AddGearDialog';
 import type {AddGearItem} from '@/components/AddGearDialog';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 import styles from './page.module.scss';
 
 export default function ListPage() {
   const {t} = useLanguage();
+  const {gearImagesEnabled} = useImagePrefs();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -887,6 +889,13 @@ export default function ListPage() {
     }
   };
 
+  // In shared mode, gear items belong to the list owner — defer to the
+  // owner's gearImagesEnabled (default true if unset). In owned mode, use
+  // the viewer's own setting.
+  const effectiveGearImagesEnabled = isSharedMode
+    ? list.user?.gearImagesEnabled !== false
+    : gearImagesEnabled;
+
   return (
     <ProtectedRoute>
       <main className="container mx-auto min-h-screen p-16">
@@ -1045,6 +1054,7 @@ export default function ListPage() {
                 }}
                 onAddToGear={isSharedMode ? handleOpenAddToGear : undefined}
                 imageUrlBuilder={(asset) => urlFor(asset).url()}
+                showImage={effectiveGearImagesEnabled}
               />
             ))}
           </ul>

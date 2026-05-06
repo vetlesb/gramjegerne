@@ -33,6 +33,7 @@ import {CategoryFilter} from '@/components/CategoryFilter';
 import {ItemCard} from '@/components/ItemCard';
 import {OverviewStats} from '@/components/OverviewStats';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 // Convert category name to URL-safe slug
 function categoryToSlug(categoryName: string): string {
@@ -46,6 +47,7 @@ function categoryToSlug(categoryName: string): string {
 
 function IndexPageContent() {
   const {t, formatPrice} = useLanguage();
+  const {gearImagesEnabled} = useImagePrefs();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -421,8 +423,8 @@ function IndexPageContent() {
               onAddGear={() => setIsAddDialogOpen(true)}
               onManageCategories={() => setIsDialogOpen(true)}
               onExcel={handleOpenImportDialog}
-              viewMode={viewMode}
-              onViewModeChange={handleViewModeChange}
+              viewMode={gearImagesEnabled ? viewMode : undefined}
+              onViewModeChange={gearImagesEnabled ? handleViewModeChange : undefined}
               sortBy={sortBy}
               onSortChange={setSortBy}
             />
@@ -519,13 +521,13 @@ function IndexPageContent() {
             ) : (
               <ul
                 className={
-                  viewMode === 'list'
+                  !gearImagesEnabled || viewMode === 'list'
                     ? 'flex flex-col gap-y-2'
                     : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4'
                 }
               >
                 {filteredItems.map((item: Item) =>
-                  viewMode === 'list' ? (
+                  !gearImagesEnabled || viewMode === 'list' ? (
                     // List view - use ItemCard component
                     <ItemCard
                       key={item._id}
@@ -535,6 +537,7 @@ function IndexPageContent() {
                       onDelete={(id) => handleDeleteClick(id)}
                       onImageClick={() => setExpandedItem(item)}
                       imageUrlBuilder={(asset) => urlFor(asset)}
+                      showImage={gearImagesEnabled}
                     />
                   ) : (
                     <ItemCard
@@ -545,6 +548,7 @@ function IndexPageContent() {
                       onDelete={(id) => handleDeleteClick(id)}
                       onImageClick={() => setExpandedItem(item)}
                       imageUrlBuilder={(asset) => urlFor(asset)}
+                      showImage={gearImagesEnabled}
                     />
                   ),
                 )}

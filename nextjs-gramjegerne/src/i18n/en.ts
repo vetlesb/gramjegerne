@@ -22,6 +22,10 @@ const en = {
       spring: 'Spring',
       rock: 'Rock',
     },
+    gearImages: 'Show gear images',
+    packingListImages: 'Show packing list images',
+    enabled: 'On',
+    disabled: 'Off',
   },
 
   // Auth

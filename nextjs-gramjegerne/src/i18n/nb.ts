@@ -24,6 +24,10 @@ const nb: Translations = {
       spring: 'Vår',
       rock: 'Fjell',
     },
+    gearImages: 'Vis utstyrsbilder',
+    packingListImages: 'Vis pakkelistebilder',
+    enabled: 'På',
+    disabled: 'Av',
   },
 
   // Auth

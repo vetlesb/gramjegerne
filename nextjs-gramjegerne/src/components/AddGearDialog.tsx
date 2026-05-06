@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import {ItemCardCompact} from '@/components/ItemCard/ItemCardCompact';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 export interface AddGearItem {
   _id: string;
@@ -43,6 +44,7 @@ export function AddGearDialog({
   imageUrlBuilder,
 }: AddGearDialogProps) {
   const {t} = useLanguage();
+  const {gearImagesEnabled} = useImagePrefs();
   const [searchQuery, setSearchQuery] = useState('');
   const [tempSelectedItems, setTempSelectedItems] = useState<AddGearItem[]>([]);
 
@@ -109,6 +111,7 @@ export function AddGearDialog({
                   isSelected={tempSelectedItems.some((s) => s._id === item._id)}
                   onClick={() => handleToggle(item)}
                   imageUrlBuilder={imageUrlBuilder}
+                  showImage={gearImagesEnabled}
                 />
               ))}
             </ul>

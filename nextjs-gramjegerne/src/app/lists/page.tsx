@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 type FilterType = 'shared' | null;
 const VALID_FILTERS = ['shared'] as const;
@@ -32,6 +33,7 @@ function isValidFilter(value: string | null): value is 'shared' {
 
 function ListsPageContent() {
   const {t} = useLanguage();
+  const {packingListImagesEnabled} = useImagePrefs();
   const {data: session} = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -274,8 +276,8 @@ function ListsPageContent() {
           <ActionBar
             mode="lists-overview"
             onAddList={() => setIsAddDialogOpen(true)}
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
+            viewMode={packingListImagesEnabled ? viewMode : undefined}
+            onViewModeChange={packingListImagesEnabled ? handleViewModeChange : undefined}
           />
 
           {showLoader ? (
@@ -296,7 +298,7 @@ function ListsPageContent() {
 
               <ul
                 className={
-                  viewMode === 'list'
+                  !packingListImagesEnabled || viewMode === 'list'
                     ? 'flex flex-col gap-y-2'
                     : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-4 gap-x-4'
                 }
@@ -306,7 +308,7 @@ function ListsPageContent() {
                       <ListCard
                         key={sharedList._key || `shared_${sharedList.list._id}_${index}`}
                         mode="shared"
-                        viewMode={viewMode}
+                        viewMode={packingListImagesEnabled ? viewMode : 'list'}
                         listId={sharedList.list._id}
                         name={sharedList.list.name}
                         slug={sharedList.list.slug.current}
@@ -314,13 +316,14 @@ function ListsPageContent() {
                         ownerName={sharedList.list.user.name}
                         onRemove={() => handleRemoveSharedList(sharedList.list._id)}
                         imageUrlBuilder={(asset) => urlFor(asset)}
+                        showImage={packingListImagesEnabled}
                       />
                     ))
                   : filteredLists.map((list) => (
                       <ListCard
                         key={list._id}
                         mode="owned"
-                        viewMode={viewMode}
+                        viewMode={packingListImagesEnabled ? viewMode : 'list'}
                         listId={list._id}
                         name={list.name}
                         slug={list.slug.current}
@@ -330,6 +333,7 @@ function ListsPageContent() {
                         onDuplicate={() => handleDuplicate(list)}
                         onDelete={() => setShowDeleteDialog(list._id)}
                         imageUrlBuilder={(asset) => urlFor(asset)}
+                        showImage={packingListImagesEnabled}
                       />
                     ))}
               </ul>

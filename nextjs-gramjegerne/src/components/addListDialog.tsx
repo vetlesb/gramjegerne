@@ -15,6 +15,7 @@ import Image from 'next/image';
 import {useEffect, useState} from 'react';
 import {compressImage} from '@/utils/imageCompression';
 import {useLanguage} from '@/i18n/LanguageProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 
 // Add image builder
 const builder = imageUrlBuilder(client);
@@ -36,6 +37,7 @@ export function AddListDialog({
   editList,
 }: AddListDialogProps) {
   const {t} = useLanguage();
+  const {packingListImagesEnabled} = useImagePrefs();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [newListImage, setNewListImage] = useState<File | null>(null);
@@ -220,29 +222,31 @@ export function AddListDialog({
                   />
                 </label>
               </div>
-              <div className="flex flex-col">
-                <label className="flex flex-col gap-y-2 text-lg">
-                  {t.labels.image}
-                  {existingImage && (
-                    <div className="mb-2">
-                      <p className="text-sm mb-2">{t.misc.existingImage}</p>
-                      <Image
-                        src={urlFor(existingImage).url()}
-                        alt="Existing image"
-                        width={128}
-                        height={128}
-                        className="w-32 h-32 object-cover rounded-md"
-                      />
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full max-w-full p-4"
-                  />
-                </label>
-              </div>
+              {packingListImagesEnabled && (
+                <div className="flex flex-col">
+                  <label className="flex flex-col gap-y-2 text-lg">
+                    {t.labels.image}
+                    {existingImage && (
+                      <div className="mb-2">
+                        <p className="text-sm mb-2">{t.misc.existingImage}</p>
+                        <Image
+                          src={urlFor(existingImage).url()}
+                          alt="Existing image"
+                          width={128}
+                          height={128}
+                          className="w-32 h-32 object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="w-full max-w-full p-4"
+                    />
+                  </label>
+                </div>
+              )}
               <div className="flex flex-col">
                 <label className="flex flex-col gap-y-2 text-lg">
                   {t.lists.connectedTrip}

@@ -4,6 +4,7 @@
 
 import {Navbar} from '@/components/Navbar';
 import {ThemeProvider} from '@/components/ThemeProvider';
+import {ImagePrefsProvider} from '@/components/ImagePrefsProvider';
 import {LanguageProvider} from '@/i18n/LanguageProvider';
 import localFont from 'next/font/local';
 import {usePathname} from 'next/navigation';
@@ -57,6 +58,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className={`${apfel.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
+          <ImagePrefsProvider>
           <Providers>
             <RegisterSW />
             <SettingsSync />
@@ -75,6 +77,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               </ProtectedRoute>
             )}
           </Providers>
+          </ImagePrefsProvider>
           </LanguageProvider>
         </ThemeProvider>
         <Toaster />

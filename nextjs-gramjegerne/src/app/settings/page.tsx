@@ -3,6 +3,7 @@
 import {ProtectedRoute} from '@/components/auth/ProtectedRoute';
 import {useSession, signOut} from 'next-auth/react';
 import {useTheme} from '@/components/ThemeProvider';
+import {useImagePrefs} from '@/components/ImagePrefsProvider';
 import {useLanguage} from '@/i18n/LanguageProvider';
 import {Icon} from '@/components/Icon';
 import {Button} from '@/components/Button/Button';
@@ -32,6 +33,12 @@ export default function SettingsPage() {
   const {data: session} = useSession();
   const {theme, setTheme} = useTheme();
   const {language, setLanguage, currency, setCurrency, t} = useLanguage();
+  const {
+    gearImagesEnabled,
+    packingListImagesEnabled,
+    setGearImagesEnabled,
+    setPackingListImagesEnabled,
+  } = useImagePrefs();
 
   return (
     <ProtectedRoute>
@@ -116,6 +123,52 @@ export default function SettingsPage() {
               {cur.label}
             </button>
           ))}
+        </div>
+      </section>
+
+      {/* Gear images */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{t.settings.gearImages}</h2>
+        <div className="flex flex-row gap-2 flex-wrap">
+          <button
+            onClick={() => setGearImagesEnabled(true)}
+            className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+              gearImagesEnabled ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+            }`}
+          >
+            {t.settings.enabled}
+          </button>
+          <button
+            onClick={() => setGearImagesEnabled(false)}
+            className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+              !gearImagesEnabled ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+            }`}
+          >
+            {t.settings.disabled}
+          </button>
+        </div>
+      </section>
+
+      {/* Packing list images */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{t.settings.packingListImages}</h2>
+        <div className="flex flex-row gap-2 flex-wrap">
+          <button
+            onClick={() => setPackingListImagesEnabled(true)}
+            className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+              packingListImagesEnabled ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+            }`}
+          >
+            {t.settings.enabled}
+          </button>
+          <button
+            onClick={() => setPackingListImagesEnabled(false)}
+            className={`flex items-center gap-x-2 rounded-3xl p-3 px-4 text-lg ${
+              !packingListImagesEnabled ? 'bg-accent text-secondary' : 'bg-dimmed menu-item'
+            }`}
+          >
+            {t.settings.disabled}
+          </button>
         </div>
       </section>
 
