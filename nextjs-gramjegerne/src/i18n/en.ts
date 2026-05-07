@@ -93,6 +93,7 @@ const en = {
   // Gear page
   gear: {
     addGear: 'Add gear',
+    createGear: 'Create gear',
     editGear: 'Edit gear',
     addCategory: 'Add category',
     categories: 'Categories',
@@ -116,8 +117,8 @@ const en = {
   // Lists
   lists: {
     title: 'Lists',
-    addList: 'Add list',
-    newList: 'New',
+    addList: 'Create list',
+    newList: 'Create list',
     editList: 'Edit',
     listCreated: 'List created!',
     listUpdated: 'List updated!',
@@ -143,7 +144,7 @@ const en = {
   // Trips
   trips: {
     title: 'Trips',
-    addTrip: 'Add trip',
+    addTrip: 'Create trip',
     saveTrip: 'Save trip',
     editTrip: 'Edit trip',
     deleteTrip: 'Are you sure you want to delete this trip?',
@@ -166,7 +167,7 @@ const en = {
     createTripToStart: 'Create a trip to start planning with friends.',
     savedToMyTrips: 'Already saved - View trip',
     saveToMyTrips: 'Save to my trips',
-    newTrip: 'New trip',
+    newTrip: 'Create trip',
     startDate: 'Start date',
     endDate: 'End date',
     descriptionPlaceholder: 'Optional description...',

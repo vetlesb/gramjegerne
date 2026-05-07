@@ -95,6 +95,7 @@ const nb: Translations = {
   // Gear page
   gear: {
     addGear: 'Legg til utstyr',
+    createGear: 'Opprett utstyr',
     editGear: 'Rediger utstyr',
     addCategory: 'Legg til kategori',
     categories: 'Kategorier',

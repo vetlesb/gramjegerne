@@ -177,7 +177,7 @@ export function ActionBar({
       <div className={styles.desktopGroup}>
         {mode === 'gear' && (
           <>
-            <Button onClick={onAddGear}>{t.gear.addGear}</Button>
+            <Button onClick={onAddGear}>{t.gear.createGear}</Button>
             <Button onClick={onManageCategories}>{t.gear.categories}</Button>
             <Button onClick={onExcel}>{t.gear.excel}</Button>
             {viewModeButton}
@@ -226,7 +226,7 @@ export function ActionBar({
       <div className={styles.mobileGroup}>
         {mode === 'gear' && (
           <>
-            <Button onClick={onAddGear}>{t.actions.add}</Button>
+            <Button onClick={onAddGear}>{t.actions.create}</Button>
             <div className={styles.moreMenu} ref={moreMenuRef}>
               <IconButton
                 iconName="ellipsis"

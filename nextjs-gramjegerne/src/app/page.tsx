@@ -434,7 +434,7 @@ function IndexPageContent() {
               <DialogContent className="dialog p-4 md:p-10 rounded-2xl max-h-[90vh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-normal text-accent pb-8">
-                    {t.gear.addGear}
+                    {t.gear.createGear}
                   </DialogTitle>
                 </DialogHeader>
                 <NewItemForm
