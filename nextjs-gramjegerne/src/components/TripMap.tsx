@@ -138,7 +138,10 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       maxZoom: 18,
       ...(offlineMode
         ? {
-            minNativeZoom: offlineZoomRange?.[0] ?? 1,
+            // Base pack (z=1-6, all of Norway) is installed on first save, so
+            // low zooms always have tiles. Only the upper bound comes from the
+            // trip-specific bundle range.
+            minNativeZoom: 1,
             maxNativeZoom: offlineZoomRange?.[1] ?? 14,
           }
         : {detectRetina: true}),
