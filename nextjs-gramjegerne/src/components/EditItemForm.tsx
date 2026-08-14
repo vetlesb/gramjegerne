@@ -75,6 +75,9 @@ export function EditItemForm({item, onSuccess}: EditItemFormProps) {
       }
     };
     fetchCategories();
+    // `t` is only read in the error path, so it is deliberately not a
+    // dependency — including it would refetch on every language switch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory.length]);
 
   useEffect(() => {

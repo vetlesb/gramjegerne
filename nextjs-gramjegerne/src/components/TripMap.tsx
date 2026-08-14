@@ -133,20 +133,26 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
     // Kartverket layer options — branch on offlineMode so the constrained
     // zoom range only applies on the offline trip page, not in /maps online.
-    const kartverketOpts = (extra?: L.TileLayerOptions): L.TileLayerOptions => ({
-      attribution: '© Kartverket',
-      maxZoom: 18,
-      ...(offlineMode
-        ? {
-            // Base pack (z=1-6, all of Norway) is installed on first save, so
-            // low zooms always have tiles. Only the upper bound comes from the
-            // trip-specific bundle range.
-            minNativeZoom: 1,
-            maxNativeZoom: offlineZoomRange?.[1] ?? 14,
-          }
-        : {detectRetina: true}),
-      ...extra,
-    });
+    // Memoized on the primitives it reads (not the offlineZoomRange array) so
+    // its identity is stable for the effects below that rebuild tile layers.
+    const offlineMaxNativeZoom = offlineZoomRange?.[1] ?? 14;
+    const kartverketOpts = useCallback(
+      (extra?: L.TileLayerOptions): L.TileLayerOptions => ({
+        attribution: '© Kartverket',
+        maxZoom: 18,
+        ...(offlineMode
+          ? {
+              // Base pack (z=1-6, all of Norway) is installed on first save, so
+              // low zooms always have tiles. Only the upper bound comes from the
+              // trip-specific bundle range.
+              minNativeZoom: 1,
+              maxNativeZoom: offlineMaxNativeZoom,
+            }
+          : {detectRetina: true}),
+        ...extra,
+      }),
+      [offlineMode, offlineMaxNativeZoom],
+    );
 
     const [tilesLoading, setTilesLoading] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
@@ -193,7 +199,7 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
 
         baseMaps[defaultTileLayer].addTo(map);
       }
-    }, [defaultTileLayer, isMapReady]);
+    }, [defaultTileLayer, isMapReady, kartverketOpts]);
 
     // Search for places using OpenStreetMap Nominatim API
     const searchPlaces = useCallback(async (query: string) => {
@@ -987,6 +993,8 @@ const TripMap = forwardRef<TripMapRef, TripMapProps>(
       };
     }, [
       isMapReady,
+      hideLayerControl,
+      kartverketOpts,
       showRoutes,
       showCampSpots,
       showFishingSpots,

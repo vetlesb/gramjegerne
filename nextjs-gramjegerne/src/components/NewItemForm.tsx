@@ -59,6 +59,10 @@ function NewItemForm({onSuccess}: NewItemFormProps) {
     };
 
     fetchCategories();
+    // Fetch once on mount. `t` is only read in the error path, so it is
+    // deliberately not a dependency — including it would refetch on every
+    // language switch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Automatically generate slug when name changes
   useEffect(() => {

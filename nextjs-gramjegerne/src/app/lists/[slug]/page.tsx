@@ -651,7 +651,7 @@ export default function ListPage() {
       categoryTotalsMap: categoryMap,
       grandTotal,
     };
-  }, [selectedItems]);
+  }, [selectedItems, t.lists.onBody]);
 
   const selectedCategoryTotals = categoryTotalsMap.get(selectedCategory ?? '');
   const selectedCategoryWeight = selectedCategoryTotals
