@@ -12,11 +12,11 @@
 
 // ============================================
 // Import Tailwind (for now, during migration)
-// Keep as @import for external CSS
+// Directives are expanded by PostCSS after Sass runs
 // ============================================
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 // ============================================
 // Import Leaflet CSS (external)
